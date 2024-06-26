@@ -1,0 +1,5 @@
+"","contrast","estimate","SE","df","t.ratio","p.value","p.value.signif"
+            Df Sum Sq Mean Sq F value Pr(>F)
+condition    1      0       0     NaN    NaN
+cycle        3      0       0     NaN    NaN
+Residuals   16      0       0               

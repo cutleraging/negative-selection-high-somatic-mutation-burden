@@ -1,0 +1,146 @@
+---
+title: "multiple ENU mutation burden analysis"
+output: html_document
+date: "2023-10-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preparation
+
+Load libraries
+```{r}
+library(ggplot2)
+library(viridis)
+```
+
+Functions
+```{r}
+theme_Publication <- function(base_size=16, base_family="helvetica") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family = "")
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               #legend.key.size= unit(0.2, "cm"),
+               legend.margin = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+          ))
+      
+}
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+```
+
+Load sample_table
+```{r}
+setwd("/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/1-data")
+
+sample_table <- read.table("sample_table.txt", header = TRUE)
+```
+
+# Plotting
+
+## Coverage
+```{r}
+setwd("/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/2-quality-control")
+
+pdf("coverage.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = Cov, fill = factor(cycle))) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Condition", y = "Coverage (bases)", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication(base_size = 16) + 
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+
+hg19_size <- 3036303846
+pdf("coverage_percent.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = Cov/hg19_size, fill = factor(cycle))) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Condition", y = "% Genome coverage", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication(base_size = 16) + 
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU")) +
+  scale_y_continuous(labels = scales::percent)
+dev.off()
+```
+
+## Sensitivity
+```{r}
+setwd("/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/2-quality-control")
+
+pdf("SNV_sensitivity.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = Sen_SNV, fill = factor(cycle))) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Condition", y = "SNV Sensitivity", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication(base_size = 16) + 
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU"))  +
+  scale_y_continuous(labels = scales::percent)
+dev.off()
+
+pdf("INDEL_sensitivity.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = Sen_INDEL, fill = factor(cycle))) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Condition", y = "INDEL Sensitivity", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication(base_size = 16) + 
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU"))  +
+  scale_y_continuous(labels = scales::percent)
+dev.off()
+```

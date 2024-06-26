@@ -1,0 +1,16 @@
+"","condition","cycle","variant_type","mean","sd"
+"1","control","1","inframe insertion",0,0
+"2","control","1","inframe deletion",0,0
+"3","control","1","frameshift variant",0.333333333333333,0.577350269189626
+"4","control","9","inframe insertion",0,0
+"5","control","9","inframe deletion",0,0
+"6","control","9","frameshift variant",0,0
+"7","enu","3","inframe insertion",0,0
+"8","enu","3","inframe deletion",0,0
+"9","enu","3","frameshift variant",0,0
+"10","enu","6","inframe insertion",0,0
+"11","enu","6","inframe deletion",0,0
+"12","enu","6","frameshift variant",0,0
+"13","enu","9","inframe insertion",0,0
+"14","enu","9","inframe deletion",0,0
+"15","enu","9","frameshift variant",0.166666666666667,0.408248290463863

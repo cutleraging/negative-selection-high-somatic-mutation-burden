@@ -1,0 +1,2331 @@
+---
+title: "VEP OE calculation"
+output: html_document
+params:
+  group: NULL  # Default value can be NULL or any default you deem fit
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Notes
+Duplicate removal
+- Seems to be that there are duplicates entries of same variant because there are different genes that it is associated with presumably due to overlapping genes
+- Unsure how to proceed, so just taking the first entry
+  - Can take most pathogenic gene, would need to use different metrics for coding and non-coding
+
+# Preparation
+
+## Libraries
+```{r}
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(purrr)
+library(data.table)
+library(foreach)
+library(doParallel)
+library(parallel)
+library(nortest)
+
+vep_cols_observed <- c(
+  "Uploaded_variation", "Location", "Allele", "Gene", "Feature", "Feature_type",
+  "Consequence", "cDNA_position", "CDS_position", "Protein_position", "Amino_acids",
+  "Codons", "Existing_variation", "IMPACT", "DISTANCE", "STRAND", "FLAGS",
+  "VARIANT_CLASS", "SYMBOL", "SYMBOL_SOURCE", "HGNC_ID", "BIOTYPE", "CANONICAL",
+  "MANE_SELECT", "MANE_PLUS_CLINICAL", "TSL", "APPRIS", "CCDS", "ENSP",
+  "SWISSPROT", "TREMBL", "UNIPARC", "UNIPROT_ISOFORM", "SOURCE", "GENE_PHENO",
+  "SIFT", "PolyPhen", "EXON", "INTRON", "DOMAINS", "miRNA", "HGVSc", "HGVSp",
+  "HGVS_OFFSET", "AF", "AFR_AF", "AMR_AF", "EAS_AF", "EUR_AF", "SAS_AF",
+  "gnomADe_AF", "gnomADe_AFR_AF", "gnomADe_AMR_AF", "gnomADe_ASJ_AF",
+  "gnomADe_EAS_AF", "gnomADe_FIN_AF", "gnomADe_NFE_AF", "gnomADe_OTH_AF",
+  "gnomADe_SAS_AF", "gnomADg_AF", "gnomADg_AFR_AF", "gnomADg_AMI_AF",
+  "gnomADg_AMR_AF", "gnomADg_ASJ_AF", "gnomADg_EAS_AF", "gnomADg_FIN_AF",
+  "gnomADg_MID_AF", "gnomADg_NFE_AF", "gnomADg_OTH_AF", "gnomADg_SAS_AF",
+  "MAX_AF", "MAX_AF_POPS", "CLIN_SIG", "SOMATIC", "PHENO", "PUBMED",
+  "MOTIF_NAME", "MOTIF_POS", "HIGH_INF_POS", "MOTIF_SCORE_CHANGE",
+  "TRANSCRIPTION_FACTORS", "CADD_PHRED", "CADD_RAW", "am_class",
+  "am_pathogenicity", "BLOSUM62", "CAROL", "mutfunc_motif", "5UTR_annotation",
+  "5UTR_consequence", "Existing_InFrame_oORFs", "Existing_OutOfFrame_oORFs",
+  "Existing_uORFs", "NMD", "GERP", "phastCons", "phyloP"
+)
+
+vep_cols_simulated <- c(
+  "Uploaded_variation", "Location", "Allele", "Gene", "Feature", "Feature_type", 
+  "Consequence", "cDNA_position", "CDS_position", "Protein_position", 
+  "Amino_acids", "Codons", "Existing_variation", "IMPACT", "DISTANCE", 
+  "STRAND", "FLAGS", "VARIANT_CLASS", "SYMBOL", "SYMBOL_SOURCE", "HGNC_ID", 
+  "BIOTYPE", "CANONICAL", "MANE_SELECT", "MANE_PLUS_CLINICAL", "TSL", "APPRIS", 
+  "CCDS", "ENSP", "SWISSPROT", "TREMBL", "UNIPARC", "UNIPROT_ISOFORM", 
+  "GENE_PHENO", "SIFT", "PolyPhen", "EXON", "INTRON", "DOMAINS", "miRNA", 
+  "HGVSc", "HGVSp", "HGVS_OFFSET", "AF", "AFR_AF", "AMR_AF", "EAS_AF", 
+  "EUR_AF", "SAS_AF", "gnomADe_AF", "gnomADe_AFR_AF", "gnomADe_AMR_AF", 
+  "gnomADe_ASJ_AF", "gnomADe_EAS_AF", "gnomADe_FIN_AF", "gnomADe_NFE_AF", 
+  "gnomADe_OTH_AF", "gnomADe_SAS_AF", "gnomADg_AF", "gnomADg_AFR_AF", 
+  "gnomADg_AMI_AF", "gnomADg_AMR_AF", "gnomADg_ASJ_AF", "gnomADg_EAS_AF", 
+  "gnomADg_FIN_AF", "gnomADg_MID_AF", "gnomADg_NFE_AF", "gnomADg_OTH_AF", 
+  "gnomADg_SAS_AF", "MAX_AF", "MAX_AF_POPS", "CLIN_SIG", "SOMATIC", "PHENO", 
+  "PUBMED", "MOTIF_NAME", "MOTIF_POS", "HIGH_INF_POS", "MOTIF_SCORE_CHANGE", 
+  "TRANSCRIPTION_FACTORS", "CADD_PHRED", "CADD_RAW"
+)
+```
+
+## Functions
+```{r}
+# function to load vep files and count occurences of a specific variant type
+# IMPROVEMENT: handle duplicated variants
+# observed skip = 120
+# simulated skip = 105
+# files = vep_observed_files
+# sample_names = gsub("\\.txt$", "", basename(vep_observed_files))
+# col_names = vep_cols_observed
+# variant_type = "Consequence"
+# main_variants = main_variants
+# batch_size = 50
+# skip = 120
+load_vep_and_count_types <- function(files, sample_names, col_names, variant_type, main_variants, batch_size = 50, skip){
+  
+  sum_and_replace_rows <- function(data, strings_to_match) {
+    result_data <- data
+
+    for (string_to_match in strings_to_match) {
+      #pattern <- paste0("^", string_to_match, "(,|$)")
+      pattern <- paste0("^", string_to_match)
+      to_remove <- grepl(pattern, result_data$variant_type)
+      sum_count <- sum(result_data$count[to_remove])
+      result_data <- result_data[!to_remove, ]
+      new_row <- data.frame(variant_type = string_to_match, count = sum_count)
+      result_data <- rbind(result_data, new_row)
+    }
+
+    result_data <- result_data[order(result_data$variant_type), ]
+
+    return(result_data)
+  }
+  
+  file_chunks <- split(files, ceiling(seq_along(files) / batch_size))
+  
+  no_cores <- Sys.getenv("SLURM_CPUS_PER_TASK", unset = 1)
+  cl <- makeCluster(as.numeric(no_cores))
+  registerDoParallel(cl)
+  
+  results_list <- foreach(file_chunk = file_chunks, .packages = c("data.table", "dplyr")) %dopar% {
+    chunk_results <- lapply(file_chunk, function(file) {
+      tryCatch({
+        vep <- fread(file, fill = TRUE, skip = skip, col.names = col_names, na.strings = "-")
+        vep.count <- vep %>% 
+          select(Uploaded_variation, !!sym(variant_type)) %>%
+          filter(!is.na(!!sym(variant_type)) & !!sym(variant_type) != "") %>%
+          distinct(Uploaded_variation, .keep_all = TRUE) %>%
+          group_by(!!sym(variant_type)) %>% 
+          summarise(count = n()) %>%
+          rename_with(~ "variant_type", .cols = 1) %>%
+          sum_and_replace_rows(main_variants)
+        return(vep.count)
+      }, error = function(e) {
+        message(sprintf("Error processing file %s: %s", file, e$message))
+        return(NULL)
+      })
+    })
+    
+    chunk_results <- chunk_results[!sapply(chunk_results, is.null)]
+    return(chunk_results)
+  }
+  
+  stopCluster(cl)
+  
+  results_list_flat <- do.call(c, results_list)
+  names(results_list_flat) <- sample_names
+  
+  results_table_long <- imap_dfr(results_list_flat, ~ mutate(.x, id = .y))
+  
+  results_table_wide <- results_table_long %>%
+    pivot_wider(names_from = id, values_from = count, values_fill = list(count = 0)) %>%
+    as.data.frame()
+  
+  if(variant_type == "Consequence"){
+    results_table_wide$variant_type <- gsub(",", " / ", gsub("_", " ", results_table_wide$variant_type))
+  }
+  
+  return(results_table_wide)
+}
+
+# function to load vep files and count occurences of a specific variant type
+# IMPROVEMENT: handle duplicated variants
+load_vep_and_count_types_synonymous_nonsynonymous <- function(files, sample_names, col_names, variant_type, batch_size = 50, skip){
+  
+  # Split files into chunks of 100
+  file_chunks <- split(files, ceiling(seq_along(files) / batch_size))
+  
+  # set up for parallel
+  no_cores <- Sys.getenv("SLURM_CPUS_PER_TASK", unset = 1)
+  cl <- makeCluster(as.numeric(no_cores))
+  registerDoParallel(cl)
+  
+  # Process each chunk of files
+  results_list <- foreach(file_chunk = file_chunks, .packages = c("data.table", "dplyr")) %dopar% {
+    chunk_results <- lapply(file_chunk, function(file) {
+      vep <- fread(file,
+                   fill = TRUE,
+                   skip = skip,
+                   col.names = col_names,
+                   na.strings = "-")
+    
+      vep.count <- vep %>% 
+        select(Uploaded_variation, !!sym(variant_type)) %>%
+        filter(!is.na(!!sym(variant_type)) & !!sym(variant_type) != "") %>%
+        distinct(Uploaded_variation, .keep_all = TRUE) %>% # remove duplicates by keeping first
+        group_by(!!sym(variant_type)) %>% 
+        summarise(count = n()) %>%
+        rename_with(~ "variant_type", .cols = 1) %>%
+        mutate(variant_type = case_when(
+            variant_type == "synonymous_variant" ~ "synonymous",
+            variant_type == "start_retained_variant" ~ "synonymous",
+            variant_type == "stop_retained_variant" ~ "synonymous",
+            variant_type == "missense_variant" ~ "nonsynonymous",
+            variant_type == "start_lost" ~ "nonsynonymous",
+            variant_type == "stop_gained" ~ "nonsynonymous",
+            variant_type == "stop_lost" ~ "nonsynonymous",
+            variant_type == "inframe_insertion" ~ "nonsynonymous",
+            variant_type == "inframe_deletion" ~ "nonsynonymous",
+            variant_type == "protein_altering_variant" ~ "nonsynonymous",
+            variant_type == "coding_sequence_variant" ~ "nonsynonymous",
+            .default = "NA"
+        )) %>%
+        filter(variant_type != "NA") %>%
+        group_by(variant_type) %>%
+        summarise(count = sum(count))
+
+      return(vep.count)
+    })
+    
+    return(chunk_results)
+    
+  }
+  
+  # Stop the parallel cluster
+  stopCluster(cl)
+
+  # Flatten the list of results and name
+  results_list_flat <- do.call(c, results_list)
+  names(results_list_flat) <- sample_names
+  
+  # combine into a single table
+  # Add an identifier column to each tibble and combine them
+  results_table_long <- imap_dfr(results_list_flat, ~ mutate(.x, id = .y))
+  
+  # Pivot the data to wide format
+  # variant_type not found in samples will be set to 0
+  results_table_wide <- results_table_long %>%
+    pivot_wider(names_from = id, values_from = count, values_fill = list(count = 0)) %>%
+    as.data.frame()
+  
+  return(results_table_wide)
+}
+
+# function to calculate O/E ratio for groups of samples
+# observed_counts = observed_consequence
+# simulated_counts = simulated_consequence
+# get_summary_type = "mean"
+calc_OE_ratio_group <- function(observed_counts, simulated_counts, get_summary_type) {
+  
+  # sum the frequencies for all of the observed samples
+  numeric_columns <- observed_counts[, -1] # Exclude the first column which is not numeric
+  row_sums <- rowSums(numeric_columns)
+  
+  # Create a new data frame with 'variant_type' and 'row_sums'
+  observed_counts_summed <- data.frame(
+    variant_type = observed_counts$variant_type,
+    obs.mut = row_sums
+  )
+  
+  # for each simulation, sum the frequencies across the samples
+  # Function to extract the group identifier
+  extract_group <- function(colname) {
+    sub(".*_(\\d+)$", "\\1", colname)
+  }
+  
+  # Get the group for each column
+  groups <- sapply(names(simulated_counts)[-1], extract_group)
+  
+  # Initialize a list to store the row sums for each group
+  row_sums_by_group <- list()
+  
+  # Loop through unique groups and calculate row sums
+  for (group in unique(groups)) {
+    # Get the columns that belong to the current group
+    group_cols <- names(simulated_counts)[-1][groups == group]
+    # Calculate the row sums for the current group
+    row_sums_by_group[[group]] <- rowSums(simulated_counts[, group_cols])
+  }
+  
+  # Convert the list to a data frame
+  simulated_counts_summed <- data.frame(variant_type = simulated_counts$variant_type)
+  for (group in names(row_sums_by_group)) {
+    simulated_counts_summed[[paste0("group_", group, "_row_sums")]] <- row_sums_by_group[[group]]
+  }
+    
+  # Join the observed and simulated data frames
+  merged_counts <- full_join(observed_counts_summed, simulated_counts_summed, by = "variant_type")
+  merged_counts[,-1] <- lapply(merged_counts[,-1], function(x) replace(x, is.na(x), 0))
+  
+  simulated_sample <- select(merged_counts, -c(1,2))
+  observed_sample <- select(merged_counts, 2)
+  
+  # get normality of distribution for simulated samples
+  sim.norm.pvalues <- apply(simulated_sample, 1, function(column) {
+        if (length(column) > 3 && length(unique(column)) > 1) {
+            ad.test(column)$p.value
+        } else {
+            NA
+        }
+    })
+  
+    # adjust normality test pvalue for multiple testing
+    # sim.norm.pvalues.adj <- p.adjust(sim.norm.pvalues, method = "BH")
+    
+    # create log2fc for all the simulated
+    simulated_log2fc <- apply(simulated_sample, 2, function(x){
+      log2((observed_sample[,1] + 1) / (x + 1))
+    })
+    
+    # permutation test to calculate significance
+    # how many simulation had equal or more/less mutations compared to observed
+    if(get_summary_type == "mean"){
+        sim.mean <- apply(simulated_sample, 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        sim.mean <- apply(simulated_sample, 1, function(x) median(x, na.rm = TRUE))
+      }
+    sim.log2fc <- log2((sim.mean + 1) / (simulated_sample + 1))
+    obs.log2fc <- log2((observed_sample[,1] + 1) / (sim.mean + 1))
+    perm.test.pvalues <- rowMeans(abs(sim.log2fc) >= abs(obs.log2fc), na.rm = TRUE)
+    perm.test.pvalues.adj <- p.adjust(perm.test.pvalues, method = "BH") # adjust permutation test pvalue for multiple testing
+    
+    # Calculate standard deviation and standard error for log2fc
+    log2fc.sd <- apply(simulated_log2fc, 1, function(x) sd(x, na.rm = TRUE))
+    log2fc.se <- log2fc.sd / sqrt(ncol(simulated_log2fc))
+    
+    # add to new df
+    res <- data.frame(
+      variant_type = merged_counts$variant_type,
+      obs.mut = observed_sample[,1],
+      sim.mut = if(get_summary_type == "mean"){
+        apply(simulated_sample, 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        apply(simulated_sample, 1, function(x) median(x, na.rm = TRUE))
+      },
+      sim.mut.normality = sim.norm.pvalues,
+      log2fc = if(get_summary_type == "mean"){
+        apply(simulated_log2fc, 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        apply(simulated_log2fc, 1, function(x) median(x, na.rm = TRUE))
+      },
+      log2fc.sd = log2fc.sd,
+      log2fc.se = log2fc.se,
+      pvalue = perm.test.pvalues,
+      pvalue.adj = perm.test.pvalues.adj
+    )
+  return(res)
+} 
+```
+
+### Archive
+```{r, eval = FALSE}
+# files = vep_observed_files
+# sample_names = sample_table$sample
+# col_names = vep_cols
+# variant_type = "CADD_PHRED"
+# batch_size = 100
+# absolute = FALSE
+load_vep_and_summarize_single <- function(file, col_names, variant_type, absolute) {
+  
+  vep <- fread(file,
+               fill = TRUE,
+               skip = 120,
+               col.names = col_names,
+               na.strings = "-")
+  
+  calculate_summary <- function(df, variant_type, absolute) {
+    # Calculate mean and median based on the `absolute` flag
+    if (absolute) {
+      summarised_df <- df %>%
+        summarise(sum = sum(abs(as.double(df[[variant_type]])), na.rm = TRUE),
+                  mean = mean(abs(as.double(df[[variant_type]])), na.rm = TRUE),
+                  median = median(abs(as.double(df[[variant_type]])), na.rm = TRUE))
+    } else {
+      summarised_df <- df %>%
+        summarise(sum = sum(as.double(df[[variant_type]]), na.rm = TRUE),
+                  mean = mean(as.double(df[[variant_type]]), na.rm = TRUE),
+                  median = median(as.double(df[[variant_type]]), na.rm = TRUE))
+    }
+    
+    return(summarised_df)
+  }
+
+  vep.count <- vep %>% 
+    filter(!is.na(!!sym(variant_type)) & !!sym(variant_type) != "") %>%
+    distinct(Uploaded_variation, .keep_all = TRUE) %>% # remove duplicates by keeping first
+    mutate(type = case_when(
+      !is.na(CDS_position) & grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding synonymous",
+      !is.na(CDS_position) & !grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding nonsynonymous",
+      `Feature_type` == "RegulatoryFeature" | `Feature_type` == "MotifFeature" ~ "snv noncoding regulatory",
+      `BIOTYPE` == "nonsense_mediated_decay" ~ "snv noncoding nmd",
+      grepl("splice", Consequence) ~ "snv noncoding splice",
+      grepl("non_coding_transcript_exon_variant", Consequence) ~ "snv noncoding transcript exon",
+      grepl("non_coding_transcript_variant", Consequence) ~ "snv noncoding transcript intron",
+      grepl("intron", Consequence) ~ "snv noncoding intron",
+      `Consequence` == "3_prime_UTR_variant" ~ "snv noncoding 3prime UTR",
+      `Consequence` == "5_prime_UTR_variant" ~ "snv noncoding 5prime UTR",
+      `Consequence` == "upstream_gene_variant" ~ "snv noncoding upstream gene",
+      `Consequence` == "downstream_gene_variant" ~ "snv noncoding downstream gene",
+      `Consequence` == "intergenic_variant" ~ "snv noncoding intergenic",
+      TRUE ~ "undefined")) %>%
+    group_by(type) %>%
+    do(calculate_summary(., variant_type, absolute))
+
+  return(vep.count)
+}
+
+
+# function to get mean and median scores for a specified variant type
+# IMPROVEMENT: handle duplicated variants
+load_vep_and_summarize <- function(files, sample_names, col_names, variant_type, absolute, batch_size = 100){
+  
+  # Split files into chunks of 100
+  file_chunks <- split(files, ceiling(seq_along(files) / batch_size))
+  
+  # set up for parallel
+  no_cores <- Sys.getenv("SLURM_CPUS_PER_TASK", unset = 1)
+  cl <- makeCluster(as.numeric(no_cores))
+  registerDoParallel(cl)
+  
+  # Process each chunk of files
+  results_list <- foreach(file_chunk = file_chunks, .packages = c("data.table", "dplyr", "rlang")) %dopar% {
+    chunk_results <- lapply(file_chunk, function(file) {
+      vep <- fread(file,
+                   fill = TRUE,
+                   skip = 120,
+                   col.names = col_names,
+                   na.strings = "-")
+      
+      calculate_summary <- function(df, variant_type, absolute) {
+        # Calculate mean and median based on the `absolute` flag
+        if (absolute) {
+          summarised_df <- df %>%
+            summarise(sum = sum(abs(as.double(df[[variant_type]])), na.rm = TRUE),
+                      mean = mean(abs(as.double(df[[variant_type]])), na.rm = TRUE),
+                      median = median(abs(as.double(df[[variant_type]])), na.rm = TRUE))
+        } else {
+          summarised_df <- df %>%
+            summarise(sum = sum(as.double(df[[variant_type]]), na.rm = TRUE),
+                      mean = mean(as.double(df[[variant_type]]), na.rm = TRUE),
+                      median = median(as.double(df[[variant_type]]), na.rm = TRUE))
+        }
+        
+        return(summarised_df)
+      }
+
+       vep.count <- vep %>% 
+        filter(!is.na(!!sym(variant_type)) & !!sym(variant_type) != "") %>%
+        distinct(Uploaded_variation, .keep_all = TRUE) %>% # remove duplicates by keeping first
+        mutate(type = case_when(
+          !is.na(CDS_position) & grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding synonymous",
+          !is.na(CDS_position) & !grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding nonsynonymous",
+          `Feature_type` == "RegulatoryFeature" | `Feature_type` == "MotifFeature" ~ "snv noncoding regulatory",
+          `BIOTYPE` == "nonsense_mediated_decay" ~ "snv noncoding nmd",
+          grepl("splice", Consequence) ~ "snv noncoding splice",
+          grepl("non_coding_transcript_exon_variant", Consequence) ~ "snv noncoding transcript exon",
+          grepl("non_coding_transcript_variant", Consequence) ~ "snv noncoding transcript intron",
+          grepl("intron", Consequence) ~ "snv noncoding intron",
+          `Consequence` == "3_prime_UTR_variant" ~ "snv noncoding 3prime UTR",
+          `Consequence` == "5_prime_UTR_variant" ~ "snv noncoding 5prime UTR",
+          `Consequence` == "upstream_gene_variant" ~ "snv noncoding upstream gene",
+          `Consequence` == "downstream_gene_variant" ~ "snv noncoding downstream gene",
+          `Consequence` == "intergenic_variant" ~ "snv noncoding intergenic",
+          TRUE ~ "undefined")) %>%
+        group_by(type) %>%
+        do(calculate_summary(., variant_type, absolute))
+      
+      return(vep.count)
+      
+    })
+    
+    return(chunk_results)
+    
+  }
+  
+  # Stop the parallel cluster
+  stopCluster(cl)
+
+  # Flatten the list of results and name
+  results_list_flat <- do.call(c, results_list)
+  names(results_list_flat) <- sample_names
+  
+  # combine into a single table
+  # Add an identifier column to each tibble and combine them
+  results_table_long <- imap_dfr(results_list_flat, ~ mutate(.x, id = .y))
+  
+  # Pivot the data to wide format
+  results_table_wide_sum <- results_table_long %>%
+    select(id, sum, type) %>%
+    pivot_wider(names_from = id, values_from = sum, values_fill = list(count = 0)) %>%
+    as.data.frame()
+  
+  results_table_wide_mean <- results_table_long %>%
+    select(id, mean, type) %>%
+    pivot_wider(names_from = id, values_from = mean, values_fill = list(count = 0)) %>%
+    as.data.frame()
+  
+  results_table_wide_median <- results_table_long %>%
+    select(id, median, type) %>%
+    pivot_wider(names_from = id, values_from = median, values_fill = list(count = 0)) %>%
+    as.data.frame()
+  
+  results_table_list <- list(sum = results_table_wide_sum,
+                             mean = results_table_wide_mean,
+                             median = results_table_wide_median)
+  
+  return(results_table_list)
+}
+
+load_vep_and_count_types_CADD_single <- function(file, col_names, variant_type){
+  
+  # Load the file using fread
+  vep <- fread(file,
+               fill = TRUE,
+               skip = 120,
+               col.names = col_names,
+               na.strings = "-")
+
+  # Process the file to count variant types
+  vep.count <- vep %>% 
+    filter(!is.na(!!sym(variant_type)) & !!sym(variant_type) != "") %>%
+    distinct(Uploaded_variation, .keep_all = TRUE) %>% # remove duplicates by keeping first
+    mutate(type = case_when(
+      !is.na(CDS_position) & grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding synonymous",
+      !is.na(CDS_position) & !grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding nonsynonymous",
+      `Feature_type` == "RegulatoryFeature" | `Feature_type` == "MotifFeature" ~ "snv noncoding regulatory",
+      `BIOTYPE` == "nonsense_mediated_decay" ~ "snv noncoding nmd",
+      grepl("splice", Consequence) ~ "snv noncoding splice",
+      grepl("non_coding_transcript_exon_variant", Consequence) ~ "snv noncoding transcript exon",
+      grepl("non_coding_transcript_variant", Consequence) ~ "snv noncoding transcript intron",
+      grepl("intron", Consequence) ~ "snv noncoding intron",
+      `Consequence` == "3_prime_UTR_variant" ~ "snv noncoding 3prime UTR",
+      `Consequence` == "5_prime_UTR_variant" ~ "snv noncoding 5prime UTR",
+      `Consequence` == "upstream_gene_variant" ~ "snv noncoding upstream gene",
+      `Consequence` == "downstream_gene_variant" ~ "snv noncoding downstream gene",
+      `Consequence` == "intergenic_variant" ~ "snv noncoding intergenic",
+      TRUE ~ "undefined")) %>%
+    group_by(type) %>%
+    summarise(count = n()) %>%
+    rename_with(~ "variant_type", .cols = 1)
+
+  return(vep.count)
+}
+
+
+# function to get mean and median scores for a specified variant type
+# no binning
+# IMPROVEMENT: handle duplicated variants
+load_vep_and_count_types_CADD <- function(files, sample_names, col_names, variant_type, batch_size = 100){
+  
+  # Split files into chunks of 100
+  file_chunks <- split(files, ceiling(seq_along(files) / batch_size))
+  
+ # set up for parallel
+  no_cores <- Sys.getenv("SLURM_CPUS_PER_TASK", unset = 1)
+  cl <- makeCluster(as.numeric(no_cores))
+  registerDoParallel(cl)
+  
+  # Process each chunk of files
+  results_list <- foreach(file_chunk = file_chunks, .packages = c("data.table", "dplyr", "rlang")) %dopar% {
+    chunk_results <- lapply(file_chunk, function(file) {
+      vep <- fread(file,
+                   fill = TRUE,
+                   skip = 120,
+                   col.names = col_names,
+                   na.strings = "-")
+
+      vep.count <- vep %>% 
+        filter(!is.na(!!sym(variant_type)) & !!sym(variant_type) != "") %>%
+        distinct(Uploaded_variation, .keep_all = TRUE) %>% # remove duplicates by keeping first
+        mutate(type = case_when(
+          !is.na(CDS_position) & grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding synonymous",
+          !is.na(CDS_position) & !grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding nonsynonymous",
+          `Feature_type` == "RegulatoryFeature" | `Feature_type` == "MotifFeature" ~ "snv noncoding regulatory",
+          `BIOTYPE` == "nonsense_mediated_decay" ~ "snv noncoding nmd",
+          grepl("splice", Consequence) ~ "snv noncoding splice",
+          grepl("non_coding_transcript_exon_variant", Consequence) ~ "snv noncoding transcript exon",
+          grepl("non_coding_transcript_variant", Consequence) ~ "snv noncoding transcript intron",
+          grepl("intron", Consequence) ~ "snv noncoding intron",
+          `Consequence` == "3_prime_UTR_variant" ~ "snv noncoding 3prime UTR",
+          `Consequence` == "5_prime_UTR_variant" ~ "snv noncoding 5prime UTR",
+          `Consequence` == "upstream_gene_variant" ~ "snv noncoding upstream gene",
+          `Consequence` == "downstream_gene_variant" ~ "snv noncoding downstream gene",
+          `Consequence` == "intergenic_variant" ~ "snv noncoding intergenic",
+          TRUE ~ "undefined")) %>%
+        group_by(type) %>%
+        summarise(count = n()) %>%
+        rename_with(~ "variant_type", .cols = 1)
+      
+      return(vep.count)
+      
+    })
+    
+    return(chunk_results)
+    
+  }
+  
+   # Stop the parallel cluster
+  stopCluster(cl)
+
+  # Flatten the list of results and name
+  results_list_flat <- do.call(c, results_list)
+  names(results_list_flat) <- sample_names
+  
+  # combine into a single table
+  # Add an identifier column to each tibble and combine them
+  results_table_long <- imap_dfr(results_list_flat, ~ mutate(.x, id = .y))
+  
+  # Pivot the data to wide format
+  # variant_type not found in samples will be set to 0
+  results_table_wide <- results_table_long %>%
+    pivot_wider(names_from = id, values_from = count, values_fill = list(count = 0)) %>%
+    as.data.frame()
+  
+  return(results_table_wide)
+}
+
+# function to get mean and median scores for a specified variant type
+# IMPROVEMENT: handle duplicated variants
+load_vep_and_count_types_CADD_RAW <- function(files, sample_names, col_names, variant_type, batch_size = 100){
+  
+  # Split files into chunks of 100
+  file_chunks <- split(files, ceiling(seq_along(files) / batch_size))
+  
+  # set up for parallel
+  num_cores <- detectCores() - 1  # leave one core free
+  registerDoParallel(cores = num_cores)
+  
+  # Process each chunk of files
+  results_list <- foreach(file_chunk = file_chunks, .packages = c("data.table", "dplyr", "rlang")) %dopar% {
+    chunk_results <- lapply(file_chunk, function(file) {
+      vep <- fread(file,
+                   fill = TRUE,
+                   skip = 120,
+                   col.names = col_names,
+                   na.strings = "-")
+      
+      bin_scores <- function(df, variant_type) {
+        
+        
+        
+        # log transform breaks which are more normally distributed
+        breaks <- c(seq(-4, 4, 0.5))
+        
+        # Bin scores into qunatiles and count
+        # filter out values < -1 and add 1 to avoid NA, these are negligible anyways
+        values <- as.double(df[[variant_type]])
+        values.filter <- values[values > -1]
+        bin <- cut(log1p(values.filter),
+                  breaks, 
+                  include.lowest = TRUE)
+        
+        bin.count <- as.data.frame(table(bin))
+      
+        return(bin.count)
+      }
+
+      vep.count <- vep %>% 
+        filter(!is.na(!!sym(variant_type)) & !!sym(variant_type) != "") %>%
+        distinct(Uploaded_variation, .keep_all = TRUE) %>% # remove duplicates by keeping first
+        mutate(type = case_when(
+          !is.na(CDS_position) & grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding synonymous",
+          !is.na(CDS_position) & !grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding nonsynonymous",
+          `Feature_type` == "RegulatoryFeature" | `Feature_type` == "MotifFeature" ~ "snv noncoding regulatory",
+          `BIOTYPE` == "nonsense_mediated_decay" ~ "snv noncoding nmd",
+          grepl("splice", Consequence) ~ "snv noncoding splice",
+          grepl("non_coding_transcript_exon_variant", Consequence) ~ "snv noncoding transcript exon",
+          grepl("non_coding_transcript_variant", Consequence) ~ "snv noncoding transcript intron",
+          grepl("intron", Consequence) ~ "snv noncoding intron",
+          `Consequence` == "3_prime_UTR_variant" ~ "snv noncoding 3prime UTR",
+          `Consequence` == "5_prime_UTR_variant" ~ "snv noncoding 5prime UTR",
+          `Consequence` == "upstream_gene_variant" ~ "snv noncoding upstream gene",
+          `Consequence` == "downstream_gene_variant" ~ "snv noncoding downstream gene",
+          `Consequence` == "intergenic_variant" ~ "snv noncoding intergenic",
+          TRUE ~ "undefined")) %>%
+        group_by(type) %>%
+        do(bin_scores(., variant_type))
+      
+      return(vep.count)
+      
+    })
+    
+    return(chunk_results)
+    
+  }
+  
+  # Stop the parallel cluster
+  stopImplicitCluster()
+
+  # Flatten the list of results and name
+  results_list_flat <- do.call(c, results_list)
+  names(results_list_flat) <- sample_names
+  
+  # combine into a single table
+  # Add an identifier column to each tibble and combine them
+  results_table_long <- imap_dfr(results_list_flat, ~ mutate(.x, id = .y))
+  
+  # Pivot the data to wide format
+  results_table_wide <- results_table_long %>%
+    pivot_wider(names_from = id, values_from = Freq, values_fill = list(count = 0)) %>%
+    as.data.frame()
+  
+  return(results_table_wide)
+}
+
+load_vep_and_count_types_CADD_PHRED_single <- function(file, col_names, variant_type, sep_coding = TRUE){
+  
+  # Load the file using fread
+  vep <- fread(file,
+               fill = TRUE,
+               skip = 120,
+               col.names = col_names,
+               na.strings = "-")
+  
+  bin_scores <- function(df, variant_type) {
+    # create log10 bins from 0 to 100 which match the distribution -10*log10(rank/total)
+    breaks <- c(0, 10^seq(0, log10(99), length.out = 10))
+
+    # Bin scores into quantiles and count
+    bin <- cut(as.double(df[[variant_type]]),
+               breaks,
+               include.lowest = TRUE)
+
+    bin.count <- as.data.frame(table(bin))
+    return(bin.count)
+  }
+
+  vep.count <- vep %>% 
+    filter(!is.na(!!sym(variant_type)) & !!sym(variant_type) != "") %>%
+    distinct(Uploaded_variation, .keep_all = TRUE) %>% # remove duplicates by keeping first
+    mutate(type = if(sep_coding == FALSE) { # do not separate coding mutations
+      case_when(
+        !is.na(CDS_position) & grepl("SNV", VARIANT_CLASS) ~ "snv coding",
+        `Feature_type` == "RegulatoryFeature" | `Feature_type` == "MotifFeature" ~ "snv noncoding regulatory",
+        `BIOTYPE` == "nonsense_mediated_decay" ~ "snv noncoding nmd",
+        grepl("splice", Consequence) ~ "snv noncoding splice",
+        grepl("non_coding_transcript_exon_variant", Consequence) ~ "snv noncoding transcript exon",
+        grepl("non_coding_transcript_variant", Consequence) ~ "snv noncoding transcript intron",
+        grepl("intron", Consequence) ~ "snv noncoding intron",
+        `Consequence` == "3_prime_UTR_variant" ~ "snv noncoding 3prime UTR",
+        `Consequence` == "5_prime_UTR_variant" ~ "snv noncoding 5prime UTR",
+        `Consequence` == "upstream_gene_variant" ~ "snv noncoding upstream gene",
+        `Consequence` == "downstream_gene_variant" ~ "snv noncoding downstream gene",
+        `Consequence` == "intergenic_variant" ~ "snv noncoding intergenic",
+        TRUE ~ "undefined"
+      )
+    } else {
+      case_when(
+        !is.na(CDS_position) & grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding synonymous",
+        !is.na(CDS_position) & !grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding nonsynonymous",
+        `Feature_type` == "RegulatoryFeature" | `Feature_type` == "MotifFeature" ~ "snv noncoding regulatory",
+        `BIOTYPE` == "nonsense_mediated_decay" ~ "snv noncoding nmd",
+        grepl("splice", Consequence) ~ "snv noncoding splice",
+        grepl("non_coding_transcript_exon_variant", Consequence) ~ "snv noncoding transcript exon",
+        grepl("non_coding_transcript_variant", Consequence) ~ "snv noncoding transcript intron",
+        grepl("intron", Consequence) ~ "snv noncoding intron",
+        `Consequence` == "3_prime_UTR_variant" ~ "snv noncoding 3prime UTR",
+        `Consequence` == "5_prime_UTR_variant" ~ "snv noncoding 5prime UTR",
+        `Consequence` == "upstream_gene_variant" ~ "snv noncoding upstream gene",
+        `Consequence` == "downstream_gene_variant" ~ "snv noncoding downstream gene",
+        `Consequence` == "intergenic_variant" ~ "snv noncoding intergenic",
+        TRUE ~ "undefined"
+      )
+    }) %>%
+   group_by(type) %>%
+        do(bin_scores(., variant_type))
+
+  return(vep.count)
+}
+
+# function to get mean and median scores for a specified variant type
+# IMPROVEMENT: handle duplicated variants
+# IMPROVMENT: Bin each variant into high medium and low based on score for that variant
+load_vep_and_count_types_CADD_PHRED <- function(files, sample_names, col_names, variant_type, sep_coding = TRUE, batch_size = 100){
+  
+  # Split files into chunks of 100
+  file_chunks <- split(files, ceiling(seq_along(files) / batch_size))
+  
+  # set up for parallel
+  no_cores <- Sys.getenv("SLURM_CPUS_PER_TASK", unset = 1)
+  cl <- makeCluster(as.numeric(no_cores))
+  registerDoParallel(cl)
+  
+  # Process each chunk of files
+  results_list <- foreach(file_chunk = file_chunks, .packages = c("data.table", "dplyr", "rlang")) %dopar% {
+    chunk_results <- lapply(file_chunk, function(file) {
+      vep <- fread(file,
+                   fill = TRUE,
+                   skip = 120,
+                   col.names = col_names,
+                   na.strings = "-")
+      
+      bin_scores <- function(df, variant_type) {
+        
+        # create log10 bins from 0 to 100 which match the distribution -10*log10(rank/total)
+        breaks <- c(0, 10^seq(0, log10(99), length.out = 10))
+
+        # Bin scores into qunatiles and count
+        # filter out values < -1 and add 1 to avoid NA, these are negligible anyways
+        bin <- cut(as.double(df[[variant_type]]),
+                  breaks,
+                  include.lowest = TRUE)
+
+        bin.count <- as.data.frame(table(bin))
+
+        return(bin.count)
+
+      }
+
+      vep.count <- vep %>% 
+        filter(!is.na(!!sym(variant_type)) & !!sym(variant_type) != "") %>%
+        distinct(Uploaded_variation, .keep_all = TRUE) %>% # remove duplicates by keeping first
+        mutate(type = if(sep_coding == FALSE) { # do not separate coding mutations
+          case_when(
+            !is.na(CDS_position) & grepl("SNV", VARIANT_CLASS) ~ "snv coding",
+            `Feature_type` == "RegulatoryFeature" | `Feature_type` == "MotifFeature" ~ "snv noncoding regulatory",
+          `BIOTYPE` == "nonsense_mediated_decay" ~ "snv noncoding nmd",
+          grepl("splice", Consequence) ~ "snv noncoding splice",
+          grepl("non_coding_transcript_exon_variant", Consequence) ~ "snv noncoding transcript exon",
+          grepl("non_coding_transcript_variant", Consequence) ~ "snv noncoding transcript intron",
+          grepl("intron", Consequence) ~ "snv noncoding intron",
+          `Consequence` == "3_prime_UTR_variant" ~ "snv noncoding 3prime UTR",
+          `Consequence` == "5_prime_UTR_variant" ~ "snv noncoding 5prime UTR",
+          `Consequence` == "upstream_gene_variant" ~ "snv noncoding upstream gene",
+          `Consequence` == "downstream_gene_variant" ~ "snv noncoding downstream gene",
+          `Consequence` == "intergenic_variant" ~ "snv noncoding intergenic",
+          TRUE ~ "undefined"
+          )
+        } else {
+          case_when(
+            !is.na(CDS_position) & grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding synonymous",
+            !is.na(CDS_position) & !grepl("synonymous", Consequence) & grepl("SNV", VARIANT_CLASS) ~ "snv coding nonsynonymous",
+            `Feature_type` == "RegulatoryFeature" | `Feature_type` == "MotifFeature" ~ "snv noncoding regulatory",
+          `BIOTYPE` == "nonsense_mediated_decay" ~ "snv noncoding nmd",
+          grepl("splice", Consequence) ~ "snv noncoding splice",
+          grepl("non_coding_transcript_exon_variant", Consequence) ~ "snv noncoding transcript exon",
+          grepl("non_coding_transcript_variant", Consequence) ~ "snv noncoding transcript intron",
+          grepl("intron", Consequence) ~ "snv noncoding intron",
+          `Consequence` == "3_prime_UTR_variant" ~ "snv noncoding 3prime UTR",
+          `Consequence` == "5_prime_UTR_variant" ~ "snv noncoding 5prime UTR",
+          `Consequence` == "upstream_gene_variant" ~ "snv noncoding upstream gene",
+          `Consequence` == "downstream_gene_variant" ~ "snv noncoding downstream gene",
+          `Consequence` == "intergenic_variant" ~ "snv noncoding intergenic",
+          TRUE ~ "undefined"
+          )
+        }) %>%
+        group_by(type) %>%
+        do(bin_scores(., variant_type))
+      
+      return(vep.count)
+      
+    })
+    
+    return(chunk_results)
+    
+  }
+  
+  # Stop the parallel cluster
+  stopCluster(cl)
+
+  # Flatten the list of results and name
+  results_list_flat <- do.call(c, results_list)
+  names(results_list_flat) <- sample_names
+  
+  # combine into a single table
+  # Add an identifier column to each tibble and combine them
+  results_table_long <- imap_dfr(results_list_flat, ~ mutate(.x, id = .y))
+  
+  # Pivot the data to wide format
+  results_table_wide <- results_table_long %>%
+    pivot_wider(names_from = id, values_from = Freq, values_fill = list(count = 0)) %>%
+    as.data.frame()
+  
+  return(results_table_wide)
+}
+
+# observed_counts = observed_consequence
+# simulated_counts = simulated_consequence
+# get_summary_type = "mean"
+calc_OE_ratio_single <- function(observed_counts, simulated_counts, get_summary_type) {
+  
+  # Join the observed and simulated data frames
+  merged_counts <- full_join(observed_counts, simulated_counts, by = "variant_type")
+  merged_counts[,-1] <- lapply(merged_counts[,-1], function(x) replace(x, is.na(x), 0))
+  
+  simulated_sample <- select(merged_counts, -c(1,2))
+  observed_sample <- select(merged_counts, 2)
+  
+  # get normality of distribution for simulated samples
+    sim.norm.pvalues <- apply(simulated_sample, 1, function(column) {
+          if (length(column) > 3 && length(unique(column)) > 1) {
+              ad.test(column)$p.value
+          } else {
+              NA
+          }
+      })
+  
+    # adjust normality test pvalue for multiple testing
+    # sim.norm.pvalues.adj <- p.adjust(sim.norm.pvalues, method = "BH")
+    
+    # create log2fc for all the simulated
+    simulated_log2fc <- apply(simulated_sample, 2, function(x){
+      log2((observed_sample$count + 1) / (x + 1))
+    })
+    
+    # permutation test to calculate significance
+    # how many simulation had equal or more/less mutations compared to observed
+    if(get_summary_type == "mean"){
+        sim.mean <- apply(simulated_sample, 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        sim.mean <- apply(simulated_sample, 1, function(x) median(x, na.rm = TRUE))
+      }
+    sim.log2fc <- log2((sim.mean + 1) / (simulated_sample + 1))
+    obs.log2fc <- log2((observed_sample + 1) / (sim.mean + 1))
+    perm.test.pvalues <- rowMeans(abs(sim.log2fc) >= abs(obs.log2fc$count), na.rm = TRUE)
+    perm.test.pvalues.adj <- p.adjust(perm.test.pvalues, method = "BH") # adjust permutation test pvalue for multiple testing
+    
+    # add to new df
+    res <- data.frame(
+      variant_type = merged_counts$variant_type,
+      obs.mut = observed_sample$count,
+      sim.mut = if(get_summary_type == "mean"){
+        apply(simulated_sample, 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        apply(simulated_sample, 1, function(x) median(x, na.rm = TRUE))
+      },
+      sim.mut.normality = sim.norm.pvalues,
+      log2fc = if(get_summary_type == "mean"){
+        apply(simulated_log2fc, 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        apply(simulated_log2fc, 1, function(x) median(x, na.rm = TRUE))
+      },
+      pvalue = perm.test.pvalues,
+      pvalue.adj = perm.test.pvalues.adj
+    )
+
+  return(res)
+}
+
+# observed_counts = observed_consequence
+# simulated_counts = simulated_consequence
+# get_summary_type = "mean"
+# sample_table = sample_table
+# function to create observed / expected ratios
+# uses mean to summarize
+# IMPROVEMENT: Use different pseudo counts for log2 calculation
+calc_OE_ratio <- function(observed_counts, simulated_counts, get_summary_type, sample_table){
+  
+  # match the types in simulated to observed
+  # if in one and not the other, set value to 0
+  merged_counts <- full_join(observed_counts, simulated_counts, by = "variant_type")
+  merged_counts[-1] <- lapply(merged_counts[-1], function(x) replace(x, is.na(x), 0))
+  
+  # split back into observed and simulated
+  observed_counts_new <- merged_counts %>%
+    select(variant_type, names(observed_counts)[names(observed_counts) != "variant_type"])
+  simulated_counts_new <- merged_counts %>%
+    select(variant_type, names(simulated_counts)[names(simulated_counts) != "variant_type"])
+  
+  # get stats for each variant type in each sample
+  # Preallocate space for the result dataframes
+  num_rows <- nrow(merged_counts)
+  num_samples <- nrow(sample_table)
+  
+  obs_mut <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  sim_mut <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  log2fc <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  normality <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  pvalues <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  pvalues_adjusted <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  colnames(obs_mut) <- sample_table$sample
+  colnames(sim_mut) <- sample_table$sample
+  colnames(log2fc) <- sample_table$sample
+  colnames(normality) <- sample_table$sample
+  colnames(pvalues) <- sample_table$sample
+  colnames(pvalues_adjusted) <- sample_table$sample
+  
+  for(i in 1:num_samples){
+    
+    # get counts for the observed sample
+    observed_sample <- observed_counts_new[, sample_table$sample[i]]
+    
+    # get all simulated samples and their counts corresponding to the observed sample
+    simulated_sample <- simulated_counts_new[, grep(sample_table$sample[i], colnames(simulated_counts_new))]
+    
+    # get normality of distribution for simulated samples
+    sim.norm.pvalues <- apply(simulated_sample, 1, function(column) {
+          if (length(column) > 3 && length(unique(column)) > 1) {
+              ad.test(column)$p.value
+          } else {
+              NA
+          }
+      })
+  
+    # adjust normality test pvalue for multiple testing
+    sim.norm.pvalues.adj <- p.adjust(sim.norm.pvalues, method = "BH")
+    
+    # create log2fc for all the simulated
+    simulated_log2fc <- log2((observed_sample + 1) / (simulated_sample + 1))
+    
+    # permutation test to calculate significance
+    # how many simulation had equal or more/less mutations compared to observed
+    if(get_summary_type == "mean"){
+        sim.mean <- apply(simulated_sample, 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        sim.mean <- apply(simulated_sample, 1, function(x) median(x, na.rm = TRUE))
+      }
+    sim.log2fc <- log2((sim.mean + 1) / (simulated_sample + 1))
+    obs.log2fc <- log2((observed_sample + 1) / (sim.mean + 1))
+    perm.test.pvalues <- rowMeans(abs(sim.log2fc) >= abs(obs.log2fc), na.rm = TRUE)
+
+    # adjust permutation test pvalue for multiple testing
+    perm.test.pvalues.adj <- p.adjust(perm.test.pvalues, method = "BH")
+    
+    # add to new df
+    obs_mut[, i] <- observed_sample
+    if(get_summary_type == "mean"){
+        sim_mut[, i] <- apply(simulated_sample, 1, function(x) mean(x, na.rm = TRUE))
+        log2fc[, i] <- apply(simulated_log2fc, 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        sim_mut[, i] <- apply(simulated_sample, 1, function(x) median(x, na.rm = TRUE))
+        log2fc[, i] <- apply(simulated_log2fc, 1, function(x) median(x, na.rm = TRUE))
+      }
+    normality[, i] <- sim.norm.pvalues.adj
+    pvalues[, i] <- perm.test.pvalues
+    pvalues_adjusted[, i] <- perm.test.pvalues.adj
+  }
+  
+  # convert to dataframes
+  obs_mut_df <- as.data.frame(obs_mut)
+  sim_mut_df <- as.data.frame(sim_mut)
+  log2fc_df <- as.data.frame(log2fc)
+  normality_df <- as.data.frame(normality)
+  pvalues_df <- as.data.frame(pvalues)
+  pvalues_adjusted_df <- as.data.frame(pvalues_adjusted)
+  
+  # Add a 'variant_type' column to each dataframe before pivoting to long format
+  obs_mut_df$variant_type <- merged_counts$variant_type
+  sim_mut_df$variant_type <- merged_counts$variant_type
+  log2fc_df$variant_type <- merged_counts$variant_type
+  normality_df$variant_type <- merged_counts$variant_type
+  pvalues_df$variant_type <- merged_counts$variant_type
+  pvalues_adjusted_df$variant_type <- merged_counts$variant_type
+  
+  # Convert dataframes to long format
+  obs_mut_long <- pivot_longer(obs_mut_df, cols = -variant_type, names_to = "sample", values_to = "obs.mut")
+  sim_mut_df_long <- pivot_longer(sim_mut_df, cols = -variant_type, names_to = "sample", values_to = "sim.mut")
+  log2fc_long <- pivot_longer(log2fc_df, cols = -variant_type, names_to = "sample", values_to = "log2fc")
+  normality_long <- pivot_longer(normality_df, cols = -variant_type, names_to = "sample", values_to = "sim.distr.norm.pvalue.adj")
+  pvalues_long <- pivot_longer(pvalues_df, cols = -variant_type, names_to = "sample", values_to = "pvalue")
+  pvalues_adjusted_long <- pivot_longer(pvalues_adjusted_df, cols = -variant_type, names_to = "sample", values_to = "pvalue.adj")
+  
+  # Combine all long-format dataframes
+  results_long <- reduce(list(obs_mut_long, sim_mut_df_long, log2fc_long, normality_long, pvalues_long, pvalues_adjusted_long), 
+                          full_join, by = c("variant_type", "sample")) %>% as.data.frame()
+  
+  # add sample info
+  results_long <- merge(results_long, sample_table, by = "sample")
+
+  return(results_long)
+}
+
+# observed_counts = observed_cadd
+# simulated_counts = observed_simulated_cadd
+# use_summary_type = "mean"
+# get_summary_type = "mean"
+# sample_table = sample_table
+
+# function to create observed / expected ratios
+# uses mean to summarize
+# IMPROVEMENT: Use different pseudo counts for log2 calculation
+calc_OE_ratio_summarize <- function(observed_counts, simulated_counts, use_summary_type, get_summary_type, sample_table){
+  
+  observed_counts_summary <- observed_counts[[use_summary_type]]
+  
+  simulated_counts_summary <- simulated_counts[[use_summary_type]]
+  
+  # match the types in simulated to observed
+  # if in one and not the other, set value to NA
+  merged_counts <- full_join(observed_counts_summary, simulated_counts_summary, by = "type")
+  
+  # split back into observed and simulated
+  observed_counts_new <- merged_counts %>%
+    select(type, names(observed_counts_summary)[names(observed_counts_summary) != "type"])
+  simulated_counts_new <- merged_counts %>%
+    select(type, names(simulated_counts_summary)[names(simulated_counts_summary) != "type"])
+  
+  num_rows <- nrow(observed_counts_new)
+  num_samples <- nrow(sample_table)
+  
+  obs_mut <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  sim_mut <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  log2fc <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  normality <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  pvalues <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  pvalues_adjusted <- matrix(NA, nrow = num_rows, ncol = num_samples)
+  colnames(obs_mut) <- sample_table$sample
+  colnames(sim_mut) <- sample_table$sample
+  colnames(log2fc) <- sample_table$sample
+  colnames(normality) <- sample_table$sample
+  colnames(pvalues) <- sample_table$sample
+  colnames(pvalues_adjusted) <- sample_table$sample
+  
+  for(i in 1:num_samples){
+    
+    # get counts for the observed sample
+    observed_sample <- as.matrix(observed_counts_new[, sample_table$sample[i]])
+    
+    # get all simulated samples and their counts corresponding to the observed sample
+    simulated_sample <- as.matrix(simulated_counts_new[, grep(sample_table$sample[i], colnames(simulated_counts_new))])
+    
+    sim.norm.pvalues <- apply(simulated_sample, 1, function(column) {
+    tryCatch({
+      # Attempt to run ad.test on the column
+      test_result <- ad.test(column)$p.value
+      # Return the result if successful
+      return(test_result)
+    }, error = function(e) {
+      # Handle the error
+      cat("Error in ad.test():", e$message, "\n")
+      # You can return NA or some other indicator of failure
+      return(NA)
+    })
+  })
+
+  
+    # sim.norm.pvalues <- apply(simulated_sample, 1, function(column) {
+    #       if (length(column) > 3 && length(unique(column)) > 1) {
+    #           ad.test(column)$p.value
+    #       } else {
+    #           NA
+    #       }
+    #   })
+  
+    # adjust normality test pvalue for multiple testing
+    sim.norm.pvalues.adj <- p.adjust(sim.norm.pvalues, method = "BH")
+    
+    # old version
+    
+    # # Replicate observed_sample to match the dimensions of simulated_sample
+    # observed_replicated <- matrix(rep(observed_sample, each = ncol(simulated_sample)), ncol = ncol(simulated_sample))
+    # 
+    # # create log2fc for all the simulated
+    # simulated_log2fc <- log2((observed_replicated + 1) / (simulated_sample + 1))
+    # 
+    # perm.test.pvalues <- c()
+    # for(j in 1:nrow(observed_sample)){
+    #   sim.mean <- get(get_summary_type)(simulated_sample[j,])
+    #   sim.log2fc <- log2((sim.mean + 1) / (simulated_sample[j,] + 1))
+    #   obs.log2fc <- log2((observed_sample[j,] + 1) / (sim.mean + 1))
+    #   perm.test.pvalues[j] <- mean(abs(sim.log2fc) >= abs(obs.log2fc), na.rm = TRUE)
+    # }
+    
+    # new version - does not add 1 to score
+    
+    # Replicate observed_sample to match the dimensions of simulated_sample
+    observed_replicated <- matrix(rep(observed_sample, ncol(simulated_sample)), nrow = nrow(merged_counts))
+
+    # create log2fc for all the simulated
+    simulated_log2fc <- log2((observed_replicated) / (simulated_sample))
+    
+    perm.test.pvalues <- c()
+    for(j in 1:nrow(observed_sample)){
+      if(get_summary_type == "mean"){
+        sim.mean <- mean((simulated_sample[j,]), na.rm = TRUE)
+      } else if(get_summary_type == "median") {
+        sim.mean <- median((simulated_sample[j,]), na.rm = TRUE)
+      }
+      sim.log2fc <- log2((sim.mean) / (simulated_sample[j,]))
+      obs.log2fc <- log2((observed_sample[j,]) / (sim.mean))
+      perm.test.pvalues[j] <- mean(abs(sim.log2fc) >= abs(obs.log2fc), na.rm = TRUE)
+    }
+
+    # adjust permutation test pvalue for multiple testing
+    perm.test.pvalues.adj <- p.adjust(perm.test.pvalues, method = "BH")
+    
+    # add to new df
+    obs_mut[, i] <- observed_sample
+    if(get_summary_type == "mean"){
+        sim_mut[, i] <- apply(simulated_sample, 1, function(x) mean(x, na.rm = TRUE))
+        log2fc[, i] <- apply(simulated_log2fc, 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        sim_mut[, i] <- apply(simulated_sample, 1, function(x) median(x, na.rm = TRUE))
+        log2fc[, i] <- apply(simulated_log2fc, 1, function(x) median(x, na.rm = TRUE))
+      }
+    normality[, i] <- sim.norm.pvalues.adj
+    pvalues[, i] <- perm.test.pvalues
+    pvalues_adjusted[, i] <- perm.test.pvalues.adj
+  }
+  
+  # convert to dataframes
+  obs_mut_df <- as.data.frame(obs_mut)
+  sim_mut_df <- as.data.frame(sim_mut)
+  log2fc_df <- as.data.frame(log2fc)
+  normality_df <- as.data.frame(normality)
+  pvalues_df <- as.data.frame(pvalues)
+  pvalues_adjusted_df <- as.data.frame(pvalues_adjusted)
+  
+  # Add a 'variant_type' column to each dataframe before pivoting to long format
+  obs_mut_df$type <- observed_counts_new$type
+  sim_mut_df$type <- observed_counts_new$type
+  log2fc_df$type <- observed_counts_new$type
+  normality_df$type <- observed_counts_new$type
+  pvalues_df$type <- observed_counts_new$type
+  pvalues_adjusted_df$type <- observed_counts_new$type
+  
+  # Convert dataframes to long format
+  obs_mut_long <- pivot_longer(obs_mut_df, cols = -type, names_to = "sample", values_to = "obs.score")
+  sim_mut_df_long <- pivot_longer(sim_mut_df, cols = -type, names_to = "sample", values_to = "sim.score")
+  log2fc_long <- pivot_longer(log2fc_df, cols = -type, names_to = "sample", values_to = "log2fc")
+  normality_long <- pivot_longer(normality_df, cols = -type, names_to = "sample", values_to = "sim.distr.norm.pvalue.adj")
+  pvalues_long <- pivot_longer(pvalues_df, cols = -type, names_to = "sample", values_to = "pvalue")
+  pvalues_adjusted_long <- pivot_longer(pvalues_adjusted_df, cols = -type, names_to = "sample", values_to = "pvalue.adj")
+  
+  # Combine all long-format dataframes
+  results_long <- reduce(list(obs_mut_long, sim_mut_df_long, log2fc_long, normality_long, pvalues_long, pvalues_adjusted_long), 
+                          full_join, by = c("type", "sample")) %>% as.data.frame()
+  
+  # add sample info
+  results_long <- merge(results_long, sample_table, by = "sample")
+
+  return(results_long)
+}
+
+# observed_counts = observed_cadd
+# simulated_counts = simulated_cadd
+# use_summary_type = "mean"
+# get_summary_type = "mean"
+
+calc_OE_ratio_CADD_single <- function(observed_counts, simulated_counts, use_summary_type, get_summary_type){
+  
+  # match the types in simulated to observed
+  # if in one and not the other, set value to 0
+  merged_counts <- full_join(observed_counts, simulated_counts, by = c("type", "bin")) %>%
+    ungroup
+  merged_counts[is.na(merged_counts)] <- 0
+  
+  # normalize for the total number of mutations for each variant type
+  merged_counts <- merged_counts %>%
+    group_by(type) %>%
+    mutate(across(where(is.numeric), ~ .x / sum(.x))) %>%
+    ungroup()
+  
+  # split back into observed and simulated
+  simulated_sample <- select(merged_counts, -c(2:3))
+  observed_sample <- select(merged_counts, c(1,3))
+  
+  # iterate over each type
+  type_list <- list()
+  types <- unique(merged_counts$type)
+  bin <- unique(merged_counts$bin)
+  for(type in types){
+    
+    # get normality of distribution for simulated samples
+    # sim.norm.pvalues <- apply(simulated_sample[simulated_sample$type == type, -1], 1, function(column) {
+    #       if (length(column) > 7 && length(unique(column)) > 1) {
+    #           ad.test(column)$p.value
+    #       } else {
+    #           NA
+    #       }
+    #   })
+  
+    # adjust normality test pvalue for multiple testing
+    # sim.norm.pvalues.adj <- p.adjust(sim.norm.pvalues, method = "BH")
+    
+    # create log2fc for all the simulated
+    simulated_log2fc <- apply(simulated_sample[simulated_sample$type == type, -1], 2, function(x){
+      log2((observed_sample[observed_sample$type == type, -1]$Freq + 1) / (x + 1))
+    })
+    
+    # permutation test to calculate significance
+    # how many simulation had equal or more/less mutations compared to observed
+    if(get_summary_type == "mean"){
+        sim.mean <- apply(simulated_sample[simulated_sample$type == type, -1], 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        sim.mean <- apply(simulated_sample[simulated_sample$type == type, -1], 1, function(x) median(x, na.rm = TRUE))
+      }
+    sim.log2fc <- log2((sim.mean + 1) / (simulated_sample[simulated_sample$type == type, -1] + 1))
+    obs.log2fc <- log2((observed_sample[observed_sample$type == type, -1]$Freq + 1) / (sim.mean + 1))
+    perm.test.pvalues <- rowMeans(abs(sim.log2fc) >= abs(obs.log2fc), na.rm = TRUE)
+    perm.test.pvalues.adj <- p.adjust(perm.test.pvalues, method = "BH") # adjust permutation test pvalue for multiple testing
+    
+    res <- data.frame(
+      variant_type = type,
+      bin = bin,
+      obs.mut = observed_sample[observed_sample$type == type, -1]$Freq,
+      sim.mut = if(get_summary_type == "mean"){
+        apply(simulated_sample[simulated_sample$type == type, -1], 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        apply(simulated_sample[simulated_sample$type == type, -1], 1, function(x) median(x, na.rm = TRUE))
+      },
+      # sim.mut.normality = sim.norm.pvalues,
+      log2fc = if(get_summary_type == "mean"){
+        apply(simulated_log2fc, 1, function(x) mean(x, na.rm = TRUE))
+      } else if(get_summary_type == "median") {
+        apply(simulated_log2fc, 1, function(x) median(x, na.rm = TRUE))
+      },
+      pvalue = perm.test.pvalues,
+      pvalue.adj = perm.test.pvalues.adj
+    )
+    
+    type_list[[type]] <- res
+  }
+  
+  # combine the same result dataframes across types
+  combined_res_df <- bind_rows(type_list)
+  
+  return(combined_res_df)
+}
+  
+
+# function to create observed / expected ratios
+# uses mean to summarize
+# IMPROVEMENT: Use different pseudo counts for log2 calculation
+calc_OE_ratio_CADD <- function(observed_counts, simulated_counts, use_summary_type, get_summary_type, sample_table){
+  
+  # match the types in simulated to observed
+  # if in one and not the other, set value to 0
+  merged_counts <- full_join(observed_counts, simulated_counts, by = c("type", "bin"))
+  merged_counts[is.na(merged_counts)] <- 0
+  
+  # split back into observed and simulated
+  observed_counts_new <- merged_counts %>%
+    select(type, names(observed_counts)[names(observed_counts) != "type"])
+  simulated_counts_new <- merged_counts %>%
+    select(type, names(simulated_counts)[names(simulated_counts) != "type"])
+  
+  # iterate over each type
+  type_list <- list()
+  types <- unique(merged_counts$type)
+  for(type in types){
+    
+    # create result matrices
+    num_rows <- sum(merged_counts$type == type)
+    num_samples <- nrow(sample_table)
+    obs_mut <- matrix(NA, nrow = num_rows, ncol = num_samples)
+    sim_mut <- matrix(NA, nrow = num_rows, ncol = num_samples)
+    log2fc <- matrix(NA, nrow = num_rows, ncol = num_samples)
+    normality <- matrix(NA, nrow = num_rows, ncol = num_samples)
+    pvalues <- matrix(NA, nrow = num_rows, ncol = num_samples)
+    pvalues_adjusted <- matrix(NA, nrow = num_rows, ncol = num_samples)
+    colnames(obs_mut) <- sample_table$sample
+    colnames(sim_mut) <- sample_table$sample
+    colnames(log2fc) <- sample_table$sample
+    colnames(normality) <- sample_table$sample
+    colnames(pvalues) <- sample_table$sample
+    colnames(pvalues_adjusted) <- sample_table$sample
+    
+    # iterate over each sample
+    for(i in 1:num_samples){
+      
+      # get counts for the observed sample
+      observed_sample <- as.matrix(observed_counts_new[observed_counts_new$type == type, sample_table$sample[i]])
+      
+      # get all simulated samples and their counts corresponding to the observed sample
+      simulated_sample <- as.matrix(simulated_counts_new[simulated_counts_new$type == type, 
+                                                         grep(sample_table$sample[i], colnames(simulated_counts_new))])
+      
+      # get if the frequencies are normally distributed in simulations
+      # if not enough values, return NA
+      sim.norm.pvalues <- apply(simulated_sample, 1, function(column) {
+        tryCatch({
+          # Attempt to run ad.test on the column
+          test_result <- ad.test(column)$p.value
+          # Return the result if successful
+          return(test_result)
+        }, error = function(e) {
+          # You can return NA or some other indicator of failure
+          return(NA)
+        })
+      })
+    
+      # adjust normality test pvalue for multiple testing
+      sim.norm.pvalues.adj <- p.adjust(sim.norm.pvalues, method = "BH")
+      
+      # Replicate observed_sample to match the dimensions of simulated_sample
+      observed_replicated <- matrix(rep(observed_sample, ncol(simulated_sample)), nrow = sum(merged_counts$type == type))
+  
+      # create log2fc for all the simulated
+      simulated_log2fc <- log2((observed_replicated + 1) / (simulated_sample + 1))
+      
+      perm.test.pvalues <- c()
+      for(j in 1:nrow(observed_sample)){
+        if(get_summary_type == "mean"){
+          sim.mean <- mean((simulated_sample[j,]), na.rm = TRUE)
+        } else if(get_summary_type == "median") {
+          sim.mean <- median((simulated_sample[j,]), na.rm = TRUE)
+        }
+        sim.log2fc <- log2((sim.mean + 1) / (simulated_sample[j,] + 1))
+        obs.log2fc <- log2((observed_sample[j,] + 1) / (sim.mean + 1))
+        perm.test.pvalues[j] <- mean(abs(sim.log2fc) >= abs(obs.log2fc), na.rm = TRUE)
+      }
+  
+      # adjust permutation test pvalue for multiple testing
+      perm.test.pvalues.adj <- p.adjust(perm.test.pvalues, method = "BH")
+      
+      # add to new df
+      obs_mut[, i] <- observed_sample
+      if(get_summary_type == "mean"){
+          sim_mut[, i] <- apply(simulated_sample, 1, function(x) mean(x, na.rm = TRUE))
+          log2fc[, i] <- apply(simulated_log2fc, 1, function(x) mean(x, na.rm = TRUE))
+        } else if(get_summary_type == "median") {
+          sim_mut[, i] <- apply(simulated_sample, 1, function(x) median(x, na.rm = TRUE))
+          log2fc[, i] <- apply(simulated_log2fc, 1, function(x) median(x, na.rm = TRUE))
+        }
+      normality[, i] <- sim.norm.pvalues.adj
+      pvalues[, i] <- perm.test.pvalues
+      pvalues_adjusted[, i] <- perm.test.pvalues.adj
+      
+    }
+    # append to type list
+    res_list <- list(obs_mut=obs_mut,
+                     sim_mut=sim_mut,
+                     log2fc=log2fc,
+                     normality=normality,
+                     pvalues=pvalues,
+                     pvalues_adjusted=pvalues_adjusted)
+    
+    type_list[[type]] <- res_list
+  }
+  
+  # combine the same result dataframes across types
+  combined_res_list <- list()
+  matrix_names <- unique(unlist(lapply(type_list, names)))
+  # Loop through each dataframe name
+  for (df_name in matrix_names) {
+    # Initialize an empty dataframe for combining the extracted data
+    combined_df <- data.frame()
+  
+    # Loop through each inner list in the main list
+    for (list_name in names(type_list)) {
+      # Extract the specified dataframe from the inner list
+      if (df_name %in% names(type_list[[list_name]])) {
+        df <- as.data.frame(type_list[[list_name]][[df_name]])
+        
+        # Add a column indicating the source inner list
+        df$type <- list_name
+        
+        # Combine the extracted dataframe with the combined results
+        combined_df <- rbind(combined_df, df)
+      }
+    }
+    # Add the combined dataframe to the list of combined dataframes
+    combined_res_list[[df_name]] <- combined_df
+  }
+  
+  # add the bin information
+  combined_res_list <- lapply(combined_res_list, function(df) {
+    df %>% 
+    mutate(bin = merged_counts$bin)  # Change '10' to your desired value or vector
+  })
+  
+  
+  # Convert dataframes to long format
+  long_list <- list()
+  for (df_name in names(combined_res_list)) {
+    df <- combined_res_list[[df_name]]
+    
+    # Convert the dataframe to long format and set the values_to parameter dynamically
+    long_df <- pivot_longer(df, cols = -c(type, bin), names_to = "sample", values_to = df_name)
+    
+    # Store the converted dataframe back in the list
+    long_list[[df_name]] <- long_df
+  }
+  
+  results_long <- reduce(long_list, 
+                         full_join, 
+                         by = c("type", "sample", "bin")) %>% 
+    as.data.frame()
+  
+  # add sample info
+  results_long <- merge(results_long, sample_table, by = "sample")
+  
+  return(results_long)
+}
+```
+
+## Load VEP results
+```{r}
+# samples <- unlist(strsplit(("C1_05_24 C2_05_24 C3_05_24"), " "))
+samples <- unlist(strsplit(params$group, " "))
+cat("Individual Samples:\n")
+cat(samples)
+
+# Initialize vectors to store file paths
+vep_observed_files <- character()
+vep_simulated_files <- character()
+
+# Loop through each sample to construct file paths
+for (sample in samples) {
+  observed_file <- paste0("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/observed/", sample, ".txt")
+  simulated_files <- list.files(path = "/gs/gsfs0/users/rcutler/Software/variant-effect-predictor/SigProfilerSimulator_output_burden_matched_vep_array",
+                                pattern = paste0(sample, ".*\\.txt$"),
+                                full.names = TRUE)
+  
+  # Concatenate file paths to vectors
+  vep_observed_files <- c(vep_observed_files, observed_file)
+  vep_simulated_files <- c(vep_simulated_files, simulated_files)
+}
+
+```
+
+# Analysis
+
+## Consequences
+
+### All subtypes
+
+#### Count types
+```{r,eval = FALSE}
+observed_consequence <- load_vep_and_count_types(files = vep_observed_files,
+                                                  sample_names = gsub("\\.txt$", "", basename(vep_observed_files)),
+                                                  col_names = vep_cols_observed,
+                                                  variant_type = "Consequence",
+                                                  main_variants = NULL,
+                                                  batch_size = 50,
+                                                  skip = 120)
+
+simulated_consequence <- load_vep_and_count_types(files = vep_simulated_files,
+                                                  sample_names = gsub("\\.txt$", "", basename(vep_simulated_files)),
+                                                  col_names = vep_cols_simulated,
+                                                  variant_type = "Consequence",
+                                                  main_variants = NULL,
+                                                  batch_size = 50,
+                                                  skip = 105)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r,eval = FALSE}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+consequence_oe_mean <- calc_OE_ratio_group(observed_consequence, 
+                                             simulated_consequence, 
+                                             get_summary_type = "mean")
+
+write.csv(consequence_oe_mean, paste0(params$group "_consequence_oe_mean.csv"), row.names = FALSE)
+
+consequence_oe_median <- calc_OE_ratio_group(observed_consequence, 
+                                             simulated_consequence, 
+                                             get_summary_type = "median")
+
+write.csv(consequence_oe_median, paste0(params$group "_consequence_oe_median.csv"), row.names = FALSE)
+```
+
+### Main subtypes
+- This combines the subtypes into the main types
+
+#### Count types
+```{r,eval = TRUE}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+main_variants <- c("synonymous_variant",
+                    "start_retained_variant",
+                    "stop_retained_variant",
+                    "stop_gained",
+                    "stop_lost",
+                    "start_lost",
+                    "inframe_insertion",
+                    "frameshift_variant",
+                    "inframe_deletion",
+                    "missense_variant", 
+                    "intron",
+                    "splice",
+                    "3_prime_UTR_variant",
+                    "5_prime_UTR_variant",
+                    "TF_binding_site_variant",
+                    "regulatory_region",
+                    "upstream_gene_variant",
+                    "downstream_gene_variant",
+                    "intergenic_variant",
+                    "non_coding_transcript_exon_variant",
+                   "NMD_transcript_variant"
+)
+
+
+observed_consequence <- load_vep_and_count_types(files = vep_observed_files,
+                                                  sample_names = gsub("\\.txt$", "", basename(vep_observed_files)),
+                                                  col_names = vep_cols_observed,
+                                                  variant_type = "Consequence",
+                                                  main_variants = main_variants,
+                                                  batch_size = 50,
+                                                  skip = 120)
+
+simulated_consequence <- load_vep_and_count_types(files = vep_simulated_files,
+                                                  sample_names = gsub("\\.txt$", "", basename(vep_simulated_files)),
+                                                  col_names = vep_cols_simulated,
+                                                  variant_type = "Consequence",
+                                                  main_variants = main_variants,
+                                                  batch_size = 50,
+                                                  skip = 105)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r,eval = TRUE}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+consequence_oe_mean <- calc_OE_ratio_group(observed_consequence, 
+                                             simulated_consequence, 
+                                             get_summary_type = "mean")
+
+write.csv(consequence_oe_mean, paste0(params$group, "_consequence_main_oe_mean.csv"), row.names = FALSE)
+
+consequence_oe_median <- calc_OE_ratio_group(observed_consequence, 
+                                             simulated_consequence, 
+                                             get_summary_type = "median")
+
+write.csv(consequence_oe_median, paste0(params$group, "_consequence_main_oe_median.csv"), row.names = FALSE)
+```
+
+### Synonymous and Nonsynonymous Coding SNV
+
+#### Count types
+```{r,eval = TRUE}
+observed_consequence <- load_vep_and_count_types_synonymous_nonsynonymous(files = vep_observed_files,
+                                                  sample_names = gsub("\\.txt$", "", basename(vep_observed_files)),
+                                                  col_names = vep_cols_observed,
+                                                  variant_type = "Consequence",
+                                                  batch_size = 50,
+                                                  skip = 120)
+
+simulated_consequence <- load_vep_and_count_types_synonymous_nonsynonymous(files = vep_simulated_files,
+                                                  sample_names = gsub("\\.txt$", "", basename(vep_simulated_files)),
+                                                  col_names = vep_cols_simulated,
+                                                  variant_type = "Consequence",
+                                                  batch_size = 50,
+                                                  skip = 105)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r,eval = TRUE}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+consequence_oe_mean <- calc_OE_ratio_group(observed_consequence, 
+                                             simulated_consequence, 
+                                             get_summary_type = "mean")
+
+write.csv(consequence_oe_mean, paste0(params$group, "_consequence_synonymous_nonsynonymous_oe_mean.csv"), row.names = FALSE)
+
+consequence_oe_median <- calc_OE_ratio_group(observed_consequence, 
+                                             simulated_consequence, 
+                                             get_summary_type = "median")
+
+write.csv(consequence_oe_median, paste0(params$group, "_consequence_synonymous_nonsynonymous_oe_median.csv"), row.names = FALSE)
+```
+
+## CADD
+- IMPROVEMENTS
+  - Group noncoding into those which fall into cCRE
+  - Group noncoding into introns or not to account for TCR
+  
+### RAW
+
+#### Summarize scores
+```{r, eval = FALSE}
+observed_cadd <- load_vep_and_summarize(files = vep_observed_files,
+                                                          sample_names = sample_table$sample,
+                                                          col_names = vep_cols,
+                                                          variant_type = "CADD_RAW",
+                                                          absolute = FALSE,
+                                                          batch_size = 100)
+
+write.csv(observed_cadd, "observed_cadd_raw_mean.csv", row.names = FALSE)
+
+observed_simulated_cadd <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           variant_type = "CADD_RAW",
+                                                           absolute = FALSE,
+                                                           batch_size = 100)
+
+#write.csv(observed_simulated_cadd, "simulated_cadd_raw_mean.csv", row.names = FALSE)
+```
+
+#### Count types
+```{r, eval = FALSE}
+observed_cadd <- load_vep_and_count_types_CADD_single(file = vep_observed_files,
+                                                          sample_names = sample_table$sample,
+                                                          col_names = vep_cols,
+                                                          variant_type = "CADD_RAW",
+                                                          batch_size = 100)
+
+
+observed_simulated_cadd <- load_vep_and_count_types_CADD(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           variant_type = "CADD_RAW",
+                                                           batch_size = 100)
+```
+
+##### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_cadd_ratio_mean <- calc_OE_ratio(observed_counts = observed_cadd, 
+                                                  simulated_counts = observed_simulated_cadd,
+                                                  get_summary_type = "mean", 
+                                                  sample_table = sample_table)
+
+write.csv(observed_cadd_ratio_mean, "observed_cadd_raw_ratio_mean_no_bin.csv", row.names = FALSE)
+```
+
+#### Count types and bin
+```{r, eval = FALSE}
+observed_cadd <- load_vep_and_count_types_CADD_RAW(files = vep_observed_files,
+                                                          sample_names = sample_table$sample,
+                                                          col_names = vep_cols,
+                                                          variant_type = "CADD_RAW",
+                                                          batch_size = 100)
+
+
+observed_simulated_cadd <- load_vep_and_count_types_CADD_RAW(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           variant_type = "CADD_RAW",
+                                                           batch_size = 100)
+```
+
+
+#### Calculate observed / expected ratios and significance
+```{r,eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_cadd_ratio_mean <- calc_OE_ratio_CADD(observed_counts = observed_cadd, 
+                                                  simulated_counts = observed_simulated_cadd,
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean", 
+                                                  sample_table = sample_table)
+
+write.csv(observed_cadd_ratio_mean, "observed_cadd_raw_ratio_mean.csv", row.names = FALSE)
+```
+
+### PHRED
+
+#### Summarize scores
+```{r,eval = FALSE}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_cadd <- load_vep_and_summarize_single(file = vep_observed_file,
+                                        col_names = vep_cols_observed,
+                                        variant_type = "CADD_PHRED",
+                                        absolute = FALSE)
+
+write.csv(observed_cadd, paste0(sample, "_observed_cadd_phred_mean.csv"), row.names = FALSE)
+
+simulated_cadd <- load_vep_and_summarize(files = vep_simulated_files,
+                                         sample_names = gsub("\\.txt$", "", basename(vep_simulated_files)),
+                                         col_names = vep_cols_simulated,
+                                         variant_type = "CADD_PHRED",
+                                         absolute = FALSE,
+                                         batch_size = 50)
+
+write.csv(simulated_cadd, "simulated_cadd_phred_mean.csv", row.names = FALSE)
+```
+
+#### Count types
+```{r,eval = TRUE}
+observed_cadd <- load_vep_and_count_types_CADD_single(file = vep_observed_file,
+                                                      col_names = vep_cols_observed,
+                                                      variant_type = "CADD_PHRED")
+
+
+simulated_cadd <- load_vep_and_count_types_CADD(files = vep_simulated_files,
+                                               sample_names = gsub("\\.txt$", "", basename(vep_simulated_files)),
+                                               col_names = vep_cols_simulated,
+                                               variant_type = "CADD_PHRED",
+                                               batch_size = 50)
+```
+
+##### Calculate observed / expected ratios and significance
+```{r,eval = TRUE}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+cadd_phred_oe_mean <- calc_OE_ratio_single(observed_counts = observed_cadd, 
+                                          simulated_counts = simulated_cadd,
+                                          get_summary_type = "mean")
+
+write.csv(cadd_phred_oe_mean, paste0(sample, "_cadd_phred_oe_mean.csv"), row.names = FALSE)
+
+cadd_phred_oe_median <- calc_OE_ratio_single(observed_counts = observed_cadd, 
+                                          simulated_counts = simulated_cadd,
+                                          get_summary_type = "median")
+
+write.csv(cadd_phred_oe_median, paste0(sample, "_cadd_phred_oe_median.csv"), row.names = FALSE)
+```
+
+#### Count types and bin
+```{r,eval = FALSE}
+observed_cadd <- load_vep_and_count_types_CADD_PHRED_single(file = vep_observed_file,
+                                                          col_names = vep_cols_observed,
+                                                          variant_type = "CADD_PHRED",
+                                                          sep_coding = TRUE)
+
+
+simulated_cadd <- load_vep_and_count_types_CADD_PHRED(files = vep_simulated_files,
+                                                     sample_names = gsub("\\.txt$", "", basename(vep_simulated_files)),
+                                                     col_names = vep_cols_simulated,
+                                                     variant_type = "CADD_PHRED",
+                                                     batch_size = 50,
+                                                     sep_coding = TRUE)
+```
+
+##### Calculate observed / expected ratios and significance
+```{r,eval = FALSE}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+cadd_phred_bin_oe_mean <- calc_OE_ratio_CADD_single(observed_counts = observed_cadd, 
+                                                  simulated_counts = simulated_cadd,
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean")
+
+write.csv(cadd_phred_bin_oe_mean, paste0(sample, "_cadd_phred_bin_oe_mean.csv"), row.names = FALSE)
+```
+
+#### Count types and bin - coding combined
+```{r,eval = TRUE}
+observed_cadd <- load_vep_and_count_types_CADD_PHRED_single(file = vep_observed_file,
+                                                          col_names = vep_cols_observed,
+                                                          variant_type = "CADD_PHRED",
+                                                          sep_coding = FALSE)
+
+
+simulated_cadd <- load_vep_and_count_types_CADD_PHRED(files = vep_simulated_files,
+                                                     sample_names = gsub("\\.txt$", "", basename(vep_simulated_files)),
+                                                     col_names = vep_cols_simulated,
+                                                     variant_type = "CADD_PHRED",
+                                                     batch_size = 50,
+                                                    sep_coding = FALSE)
+```
+
+##### Calculate observed / expected ratios and significance
+```{r,eval = TRUE}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+cadd_phred_bin_oe_mean <- calc_OE_ratio_CADD_single(observed_counts = observed_cadd, 
+                                                  simulated_counts = simulated_cadd,
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean")
+
+write.csv(cadd_phred_bin_oe_mean, paste0(sample, "_cadd_phred_bin_coding_combined_oe_mean.csv"), row.names = FALSE)
+```
+
+## Alpha missense
+
+### Abosolute score summary
+
+#### Summarize scores
+```{r, eval = FALSE}
+observed_am <- load_vep_and_summarize(files = vep_observed_files,
+                                                          sample_names = sample_table$sample,
+                                                          col_names = vep_cols,
+                                                          absolute = TRUE,
+                                                          variant_type = "am_pathogenicity",
+                                                          batch_size = 100)
+
+
+observed_simulated_am <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           absolute = TRUE,
+                                                           variant_type = "am_pathogenicity",
+                                                           batch_size = 100)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_am_ratio_mean <- calc_OE_ratio_summarize(observed_counts = observed_am, 
+                                                  simulated_counts = observed_simulated_am, 
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean", 
+                                                  sample_table = sample_table)
+
+write.csv(observed_am_ratio_mean, "observed_alpha-missense_absolute_ratio_mean.csv", row.names = FALSE)
+
+observed_am_ratio_median <- calc_OE_ratio_summarize(observed_counts = observed_am, 
+                                                  simulated_counts = observed_simulated_am, 
+                                                  use_summary_type = "median",
+                                                  get_summary_type = "median",
+                                                  sample_table = sample_table)
+
+write.csv(observed_am_ratio_median, "observed_alpha-missense_absolute_ratio_median.csv", row.names = FALSE)
+
+observed_am_ratio_sum <- calc_OE_ratio_summarize(observed_counts = observed_am, 
+                                                  simulated_counts = observed_simulated_am, 
+                                                  use_summary_type = "sum", 
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_am_ratio_sum, "observed_alpha-missense_absolute_ratio_sum.csv", row.names = FALSE)
+```
+
+### Non-Abosolute score summary
+
+#### Summarize scores
+```{r, eval = FALSE}
+observed_am <- load_vep_and_summarize(files = vep_observed_files,
+                                                          sample_names = sample_table$sample,
+                                                          col_names = vep_cols,
+                                                          absolute = FALSE,
+                                                          variant_type = "am_pathogenicity",
+                                                          batch_size = 100)
+
+
+observed_simulated_am <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           absolute = FALSE,
+                                                           variant_type = "am_pathogenicity",
+                                                           batch_size = 100)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_am_ratio_mean <- calc_OE_ratio_summarize(observed_counts = observed_am, 
+                                                  simulated_counts = observed_simulated_am, 
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_am_ratio_mean, "observed_alpha-missense_non-absolute_ratio_mean.csv", row.names = FALSE)
+
+observed_am_ratio_median <- calc_OE_ratio_summarize(observed_counts = observed_am, 
+                                                  simulated_counts = observed_simulated_am, 
+                                                  use_summary_type = "median",
+                                                  get_summary_type = "median",
+                                                  sample_table = sample_table)
+
+write.csv(observed_am_ratio_median, "observed_alpha-missense_non-absolute_ratio_median.csv", row.names = FALSE)
+
+observed_am_ratio_sum <- calc_OE_ratio_summarize(observed_counts = observed_am, 
+                                                  simulated_counts = observed_simulated_am, 
+                                                  use_summary_type = "sum", 
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_am_ratio_sum, "observed_alpha-missense_non-absolute_ratio_sum.csv", row.names = FALSE)
+```
+
+## GERP
+
+### Absolute score summary
+
+#### Summarize scores
+- there are entries which have 2 scores that are ignored
+```{r, eval = FALSE}
+observed_gerp <- load_vep_and_summarize(files = vep_observed_files,
+                                        sample_names = sample_table$sample,
+                                        col_names = vep_cols,
+                                        absolute = TRUE,
+                                        variant_type = "GERP",
+                                        batch_size = 100)
+
+
+observed_simulated_gerp <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           absolute = TRUE,
+                                                           variant_type = "GERP",
+                                                           batch_size = 100)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_gerp_ratio_mean <- calc_OE_ratio_summarize(observed_counts = observed_gerp, 
+                                                  simulated_counts = observed_simulated_gerp, 
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_gerp_ratio_mean, "observed_gerp_absolute_ratio_mean.csv", row.names = FALSE)
+
+observed_gerp_ratio_median <- calc_OE_ratio_summarize(observed_counts = observed_gerp, 
+                                                  simulated_counts = observed_simulated_gerp, 
+                                                  use_summary_type = "median",
+                                                  get_summary_type = "median",
+                                                  sample_table = sample_table)
+
+write.csv(observed_gerp_ratio_median, "observed_gerp_absolute_ratio_median.csv", row.names = FALSE)
+
+observed_gerp_ratio_sum <- calc_OE_ratio_summarize(observed_counts = observed_gerp, 
+                                                  simulated_counts = observed_simulated_gerp, 
+                                                  use_summary_type = "sum", 
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_gerp_ratio_sum, "observed_gerp_absolute_ratio_median.csv", row.names = FALSE)
+```
+
+### Non-absolute score summary
+
+#### Summarize scores
+- there are entries which have 2 scores that are ignored
+```{r, eval = FALSE}
+observed_gerp <- load_vep_and_summarize(files = vep_observed_files,
+                                        sample_names = sample_table$sample,
+                                        col_names = vep_cols,
+                                        absolute = FALSE,
+                                        variant_type = "GERP",
+                                        batch_size = 100)
+
+
+observed_simulated_gerp <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           absolute = FALSE,
+                                                           variant_type = "GERP",
+                                                           batch_size = 100)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_gerp_ratio_mean <- calc_OE_ratio_summarize(observed_counts = observed_gerp, 
+                                                  simulated_counts = observed_simulated_gerp, 
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_gerp_ratio_mean, "observed_gerp_non-absolute_ratio_mean.csv", row.names = FALSE)
+
+observed_gerp_ratio_median <- calc_OE_ratio_summarize(observed_counts = observed_gerp, 
+                                                  simulated_counts = observed_simulated_gerp, 
+                                                  use_summary_type = "median",
+                                                  get_summary_type = "median",
+                                                  sample_table = sample_table)
+
+write.csv(observed_gerp_ratio_median, "observed_gerp_non-absolute_ratio_median.csv", row.names = FALSE)
+
+observed_gerp_ratio_sum <- calc_OE_ratio_summarize(observed_counts = observed_gerp, 
+                                                  simulated_counts = observed_simulated_gerp, 
+                                                  use_summary_type = "sum",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_gerp_ratio_sum, "observed_gerp_non-absolute_ratio_median.csv", row.names = FALSE)
+```
+
+## Transcription factor motif Z-score
+
+### Absolute score summary
+
+#### Summarize scores
+```{r, eval = FALSE}
+observed_tf <- load_vep_and_summarize(files = vep_observed_files,
+                                        sample_names = sample_table$sample,
+                                        col_names = vep_cols,
+                                        variant_type = "MOTIF_SCORE_CHANGE",
+                                        absolute = TRUE,
+                                        batch_size = 100)
+
+
+observed_simulated_tf <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           variant_type = "MOTIF_SCORE_CHANGE",
+                                                           absolute = TRUE,
+                                                           batch_size = 100)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_tf_ratio_mean <- calc_OE_ratio_summarize(observed_counts = observed_tf, 
+                                                  simulated_counts = observed_simulated_tf, 
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_tf_ratio_mean, "observed_tf_absolute_ratio_mean.csv", row.names = FALSE)
+
+observed_tf_ratio_median <- calc_OE_ratio_summarize(observed_counts = observed_tf, 
+                                                  simulated_counts = observed_simulated_tf, 
+                                                  use_summary_type = "median",
+                                                  get_summary_type = "median",
+                                                  sample_table = sample_table)
+
+write.csv(observed_tf_ratio_median, "observed_tf_absolute_ratio_median.csv", row.names = FALSE)
+
+observed_tf_ratio_sum <- calc_OE_ratio_summarize(observed_counts = observed_tf, 
+                                                  simulated_counts = observed_simulated_tf, 
+                                                  use_summary_type = "sum",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_tf_ratio_sum, "observed_tf_absolute_ratio_sum.csv", row.names = FALSE)
+```
+
+### Absolute score summary
+
+#### Summarize scores
+```{r, eval = FALSE}
+observed_tf <- load_vep_and_summarize(files = vep_observed_files,
+                                        sample_names = sample_table$sample,
+                                        col_names = vep_cols,
+                                        variant_type = "MOTIF_SCORE_CHANGE",
+                                        absolute = FALSE,
+                                        batch_size = 100)
+
+
+observed_simulated_tf <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           variant_type = "MOTIF_SCORE_CHANGE",
+                                                           absolute = FALSE,
+                                                           batch_size = 100)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_tf_ratio_mean <- calc_OE_ratio_summarize(observed_counts = observed_tf, 
+                                                  simulated_counts = observed_simulated_tf, 
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_tf_ratio_mean, "observed_tf_non-absolute_ratio_mean.csv", row.names = FALSE)
+
+observed_tf_ratio_median <- calc_OE_ratio_summarize(observed_counts = observed_tf, 
+                                                  simulated_counts = observed_simulated_tf, 
+                                                  use_summary_type = "median",
+                                                  get_summary_type = "median",
+                                                  sample_table = sample_table)
+
+write.csv(observed_tf_ratio_median, "observed_tf_non-absolute_ratio_median.csv", row.names = FALSE)
+
+observed_tf_ratio_sum <- calc_OE_ratio_summarize(observed_counts = observed_tf, 
+                                                  simulated_counts = observed_simulated_tf, 
+                                                  use_summary_type = "sum",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_tf_ratio_sum, "observed_tf_non-absolute_ratio_sum.csv", row.names = FALSE)
+```
+
+## PhyloP
+
+### Absolute score summary
+
+#### Summarize scores
+```{r, eval = FALSE}
+observed_phylop <- load_vep_and_summarize(files = vep_observed_files,
+                                        sample_names = sample_table$sample,
+                                        col_names = vep_cols,
+                                        absolute = TRUE,
+                                        variant_type = "phyloP",
+                                        batch_size = 100)
+
+
+observed_simulated_phylop <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           absolute = TRUE,
+                                                           variant_type = "phyloP",
+                                                           batch_size = 100)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_phylop_ratio_mean <- calc_OE_ratio_summarize(observed_counts = observed_phylop, 
+                                                  simulated_counts = observed_simulated_phylop, 
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phylop_ratio_mean, "observed_phylop_absolute_ratio_mean.csv", row.names = FALSE)
+
+observed_phylop_ratio_median <- calc_OE_ratio_summarize(observed_counts = observed_phylop, 
+                                                  simulated_counts = observed_simulated_phylop, 
+                                                  use_summary_type = "median",
+                                                  get_summary_type = "median",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phylop_ratio_median, "observed_phylop_absolute_ratio_median.csv", row.names = FALSE)
+
+observed_phylop_ratio_sum <- calc_OE_ratio_summarize(observed_counts = observed_phylop, 
+                                                  simulated_counts = observed_simulated_phylop, 
+                                                  use_summary_type = "sum",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phylop_ratio_sum, "observed_phylop_absolute_ratio_sum.csv", row.names = FALSE)
+```
+
+### Non-Absolute score summary
+
+#### Summarize scores
+```{r, eval = FALSE}
+observed_phylop <- load_vep_and_summarize(files = vep_observed_files,
+                                        sample_names = sample_table$sample,
+                                        col_names = vep_cols,
+                                        absolute = FALSE,
+                                        variant_type = "phyloP",
+                                        batch_size = 100)
+
+
+observed_simulated_phylop <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           absolute = FALSE,
+                                                           variant_type = "phyloP",
+                                                           batch_size = 100)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_phylop_ratio_mean <- calc_OE_ratio_summarize(observed_counts = observed_phylop, 
+                                                  simulated_counts = observed_simulated_phylop, 
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phylop_ratio_mean, "observed_phylop_non-absolute_ratio_mean.csv", row.names = FALSE)
+
+observed_phylop_ratio_median <- calc_OE_ratio_summarize(observed_counts = observed_phylop, 
+                                                  simulated_counts = observed_simulated_phylop, 
+                                                  use_summary_type = "median",
+                                                  get_summary_type = "median",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phylop_ratio_median, "observed_phylop_non-absolute_ratio_median.csv", row.names = FALSE)
+
+observed_phylop_ratio_sum <- calc_OE_ratio_summarize(observed_counts = observed_phylop, 
+                                                  simulated_counts = observed_simulated_phylop, 
+                                                  use_summary_type = "sum",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phylop_ratio_sum, "observed_phylop_non-absolute_ratio_sum.csv", row.names = FALSE)
+```
+
+## phastCons
+
+### Absolute score summary
+
+#### Summarize scores
+```{r, eval = FALSE}
+observed_phastCons <- load_vep_and_summarize(files = vep_observed_files,
+                                        sample_names = sample_table$sample,
+                                        col_names = vep_cols,
+                                        absolute = TRUE,
+                                        variant_type = "phastCons",
+                                        batch_size = 100)
+
+
+observed_simulated_phastCons <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           absolute = TRUE,
+                                                           variant_type = "phastCons",
+                                                           batch_size = 100)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_phastCons_ratio_mean <- calc_OE_ratio_summarize(observed_counts = observed_phastCons, 
+                                                  simulated_counts = observed_simulated_phastCons, 
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phastCons_ratio_mean, "observed_phastCons_absolute_ratio_mean.csv", row.names = FALSE)
+
+observed_phastCons_ratio_median <- calc_OE_ratio_summarize(observed_counts = observed_phastCons, 
+                                                  simulated_counts = observed_simulated_phastCons, 
+                                                  use_summary_type = "median",
+                                                  get_summary_type = "median",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phastCons_ratio_median, "observed_phastCons_absolute_ratio_median.csv", row.names = FALSE)
+
+observed_phastCons_ratio_sum <- calc_OE_ratio_summarize(observed_counts = observed_phastCons, 
+                                                  simulated_counts = observed_simulated_phastCons, 
+                                                  use_summary_type = "sum",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phastCons_ratio_sum, "observed_phastCons_absolute_ratio_sum.csv", row.names = FALSE)
+```
+
+### Non-Absolute score summary
+
+#### Summarize scores
+```{r, eval = FALSE}
+observed_phastCons <- load_vep_and_summarize(files = vep_observed_files,
+                                        sample_names = sample_table$sample,
+                                        col_names = vep_cols,
+                                        absolute = FALSE,
+                                        variant_type = "phastCons",
+                                        batch_size = 100)
+
+
+observed_simulated_phastCons <- load_vep_and_summarize(files = vep_simulated_files,
+                                                           sample_names = sample_table_simulated$sample,
+                                                           col_names = vep_cols,
+                                                           absolute = FALSE,
+                                                           variant_type = "phastCons",
+                                                           batch_size = 100)
+```
+
+#### Calculate observed / expected ratios and significance
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/variant-effect-prediction/cells-combined")
+
+observed_phastCons_ratio_mean <- calc_OE_ratio_summarize(observed_counts = observed_phastCons, 
+                                                  simulated_counts = observed_simulated_phastCons, 
+                                                  use_summary_type = "mean",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phastCons_ratio_mean, "observed_phastCons_non-absolute_ratio_mean.csv", row.names = FALSE)
+
+observed_phastCons_ratio_median <- calc_OE_ratio_summarize(observed_counts = observed_phastCons, 
+                                                  simulated_counts = observed_simulated_phastCons, 
+                                                  use_summary_type = "median",
+                                                  get_summary_type = "median",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phastCons_ratio_median, "observed_phastCons_non-absolute_ratio_median.csv", row.names = FALSE)
+
+observed_phastCons_ratio_sum <- calc_OE_ratio_summarize(observed_counts = observed_phastCons, 
+                                                  simulated_counts = observed_simulated_phastCons, 
+                                                  use_summary_type = "sum",
+                                                  get_summary_type = "mean",
+                                                  sample_table = sample_table)
+
+write.csv(observed_phastCons_ratio_sum, "observed_phastCons_non-absolute_ratio_sum.csv", row.names = FALSE)

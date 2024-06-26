@@ -1,0 +1,717 @@
+---
+title: "Bulk RNA-Seq - Differential expression"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preparation
+
+## Load Libraries
+```{r}
+library(SummarizedExperiment)
+library(DESeq2)
+library(PCAtools)
+library(affy)
+library(genefilter)
+library(pheatmap)
+library(ComplexHeatmap)
+library(EnhancedVolcano)
+library(viridis)
+library(BatchQC)
+library(sva)
+
+library(ggplot2)
+library(ggrepel)
+library(data.table)
+library(purrr)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+
+library(RColorBrewer)
+
+colors <- viridis(2)
+```
+
+
+## Load sample table and annotated counts
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/14-bulk-rna-analysis/1-data")
+
+sample_table <- read.csv("sample_table.csv")
+rownames(sample_table) <- sample_table$sample
+
+data <- read.csv("counts_annotated.csv", row.names = 1)
+```
+
+## Create summarized experiment
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/14-bulk-rna-analysis/3-differential-expression")
+
+# replace NA values with average transcript length
+data$transcript_length[is.na(data$transcript_length)] <- mean(data$transcript_length, na.rm = TRUE)
+
+# calculate TPM
+tpm <- function(counts, lengths) {
+  rate <- counts / lengths
+  rate / sum(rate) * 1e6
+}
+
+data.tpm <- apply(data[,c(1:6)], 2, function(x) tpm(x, data$transcript_length))
+
+
+se <- SummarizedExperiment(assays=SimpleList(counts = data[,c(1:6)],
+                                             tpm = data.tpm),
+                           colData = sample_table,
+                           rowData = data[,-c(1:6)])
+```
+
+# Count filter
+
+## Raw count distribution
+```{r}
+pdf("raw_count_distribution.pdf",
+    width = 5,
+    height = 5)
+plotDensity(log2(assay(se) + 1),
+            lty=1,
+            col=colors[as.factor(colData(se)$condition)],
+            lwd=1,
+            xlab = "log2(Counts + 1)", 
+            main = "Raw Counts")
+legend("topright",
+       legend=levels(as.factor(colData(se)$condition)),
+       lwd=1, col = colors)
+
+boxplot(log2(assay(se) + 1),
+        col=colors[as.factor(colData(se)$condition)],
+        cex.axis = 0.5,
+        las = 1,
+        horizontal = TRUE,
+        xlab = "log2(Counts + 1)",
+        ylab = "Samples",
+        main = "Raw Counts")
+legend("topright",
+       legend=levels(as.factor(colData(se)$condition)),
+       lwd=1, col = colors)
+dev.off()
+```
+
+## Filter out low counts
+```{r}
+assay(se, "zfpkm") <- zFPKM(se, assayName = "tpm")
+assay(se, "zfpkm")[assay(se, "zfpkm") == -Inf] <- NA
+
+pdf("zfpkm_filter.pdf",
+    width = 5,
+    height = 5)
+zFPKMPlot(se, assayName = "tpm", FacetTitles = TRUE)
+dev.off()
+
+# To determine which genes are active, we compute the median expression within each group.
+# detach(package:plyr)
+activeGenes <- assay(se, "zfpkm") %>%
+  mutate(gene = rownames(assay(se, "zfpkm"))) %>%
+  gather(sample, zfpkm, -gene) %>%
+  left_join(select(as.data.frame(colData(se)), sample, condition), by="sample") %>%
+  dplyr::group_by(gene, condition) %>%
+  summarize(median_zfpkm=median(zfpkm)) %>%
+  ungroup() %>%
+  mutate(active=(median_zfpkm > -3)) %>%
+  filter(active) %>%
+  select(gene) %>%
+  distinct()
+
+# filter
+se.filter <- SummarizedExperiment(assays=SimpleList(counts = as.matrix(round(assay(se, "counts")[activeGenes$gene, ])),
+                                             tpm = as.matrix(round(assay(se, "tpm")[activeGenes$gene, ]))),
+                           colData = sample_table,
+                           rowData = data[activeGenes$gene,-c(1:6)])
+
+# save
+write.table(assay(se.filter, "counts"), "counts_filtered.tsv", quote = FALSE)
+write.table(assay(se.filter, "tpm"), "tpm_filtered.tsv", quote = FALSE)
+saveRDS(se.filter, "se.filter.RDS")
+```
+
+## Filtered count distribution
+```{r}
+pdf("filtered_count_distribution.pdf",
+    width = 5,
+    height = 5)
+plotDensity(log2(assay(se.filter) + 1),
+            lty=1,
+            col=colors[as.factor(colData(se)$condition)],
+            lwd=1,
+            xlab = "log2(Counts + 1)", 
+            main = "Filtered Counts")
+legend("topright",
+       legend=levels(as.factor(colData(se)$condition)),
+       lwd=1, col = colors)
+
+boxplot(log2(assay(se.filter) + 1),
+        col=colors[as.factor(colData(se)$condition)],
+        cex.axis = 0.5,
+        las = 1,
+        horizontal = TRUE,
+        xlab = "log2(Counts + 1)",
+        ylab = "Samples",
+        main = "Filtered Counts")
+legend("topright",
+       legend=levels(as.factor(colData(se)$condition)),
+       lwd=1, col = colors)
+dev.off()
+```
+
+# Normalization
+
+## DeSeq2 processing
+- Accounting for batch
+```{r}
+# load 
+dds <- DESeqDataSet(se.filter, design = ~ batch + condition)
+
+# set control
+dds$condition <- relevel(dds$condition, ref = "control")
+
+# run
+dds <- DESeq(dds)
+```
+
+## Normalized count distribution
+```{r}
+pdf("normalized_count_distribution.pdf",
+    width = 5,
+    height = 5)
+plotDensity(log2(counts(dds, normalized = TRUE) + 1),
+            lty=1,
+            col=colors[dds$condition],
+            lwd=1,
+            xlab = "log2(Counts + 1)", 
+            main = "Normalized Counts")
+legend("topright",
+       legend=levels(dds$condition),
+       lwd=1, col = colors)
+
+boxplot(log2(counts(dds, normalized = TRUE) + 1),
+        col=colors[dds$condition],
+        cex.axis = 0.5,
+        las = 1,
+        horizontal = TRUE,
+        xlab = "log2(Counts + 1)",
+        ylab = "Samples",
+        main = "Normalized Counts")
+legend("topright",
+       legend=levels(dds$condition),
+       lwd=1, col = colors)
+dev.off()
+```
+
+## Mean Variance Relationship
+- Plotting the mean and variance to examine whether the data appears to have a non-linear relationship between the variance and mean which would support the use of a negative binomial distribution to model read counts. This is done by comparing the mean-variance plot to a linear line.
+```{r}
+## Computing mean and variance
+norm.counts <- counts(dds, normalized=TRUE) 
+mean.counts <- rowMeans(norm.counts)
+variance.counts <- apply(norm.counts, MARGIN = 1, var)
+
+## Mean and variance relationship
+mean.var.col <- densCols(x=log2(mean.counts), y=log2(variance.counts)) 
+plot(x=log2(mean.counts), y=log2(variance.counts), pch=16, cex=0.5,
+col=mean.var.col, main="Mean-variance relationship", xlab="Mean log2(normalized counts) per gene", ylab="Variance of log2(normalized counts)", panel.first = grid())
+abline(a=1, b=1, col="red") # a linear line to compare against 
+```
+
+## Estimation of Dispersion 
+- This gives us a feel for what the dispersion parameter is in our model and what the effect of dispersion shrinkage is. 
+```{r}
+plotDispEsts(dds)
+sum(mcols(dds,use.names=TRUE)[,"dispOutlier"])
+```
+
+# Sample clustering
+
+## Quality assurance
+
+### Transform counts
+- Using two transformations in order to stabilize the mean-variance relationship in order to minimize the influence of genes with low read counts when performing unsupervised analysis
+- We use the blind = TRUE parameter to not take into account the experimental design, such as the batch
+```{r}
+dds_log2 <- log2(counts(dds) + 1)
+dds_rlog <- rlog(dds, blind = TRUE)
+dds_vst <- vst(dds, blind = TRUE)
+
+# no transform
+norm.counts <- assay(dds) 
+mean.counts <- rowMeans(norm.counts)
+variance.counts <- apply(norm.counts, MARGIN = 1, var)
+mean.var.col <- densCols(x=log2(mean.counts), y=log2(variance.counts)) 
+plot(x=log2(mean.counts), y=log2(variance.counts), pch=16, cex=0.5,
+col=mean.var.col, main="Non-transformed", xlab="Mean log2(normalized counts) per gene", ylab="Variance of log2(normalized counts)", panel.first = grid())
+
+# log2
+norm.counts <- dds_log2
+mean.counts <- rowMeans(norm.counts)
+variance.counts <- apply(norm.counts, MARGIN = 1, var)
+mean.var.col <- densCols(x=log2(mean.counts), y=log2(variance.counts)) 
+plot(x=log2(mean.counts), y=log2(variance.counts), pch=16, cex=0.5,
+col=mean.var.col, main="log2 transformed", xlab="Mean log2(normalized counts) per gene", ylab="Variance of log2(normalized counts)", panel.first = grid())
+
+# rlog
+norm.counts <- assay(dds_rlog) 
+mean.counts <- rowMeans(norm.counts)
+variance.counts <- apply(norm.counts, MARGIN = 1, var)
+mean.var.col <- densCols(x=log2(mean.counts), y=log2(variance.counts)) 
+plot(x=log2(mean.counts), y=log2(variance.counts), pch=16, cex=0.5,
+col=mean.var.col, main="rlog transformed", xlab="Mean log2(normalized counts) per gene", ylab="Variance of log2(normalized counts)", panel.first = grid())
+
+# vst
+norm.counts <- assay(dds_vst) 
+mean.counts <- rowMeans(norm.counts)
+variance.counts <- apply(norm.counts, MARGIN = 1, var)
+mean.var.col <- densCols(x=log2(mean.counts), y=log2(variance.counts)) 
+plot(x=log2(mean.counts), y=log2(variance.counts), pch=16, cex=0.5,
+col=mean.var.col, main="VST transformed", xlab="Mean log2(normalized counts) per gene", ylab="Variance of log2(normalized counts)", panel.first = grid())
+```
+
+## Sample-to-sample distances
+```{r}
+sampleDists <- dist(t(assay(dds_vst)))
+
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(dds_vst$sample, dds_vst$conditiontime, sep="-")
+colnames(sampleDistMatrix) <- paste(dds_vst$sample, dds_vst$conditiontime, sep="-")
+
+pdf("sample-sample_heatmap_blind.pdf",
+    width = 5,
+    height = 5)
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         col=colorRampPalette( rev(brewer.pal(9, "Blues")) )(255))
+dev.off()
+```
+
+## PCA
+- Large batch effect present which mostly separates batch c from a and b
+```{r}
+p <- pca(assay(dds_vst),
+         metadata = colData(dds_vst),
+         center = TRUE, 
+         scale = TRUE)
+
+pdf("pca_pc_regression_blind.pdf",
+    width = 5,
+    height = 5)
+screeplot(p, 
+          axisLabSize = 18, 
+          titleLabSize = 22,  
+          vline = findElbowPoint(p$variance))
+dev.off()
+
+pdf("eigencor_blind.pdf",
+    width = 5,
+    height = 5)
+eigencorplot(p,
+             components = getComponents(p, seq_len(5)),
+             main = "Principle component correlations",
+             cexMain = 1.5,
+             metavars = c("condition", "batch"),
+             col = viridis(100),
+             colCorval = 'firebrick',
+             fontCorval = 2,
+             cexCorval = 0.5,
+             rotLabX = 45,
+             posColKey = 'top')
+dev.off()
+
+pdf("pca_blind.pdf",
+    width = 5,
+    height = 5)
+biplot(p,
+       colby = "condition", 
+       shape = "batch",
+       legendPosition = 'right',
+       hline = 0, 
+       vline = 0,
+       gridlines.major = FALSE, 
+       gridlines.minor = FALSE,
+       lab = NULL)
+dev.off()
+```
+
+## Accounting for experimental design
+
+### Transform counts
+- Using two transformations in order to stabilize the mean-variance relationship in order to minimize the influence of genes with low read counts when performing unsupervised analysis
+- We use the blind = FALSE parameter to indicate to take into account our design when transforming counts
+```{r}
+dds_log2 <- log2(counts(dds) + 1)
+dds_rlog <- rlog(dds, blind = FALSE)
+dds_vst <- vst(dds, blind = FALSE)
+
+# no transform
+norm.counts <- assay(dds) 
+mean.counts <- rowMeans(norm.counts)
+variance.counts <- apply(norm.counts, MARGIN = 1, var)
+mean.var.col <- densCols(x=log2(mean.counts), y=log2(variance.counts)) 
+plot(x=log2(mean.counts), y=log2(variance.counts), pch=16, cex=0.5,
+col=mean.var.col, main="Non-transformed", xlab="Mean log2(normalized counts) per gene", ylab="Variance of log2(normalized counts)", panel.first = grid())
+
+# log2
+norm.counts <- dds_log2
+mean.counts <- rowMeans(norm.counts)
+variance.counts <- apply(norm.counts, MARGIN = 1, var)
+mean.var.col <- densCols(x=log2(mean.counts), y=log2(variance.counts)) 
+plot(x=log2(mean.counts), y=log2(variance.counts), pch=16, cex=0.5,
+col=mean.var.col, main="log2 transformed", xlab="Mean log2(normalized counts) per gene", ylab="Variance of log2(normalized counts)", panel.first = grid())
+
+# rlog
+norm.counts <- assay(dds_rlog) 
+mean.counts <- rowMeans(norm.counts)
+variance.counts <- apply(norm.counts, MARGIN = 1, var)
+mean.var.col <- densCols(x=log2(mean.counts), y=log2(variance.counts)) 
+plot(x=log2(mean.counts), y=log2(variance.counts), pch=16, cex=0.5,
+col=mean.var.col, main="rlog transformed", xlab="Mean log2(normalized counts) per gene", ylab="Variance of log2(normalized counts)", panel.first = grid())
+
+# vst
+norm.counts <- assay(dds_vst) 
+mean.counts <- rowMeans(norm.counts)
+variance.counts <- apply(norm.counts, MARGIN = 1, var)
+mean.var.col <- densCols(x=log2(mean.counts), y=log2(variance.counts)) 
+plot(x=log2(mean.counts), y=log2(variance.counts), pch=16, cex=0.5,
+col=mean.var.col, main="VST transformed", xlab="Mean log2(normalized counts) per gene", ylab="Variance of log2(normalized counts)", panel.first = grid())
+```
+
+## Sample-to-sample distances
+```{r}
+sampleDists <- dist(t(assay(dds_vst)))
+
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(dds_vst$sample, dds_vst$conditiontime, sep="-")
+colnames(sampleDistMatrix) <- paste(dds_vst$sample, dds_vst$conditiontime, sep="-")
+
+pdf("sample-sample_heatmap_unblind.pdf",
+    width = 5,
+    height = 5)
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         col=colorRampPalette( rev(brewer.pal(9, "Blues")) )(255))
+dev.off()
+```
+
+## PCA
+- Large batch effect present which mostly separates batch c froma and b
+```{r}
+p <- pca(assay(dds_vst),
+         metadata = colData(dds_vst),
+         center = TRUE, 
+         scale = TRUE)
+
+pdf("pca_pc_regression_unblind.pdf",
+    width = 5,
+    height = 5)
+screeplot(p, 
+          axisLabSize = 18, 
+          titleLabSize = 22,  
+          vline = findElbowPoint(p$variance))
+dev.off()
+
+pdf("eigencor_unblind.pdf",
+    width = 5,
+    height = 5)
+eigencorplot(p,
+             components = getComponents(p, seq_len(5)),
+             main = "Principle component correlations",
+             cexMain = 1.5,
+             metavars = c("condition", "batch"),
+             col = viridis(100),
+             colCorval = 'firebrick',
+             fontCorval = 2,
+             cexCorval = 0.5,
+             rotLabX = 45,
+             posColKey = 'top')
+dev.off()
+
+pdf("pca_unblind.pdf",
+    width = 5,
+    height = 5)
+biplot(p,
+       colby = "condition", 
+       shape = "batch",
+       legendPosition = 'right',
+       hline = 0, 
+       vline = 0,
+       gridlines.major = FALSE, 
+       gridlines.minor = FALSE,
+       lab = NULL)
+dev.off()
+```
+
+# Batch correction
+
+## Combat
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/14-bulk-rna-analysis/3-differential-expression/batchqc")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/14-bulk-rna-analysis/3-differential-expression/batchqc")
+
+# assess batch effects
+batchQC(dat = counts(dds, normalized = TRUE), 
+        batch = dds$batch, 
+        condition = dds$condition,
+        report_file="uncorrected.html", report_dir=".", 
+        report_option_binary="111111111",
+        view_report=FALSE, interactive=FALSE, batchqc_output=FALSE)
+
+# correct batch using combat
+modmatrix = model.matrix(~condition, data=colData(dds))
+assays(se.filter, withDimnames=FALSE)[["counts.normalized.correct"]] <- as.data.frame(ComBat(dat = counts(dds, normalized = TRUE), 
+                                                               batch = dds$batch, 
+                                                               mod = modmatrix))
+
+# assess correction
+batchQC(assay(se.filter, "counts.normalized.correct"),
+        batch = dds$batch, 
+        condition = dds$condition,
+        report_file="corrected.html", report_dir=".", 
+        report_option_binary="111111111",
+        view_report=FALSE, interactive=FALSE, batchqc_output=FALSE)
+```
+
+### PCA
+- Seems to have over corrected and things are not completely mitigated but this is okay
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/14-bulk-rna-analysis/3-differential-expression")
+
+# vst transform
+dds_vst_correct <- round(as.matrix(assay(se.filter, "counts.normalized.correct")))
+dds_vst_correct[dds_vst_correct < 0] <- NA
+dds_vst_correct <- varianceStabilizingTransformation(na.omit(dds_vst_correct),
+                                                     blind = TRUE)
+
+p <- pca(dds_vst_correct,
+         metadata = colData(dds_vst),
+         center = TRUE, 
+         scale = TRUE)
+
+pdf("pca_pc_regression_batch_correct.pdf",
+    width = 5,
+    height = 5)
+screeplot(p, 
+          axisLabSize = 18, 
+          titleLabSize = 22,  
+          vline = findElbowPoint(p$variance))
+dev.off()
+
+pdf("eigencor_batch_correct.pdf",
+    width = 5,
+    height = 5)
+eigencorplot(p,
+             components = getComponents(p, seq_len(5)),
+             main = "Principle component correlations",
+             cexMain = 1.5,
+             metavars = c("condition", "batch"),
+             col = viridis(100),
+             colCorval = 'firebrick',
+             fontCorval = 2,
+             cexCorval = 0.5,
+             rotLabX = 45,
+             posColKey = 'top')
+dev.off()
+
+pdf("pca_batch_correct.pdf",
+    width = 5,
+    height = 5)
+biplot(p,
+       colby = "condition", 
+       shape = "batch",
+       legendPosition = 'right',
+       hline = 0, 
+       vline = 0,
+       gridlines.major = FALSE, 
+       gridlines.minor = FALSE,
+       lab = NULL)
+dev.off()
+```
+
+## SVA
+- This did not do a better job than combat
+```{r, eval = FALSE}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/14-bulk-rna-analysis/3-differential-expression/batchqc")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/14-bulk-rna-analysis/3-differential-expression/batchqc")
+
+# correct batch using sva
+mod <- model.matrix(~ condition, data = colData(dds))
+mod0 <- model.matrix(~ 1, data = colData(dds))
+svseq <- sva(as.matrix(counts(dds, normalized = TRUE)), mod, mod0)
+
+# make new design matrix
+sva_design <- cbind(mod, svseq$sv)
+colnames(sva_design) <- c(colnames(mod), paste0("SV", seq_len(ncol(svseq$sv))))
+colData(dds)$SV1 <- svseq$sv
+
+# create new deseq object with sva dewsign
+dds <- DESeqDataSetFromMatrix(assay(se.filter, "counts"), 
+                              colData = colData(dds),
+                              rowData = rowData(dds),
+                              design = ~ 0 + condition + SV1)
+dds$condition <- relevel(dds$condition, ref = "control")
+dds <- DESeq(dds)
+
+# get corrected counts (residuals)
+model_matrix <- model.matrix(design(dds), colData(dds))
+beta_hat <- t(coef(dds))
+fitted_counts <- t(model_matrix %*% beta_hat)
+residuals_counts <- counts(dds, normalized=TRUE) - fitted_counts
+```
+
+### PCA
+- Seems to have over corrected and things are not completely mitigated but this is okay
+```{r, eval = FALSE}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/14-bulk-rna-analysis/3-differential-expression")
+
+# # vst transform
+# dds_vst_correct <- round(as.matrix(assay(se.filter, "counts.normalized.correct")))
+# dds_vst_correct[dds_vst_correct < 0] <- NA
+# dds_vst_correct <- varianceStabilizingTransformation(na.omit(dds_vst_correct),
+#                                                      blind = TRUE)
+
+p <- pca(residuals_counts,
+         metadata = colData(dds),
+         center = TRUE, 
+         scale = TRUE)
+
+pdf("pca_pc_regression_batch_correct.pdf",
+    width = 5,
+    height = 5)
+screeplot(p, 
+          axisLabSize = 18, 
+          titleLabSize = 22,  
+          vline = findElbowPoint(p$variance))
+dev.off()
+
+pdf("eigencor_batch_correct.pdf",
+    width = 5,
+    height = 5)
+eigencorplot(p,
+             components = getComponents(p, seq_len(5)),
+             main = "Principle component correlations",
+             cexMain = 1.5,
+             metavars = c("condition", "batch"),
+             col = viridis(100),
+             colCorval = 'firebrick',
+             fontCorval = 2,
+             cexCorval = 0.5,
+             rotLabX = 45,
+             posColKey = 'top')
+dev.off()
+
+pdf("pca_batch_correct.pdf",
+    width = 5,
+    height = 5)
+biplot(p,
+       colby = "condition", 
+       shape = "batch",
+       legendPosition = 'right',
+       hline = 0, 
+       vline = 0,
+       gridlines.major = FALSE, 
+       gridlines.minor = FALSE,
+       lab = NULL)
+dev.off()
+```
+
+# Differential Expression
+
+## ENU vs Control
+- pvalue histogram still indicates there is some batch effect present
+```{r}
+resultsNames(dds)
+
+enu_vs_control <- results(dds, alpha = 0.05, contrast = c("condition", "enu", "control"))
+
+# p-value distribution histogram
+hist(enu_vs_control$pvalue, main = "P-value distribution", xlab = "P-value", ylab = "Frequency", col = "lavender")
+
+# get a summary of the amount of significantly DEG 
+summary(enu_vs_control, alpha = 0.05)
+
+# ma plot
+plotMA(enu_vs_control)
+
+# get shrunken fold change
+#enu_vs_controllfcShrink <- lfcShrink(dds = dds, res = enu_vs_control, contrast = c("condition", "enu", "control"),  type = "ashr")
+
+# add row data to results and sort
+enu_vs_control <- merge(as.data.frame(enu_vs_control), rowData(dds), by = "row.names")
+enu_vs_control <- enu_vs_control[order(enu_vs_control$padj),]
+
+# save results
+write.csv(enu_vs_control, "enu_vs_control.csv", row.names = FALSE)
+
+# volcano
+enu_vs_control$volcano.label <- ""
+enu_vs_control$volcano.label[1:10] <- enu_vs_control$external_gene_name[1:10]
+
+pdf("enu_vs_control_volcano.pdf",
+    width = 5,
+    height = 5)
+EnhancedVolcano(enu_vs_control,
+                lab = enu_vs_control$external_gene_name,
+                selectLab = enu_vs_control$volcano.label,
+                title = "Control vs ENU",
+                subtitle = NULL,
+                caption = "Thresholds: adjusted p-value = 0.1, log2fc = 1",
+                x = 'log2FoldChange',
+                y = 'pvalue',
+                pointSize = 4.0,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 1,
+                pCutoff = 0.1,
+                pCutoffCol = 'padj',
+                labSize = 3,
+                labCol = 'black',
+                labFace = 'bold',
+                boxedLabels = FALSE,
+                drawConnectors = TRUE,
+                widthConnectors = 1.0,
+                colConnectors = 'black',
+                ylim = c(0, 9),
+                max.overlaps = Inf,
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE)
+dev.off()
+
+# heatmap
+sig.genes <- na.omit(enu_vs_control$Row.names[enu_vs_control$padj < 0.1])
+df <- assay(se.filter, "counts.normalized.correct")
+df <- df[sig.genes,]
+rownames(df) <- rowData(se.filter)[rownames(df), "external_gene_name"]
+
+column_ha = HeatmapAnnotation(condition = dds$condition,
+                              batch = dds$batch,
+                              col = list(condition = c("control" = colors[1], "enu" = colors[2])))
+
+pdf("enu_vs_control_sig_heatmap.pdf",
+    width = 8,
+    height = 5)
+set.seed(1234)
+Heatmap(t(scale(t(df), center = TRUE, scale = TRUE)),
+        top_annotation = column_ha,
+        heatmap_legend_param = list(title = "Z-score"),
+        cluster_rows = TRUE,
+        cluster_columns = TRUE,
+        show_column_names = FALSE,
+        column_split = dds$condition,
+        cluster_column_slices = FALSE,
+        cluster_row_slices = FALSE,
+        row_names_gp = gpar(fontsize = 10))
+dev.off()
+```

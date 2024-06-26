@@ -1,0 +1,3 @@
+It was found that cells from the last 2 batches contain a much higher amount of shared mutations than expected. This is because the experiments with these were done much later and the cell line has probably changed. In addition the germline reference is closer to the batch 1 cells than the later batches.
+
+To mitigate this, mutations shared between all cells from the later batches are considered to be germline and thus removed.

@@ -1,0 +1,262 @@
+"type","sum","mean","median",sample
+"snv coding nonsynonymous",99.64,19.928,22.1,C1_05_24
+"snv coding synonymous",10.51,10.51,10.51,C1_05_24
+"snv noncoding 3prime UTR",44.43,14.81,13.98,C1_05_24
+"snv noncoding downstream gene",143.008,3.97244444444444,2.6765,C1_05_24
+"snv noncoding intergenic",273.983,3.80531944444444,1.88,C1_05_24
+"snv noncoding intron",839.692,4.17757213930348,2.993,C1_05_24
+"snv noncoding nmd",12.984,3.246,2.8305,C1_05_24
+"snv noncoding regulatory",132.291,3.14978571428571,2.058,C1_05_24
+"snv noncoding splice",35.586,17.793,17.793,C1_05_24
+"snv noncoding transcript exon",34.604,4.94342857142857,2.236,C1_05_24
+"snv noncoding transcript intron",207.52,3.29396825396825,2.175,C1_05_24
+"snv noncoding upstream gene",209.994,4.19988,2.9045,C1_05_24
+"snv coding nonsynonymous",44.67,22.335,22.335,C2_05_24
+"snv coding synonymous",12.83,12.83,12.83,C2_05_24
+"snv noncoding 3prime UTR",24.212,8.07066666666667,7.615,C2_05_24
+"snv noncoding 5prime UTR",47.736,15.912,15.82,C2_05_24
+"snv noncoding downstream gene",132.684,4.73871428571429,2.1615,C2_05_24
+"snv noncoding intergenic",217.013,3.44465079365079,1.914,C2_05_24
+"snv noncoding intron",713.586,3.89937704918033,2.796,C2_05_24
+"snv noncoding nmd",13.06,3.265,1.503,C2_05_24
+"snv noncoding regulatory",103.693,3.70332142857143,3.3605,C2_05_24
+"snv noncoding splice",14.364,7.182,7.182,C2_05_24
+"snv noncoding transcript exon",0.202,0.202,0.202,C2_05_24
+"snv noncoding transcript intron",125.933,3.148325,2.275,C2_05_24
+"snv noncoding upstream gene",43.832,2.1916,1.6795,C2_05_24
+"snv coding nonsynonymous",139.08,27.816,26,C3_05_24
+"snv coding synonymous",5.463,5.463,5.463,C3_05_24
+"snv noncoding 3prime UTR",5.318,2.659,2.659,C3_05_24
+"snv noncoding downstream gene",141.378,5.23622222222222,2.582,C3_05_24
+"snv noncoding intergenic",269.142,4.0170447761194,2.608,C3_05_24
+"snv noncoding intron",725.249,3.89918817204301,2.5975,C3_05_24
+"snv noncoding nmd",15.034,2.50566666666667,1.945,C3_05_24
+"snv noncoding regulatory",95.273,3.96970833333333,2.9245,C3_05_24
+"snv noncoding splice",9.773,9.773,9.773,C3_05_24
+"snv noncoding transcript exon",5.782,5.782,5.782,C3_05_24
+"snv noncoding transcript intron",205.532,3.60582456140351,2.714,C3_05_24
+"snv noncoding upstream gene",116.255,3.63296875,2.872,C3_05_24
+"snv coding nonsynonymous",333.375,22.225,23.4,E1_06_14
+"snv coding synonymous",45.176,7.52933333333333,8.7725,E1_06_14
+"snv noncoding 3prime UTR",166.493,6.16640740740741,4.104,E1_06_14
+"snv noncoding 5prime UTR",12.71,12.71,12.71,E1_06_14
+"snv noncoding downstream gene",668.66,3.59494623655914,2.727,E1_06_14
+"snv noncoding intergenic",1102.814,3.48991772151899,2.3,E1_06_14
+"snv noncoding intron",4662.54,4.27363886342805,3.121,E1_06_14
+"snv noncoding nmd",111.142,3.96935714285714,2.919,E1_06_14
+"snv noncoding regulatory",657.568,4.38378666666667,3.6595,E1_06_14
+"snv noncoding splice",20.633,10.3165,10.3165,E1_06_14
+"snv noncoding transcript exon",86.339,6.16707142857143,6.7145,E1_06_14
+"snv noncoding transcript intron",1364.51,4.37342948717949,3.038,E1_06_14
+"snv noncoding upstream gene",943.318,4.55709178743961,3.133,E1_06_14
+"snv coding nonsynonymous",837.883,20.947075,23.1,E1_08_16
+"snv coding synonymous",49.777,7.111,5.68,E1_08_16
+"snv noncoding 3prime UTR",146.1,9.13125,9.0105,E1_08_16
+"snv noncoding 5prime UTR",69.092,8.6365,8.318,E1_08_16
+"snv noncoding downstream gene",1019.855,4.16267346938776,2.646,E1_08_16
+"snv noncoding intergenic",1789.846,3.82445726495726,2.703,E1_08_16
+"snv noncoding intron",5920.862,4.21413665480427,3.032,E1_08_16
+"snv noncoding nmd",163.445,4.086125,2.8295,E1_08_16
+"snv noncoding regulatory",887.615,4.09039170506912,3.391,E1_08_16
+"snv noncoding splice",131.465,14.6072222222222,11.75,E1_08_16
+"snv noncoding transcript exon",134.514,5.60475,6.0235,E1_08_16
+"snv noncoding transcript intron",1885.339,4.54298554216868,3.125,E1_08_16
+"snv noncoding upstream gene",1169.009,4.9534279661017,3.645,E1_08_16
+"snv coding nonsynonymous",859.674,23.2344324324324,23.5,E2_06_14
+"snv coding synonymous",75.518,6.29316666666667,6.292,E2_06_14
+"snv noncoding 3prime UTR",188.875,8.21195652173913,7.701,E2_06_14
+"snv noncoding 5prime UTR",25.216,8.40533333333333,9.747,E2_06_14
+"snv noncoding downstream gene",1059.886,4.06086590038314,3.437,E2_06_14
+"snv noncoding intergenic",1406.894,3.45674201474201,2.326,E2_06_14
+"snv noncoding intron",5272.232,4.16119337016575,3.035,E2_06_14
+"snv noncoding nmd",119.394,3.618,2.5,E2_06_14
+"snv noncoding regulatory",832.332,4.47490322580645,3.3265,E2_06_14
+"snv noncoding splice",96.738,12.09225,7.5235,E2_06_14
+"snv noncoding transcript exon",145.489,6.32560869565217,5.787,E2_06_14
+"snv noncoding transcript intron",1657.106,4.27089175257732,3.011,E2_06_14
+"snv noncoding upstream gene",1049.307,4.33597933884298,3.3725,E2_06_14
+"snv coding nonsynonymous",934.185,20.7596666666667,23.4,E2_08_16
+"snv coding synonymous",71.905,7.1905,8.4115,E2_08_16
+"snv noncoding 3prime UTR",266.345,7.00907894736842,5.4825,E2_08_16
+"snv noncoding 5prime UTR",136.754,11.3961666666667,11.61,E2_08_16
+"snv noncoding downstream gene",1481.973,4.32062099125364,3.114,E2_08_16
+"snv noncoding intergenic",2608.842,3.97689329268293,2.7395,E2_08_16
+"snv noncoding intron",8591.912,4.25131716971796,3.114,E2_08_16
+"snv noncoding nmd",232.764,4.65528,3.473,E2_08_16
+"snv noncoding regulatory",1627.793,4.63758689458689,3.312,E2_08_16
+"snv noncoding splice",98.359,10.9287777777778,11.19,E2_08_16
+"snv noncoding transcript exon",162.228,6.00844444444444,6.579,E2_08_16
+"snv noncoding transcript intron",2458.067,4.2898202443281,3.191,E2_08_16
+"snv noncoding upstream gene",1463.242,4.84517218543046,3.735,E2_08_16
+"snv coding nonsynonymous",1432.739,22.0421384615385,23,E3_06_14
+"snv coding synonymous",235.53,9.05884615384615,9.914,E3_06_14
+"snv noncoding 3prime UTR",382.655,6.17185483870968,4.9285,E3_06_14
+"snv noncoding 5prime UTR",120.739,10.9762727272727,9.724,E3_06_14
+"snv noncoding downstream gene",2620,4.30213464696223,3.072,E3_06_14
+"snv noncoding intergenic",3771.979,3.87664850976362,2.751,E3_06_14
+"snv noncoding intron",14977.677,4.34135565217391,3.2765,E3_06_14
+"snv noncoding nmd",456.053,4.34336190476191,3.622,E3_06_14
+"snv noncoding regulatory",2210.071,4.54747119341564,3.428,E3_06_14
+"snv noncoding splice",291.461,17.1447647058824,13.2,E3_06_14
+"snv noncoding transcript exon",239.849,5.996225,4.5295,E3_06_14
+"snv noncoding transcript intron",4197.203,4.26978942014242,3.131,E3_06_14
+"snv noncoding upstream gene",2949.082,4.67366402535658,3.293,E3_06_14
+"snv coding nonsynonymous",1086.255,19.7500909090909,23.2,E3_08_16
+"snv coding synonymous",139.868,6.35763636363636,8.1505,E3_08_16
+"snv noncoding 3prime UTR",480.138,7.50215625,5.6605,E3_08_16
+"snv noncoding 5prime UTR",195.906,12.244125,12.3,E3_08_16
+"snv noncoding downstream gene",2609.447,4.51461418685121,3.4075,E3_08_16
+"snv noncoding intergenic",3911.299,3.73572015281757,2.592,E3_08_16
+"snv noncoding intron",13540.441,4.37776947946977,3.341,E3_08_16
+"snv noncoding nmd",464.921,4.793,3.956,E3_08_16
+"snv noncoding regulatory",2482.373,4.97469539078156,3.604,E3_08_16
+"snv noncoding splice",109.381,13.672625,11.27,E3_08_16
+"snv noncoding transcript exon",338.165,6.7633,6.175,E3_08_16
+"snv noncoding transcript intron",3629.78,3.98876923076923,2.8765,E3_08_16
+"snv noncoding upstream gene",2321.102,4.42114666666667,3.372,E3_08_16
+"snv coding nonsynonymous",108.55,21.71,23.2,MMEA9_C1
+"snv coding synonymous",11.34,11.34,11.34,MMEA9_C1
+"snv noncoding 3prime UTR",23.552,7.85066666666667,6.733,MMEA9_C1
+"snv noncoding downstream gene",152.011,4.60639393939394,3.192,MMEA9_C1
+"snv noncoding intergenic",277.513,4.47601612903226,3.1135,MMEA9_C1
+"snv noncoding intron",754.534,4.21527374301676,2.86,MMEA9_C1
+"snv noncoding nmd",41.144,6.85733333333333,6.7275,MMEA9_C1
+"snv noncoding regulatory",118.515,4.938125,3.6715,MMEA9_C1
+"snv noncoding splice",35,35,35,MMEA9_C1
+"snv noncoding transcript exon",13.619,3.40475,2.3745,MMEA9_C1
+"snv noncoding transcript intron",232.014,4.07042105263158,2.717,MMEA9_C1
+"snv noncoding upstream gene",76.448,3.64038095238095,2.126,MMEA9_C1
+"snv coding nonsynonymous",140.83,28.166,28.4,MMEA9_C2
+"snv coding synonymous",10.29,10.29,10.29,MMEA9_C2
+"snv noncoding 3prime UTR",23.662,7.88733333333333,8.287,MMEA9_C2
+"snv noncoding 5prime UTR",7.088,7.088,7.088,MMEA9_C2
+"snv noncoding downstream gene",86.5,3.32692307692308,2.9725,MMEA9_C2
+"snv noncoding intergenic",176.509,3.26868518518519,1.908,MMEA9_C2
+"snv noncoding intron",705.944,4.27844848484848,2.945,MMEA9_C2
+"snv noncoding nmd",17.348,2.89133333333333,1.411,MMEA9_C2
+"snv noncoding regulatory",125.539,6.27695,4.9625,MMEA9_C2
+"snv noncoding transcript exon",11.876,5.938,5.938,MMEA9_C2
+"snv noncoding transcript intron",161.209,4.1335641025641,3.019,MMEA9_C2
+"snv noncoding upstream gene",137.988,4.45122580645161,4.434,MMEA9_C2
+"snv coding nonsynonymous",171.9,28.65,24.9,MMEA9_C3
+"snv coding synonymous",10.62,10.62,10.62,MMEA9_C3
+"snv noncoding 3prime UTR",26.279,4.37983333333333,3.2265,MMEA9_C3
+"snv noncoding 5prime UTR",11.82,11.82,11.82,MMEA9_C3
+"snv noncoding downstream gene",73.665,2.5401724137931,1.489,MMEA9_C3
+"snv noncoding intergenic",234.765,3.35378571428571,1.679,MMEA9_C3
+"snv noncoding intron",624.872,4.19377181208054,2.942,MMEA9_C3
+"snv noncoding nmd",17.088,2.136,1.8485,MMEA9_C3
+"snv noncoding regulatory",115.261,3.84203333333333,2.59,MMEA9_C3
+"snv noncoding transcript exon",6.979,3.4895,3.4895,MMEA9_C3
+"snv noncoding transcript intron",232.452,3.6320625,2.0105,MMEA9_C3
+"snv noncoding upstream gene",165.731,4.60363888888889,2.882,MMEA9_C3
+"snv coding nonsynonymous",2064.587,21.5061145833333,23.2,MMEA9_E1
+"snv coding synonymous",314.706,8.06938461538462,9.531,MMEA9_E1
+"snv noncoding 3prime UTR",575.244,7.569,5.7315,MMEA9_E1
+"snv noncoding 5prime UTR",140.816,10.832,8.432,MMEA9_E1
+"snv noncoding downstream gene",3266.647,4.48099725651578,3.372,MMEA9_E1
+"snv noncoding intergenic",4649.177,3.81080081967213,2.644,MMEA9_E1
+"snv noncoding intron",18481.552,4.46630062832286,3.3445,MMEA9_E1
+"snv noncoding nmd",790.338,4.70439285714286,3.225,MMEA9_E1
+"snv noncoding regulatory",2697.071,4.51770686767169,3.242,MMEA9_E1
+"snv noncoding splice",291.793,18.2370625,14.405,MMEA9_E1
+"snv noncoding transcript exon",280.633,5.19690740740741,4.2625,MMEA9_E1
+"snv noncoding transcript intron",4862.556,4.16314726027397,3.013,MMEA9_E1
+"snv noncoding upstream gene",3488.119,4.69464199192463,3.453,MMEA9_E1
+"snv coding nonsynonymous",854.11,23.0840540540541,23.1,MMEA9_E2
+"snv coding synonymous",145.723,9.1076875,10.845,MMEA9_E2
+"snv noncoding 3prime UTR",168.388,6.01385714285714,3.406,MMEA9_E2
+"snv noncoding 5prime UTR",103.931,10.3931,10.73,MMEA9_E2
+"snv noncoding downstream gene",1580.982,4.49142613636364,2.989,MMEA9_E2
+"snv noncoding intergenic",2257.533,3.96754481546573,2.922,MMEA9_E2
+"snv noncoding intron",8445.403,4.42167696335079,3.286,MMEA9_E2
+"snv noncoding nmd",284.802,4.38156923076923,3.468,MMEA9_E2
+"snv noncoding regulatory",1399.892,4.58980983606557,3.314,MMEA9_E2
+"snv noncoding splice",92.54,18.508,18.26,MMEA9_E2
+"snv noncoding transcript exon",134.043,4.96455555555556,4.425,MMEA9_E2
+"snv noncoding transcript intron",2444.374,4.16418057921635,3.083,MMEA9_E2
+"snv noncoding upstream gene",1517.476,4.97533114754098,3.766,MMEA9_E2
+"snv coding nonsynonymous",2636.415,22.925347826087,24.2,MMEA9_E3
+"snv coding synonymous",357.716,8.9429,10.25,MMEA9_E3
+"snv noncoding 3prime UTR",722.566,6.69042592592593,5.1455,MMEA9_E3
+"snv noncoding 5prime UTR",239.69,10.4213043478261,11.68,MMEA9_E3
+"snv noncoding downstream gene",4536.47,4.38306280193237,3.138,MMEA9_E3
+"snv noncoding intergenic",7397.805,3.87725628930818,2.686,MMEA9_E3
+"snv noncoding intron",25946.979,4.42177556237219,3.322,MMEA9_E3
+"snv noncoding nmd",942.048,4.52907692307692,3.3455,MMEA9_E3
+"snv noncoding regulatory",4242.84,4.62687022900763,3.576,MMEA9_E3
+"snv noncoding splice",385.629,17.5285909090909,15.66,MMEA9_E3
+"snv noncoding transcript exon",513.77,5.97406976744186,5.531,MMEA9_E3
+"snv noncoding transcript intron",7055.612,4.3499457459926,3.2925,MMEA9_E3
+"snv noncoding upstream gene",5013.853,4.64245648148148,3.559,MMEA9_E3
+"snv coding nonsynonymous",65.84,21.9466666666667,21.6,MMEB9_C1
+"snv noncoding 3prime UTR",23.36,5.84,4.0745,MMEB9_C1
+"snv noncoding downstream gene",105.688,5.87155555555556,4.201,MMEB9_C1
+"snv noncoding intergenic",228.762,4.3162641509434,3.006,MMEB9_C1
+"snv noncoding intron",448.654,3.67749180327869,2.6655,MMEB9_C1
+"snv noncoding nmd",10.447,3.48233333333333,2.378,MMEB9_C1
+"snv noncoding regulatory",70.153,2.92304166666667,2.249,MMEB9_C1
+"snv noncoding transcript exon",15.328,7.664,7.664,MMEB9_C1
+"snv noncoding transcript intron",192.407,5.20018918918919,4.461,MMEB9_C1
+"snv noncoding upstream gene",71.738,3.98544444444444,2.087,MMEB9_C1
+"snv coding nonsynonymous",91.85,22.9625,23.85,MMEB9_C2
+"snv noncoding 3prime UTR",7.024,2.34133333333333,2.171,MMEB9_C2
+"snv noncoding downstream gene",137.607,5.98291304347826,4.768,MMEB9_C2
+"snv noncoding intergenic",173.194,3.03849122807018,1.832,MMEB9_C2
+"snv noncoding intron",714.151,4.25089880952381,2.7885,MMEB9_C2
+"snv noncoding nmd",37.578,4.69725,2.632,MMEB9_C2
+"snv noncoding regulatory",68.397,4.2748125,2.677,MMEB9_C2
+"snv noncoding transcript exon",18.793,9.3965,9.3965,MMEB9_C2
+"snv noncoding transcript intron",175.859,3.03205172413793,2.578,MMEB9_C2
+"snv noncoding upstream gene",176.664,4.01509090909091,2.796,MMEB9_C2
+"snv coding nonsynonymous",82.89,20.7225,21.85,MMEB9_C3
+"snv noncoding 3prime UTR",0.585,0.585,0.585,MMEB9_C3
+"snv noncoding 5prime UTR",6.696,6.696,6.696,MMEB9_C3
+"snv noncoding downstream gene",55.396,3.69306666666667,1.825,MMEB9_C3
+"snv noncoding intergenic",185.09,3.93808510638298,2.424,MMEB9_C3
+"snv noncoding intron",472.464,3.9372,2.524,MMEB9_C3
+"snv noncoding nmd",15.214,2.53566666666667,2.2445,MMEB9_C3
+"snv noncoding regulatory",97.252,5.40288888888889,4.997,MMEB9_C3
+"snv noncoding transcript exon",26.228,8.74266666666667,8.037,MMEB9_C3
+"snv noncoding transcript intron",125.648,2.79217777777778,1.525,MMEB9_C3
+"snv noncoding upstream gene",70.928,3.37752380952381,2.49,MMEB9_C3
+"snv coding nonsynonymous",2687.299,22.5823445378151,23.8,MMEB9_E1
+"snv coding synonymous",230.078,8.21707142857143,9.479,MMEB9_E1
+"snv noncoding 3prime UTR",636.47,6.49459183673469,5.33,MMEB9_E1
+"snv noncoding 5prime UTR",145.969,12.1640833333333,10.785,MMEB9_E1
+"snv noncoding downstream gene",5345.412,4.46194657762938,3.4235,MMEB9_E1
+"snv noncoding intergenic",8003.65,3.93493117010816,2.723,MMEB9_E1
+"snv noncoding intron",28179.669,4.38867294813892,3.313,MMEB9_E1
+"snv noncoding nmd",913.31,4.7817277486911,3.633,MMEB9_E1
+"snv noncoding regulatory",4393.517,4.54345087900724,3.26,MMEB9_E1
+"snv noncoding splice",312.387,14.8755714285714,13.61,MMEB9_E1
+"snv noncoding transcript exon",545.131,6.33873255813953,5.732,MMEB9_E1
+"snv noncoding transcript intron",8142.412,4.21449896480331,3.175,MMEB9_E1
+"snv noncoding upstream gene",5613.023,4.95412444836717,3.63,MMEB9_E1
+"undefined",29.4,29.4,29.4,MMEB9_E1
+"snv coding nonsynonymous",896.795,20.8556976744186,23.1,MMEB9_E2
+"snv coding synonymous",174.32,7.26333333333333,8.857,MMEB9_E2
+"snv noncoding 3prime UTR",287.729,5.53325,4.319,MMEB9_E2
+"snv noncoding 5prime UTR",83.241,10.405125,9.231,MMEB9_E2
+"snv noncoding downstream gene",2167.538,4.31780478087649,3.346,MMEB9_E2
+"snv noncoding intergenic",3845.121,3.61383552631579,2.5625,MMEB9_E2
+"snv noncoding intron",12347.614,4.33553862359551,3.1825,MMEB9_E2
+"snv noncoding nmd",539.732,4.99751851851852,4.0325,MMEB9_E2
+"snv noncoding regulatory",1808.968,4.57966582278481,3.213,MMEB9_E2
+"snv noncoding splice",141.506,14.1506,11.88,MMEB9_E2
+"snv noncoding transcript exon",180.02,6.20758620689655,5.004,MMEB9_E2
+"snv noncoding transcript intron",3802.418,4.19230209481808,2.905,MMEB9_E2
+"snv noncoding upstream gene",2309.408,4.80126403326403,3.867,MMEB9_E2
+"snv coding nonsynonymous",1532.802,21.5887605633803,23.4,MMEB9_E3
+"snv coding synonymous",201.667,8.40279166666667,8.6675,MMEB9_E3
+"snv noncoding 3prime UTR",433.879,6.88696825396825,5.341,MMEB9_E3
+"snv noncoding 5prime UTR",195.169,12.1980625,12.59,MMEB9_E3
+"snv noncoding downstream gene",2833.462,4.41349221183801,3.243,MMEB9_E3
+"snv noncoding intergenic",4060.36,3.74226728110599,2.526,MMEB9_E3
+"snv noncoding intron",15692.521,4.43291553672316,3.3865,MMEB9_E3
+"snv noncoding nmd",474.937,4.70234653465346,3.303,MMEB9_E3
+"snv noncoding regulatory",2597.987,4.67263848920863,3.65,MMEB9_E3
+"snv noncoding splice",171.97,14.3308333333333,11.46,MMEB9_E3
+"snv noncoding transcript exon",362.216,6.96569230769231,5.984,MMEB9_E3
+"snv noncoding transcript intron",4158.532,4.1337296222664,3.063,MMEB9_E3
+"snv noncoding upstream gene",3093.242,4.85595290423862,3.804,MMEB9_E3

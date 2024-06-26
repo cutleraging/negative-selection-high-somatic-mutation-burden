@@ -1,0 +1,459 @@
+---
+title: "4-mutation-burden - multiple ENU"
+output: html_document
+date: "2023-10-09"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preparation
+
+## Load libraries
+```{r}
+library(ggplot2)
+library(ggpubr)
+library(rstatix)
+library(patchwork)
+library(dplyr)
+library(viridis)
+library(emmeans)
+library(scales)
+library(reshape2)
+```
+
+## Functions
+```{r}
+theme_Publication <- function(base_size=16, base_family="helvetica") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family = "")
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               #legend.key.size= unit(0.2, "cm"),
+               legend.margin = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+          ))
+      
+}
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+```
+
+## Load sample table
+- using filtered sample table where shared mutations were removed
+```{r}
+sample_table <- read.table("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/1-data/sample_table_filtered.txt", header = TRUE, sep = "\t")
+```
+
+# Mutation burden analysis
+
+## SNV
+
+## Observed
+```{r}
+setwd("/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/4-mutation-burden")
+
+stats_summary <- sample_table %>%
+  group_by(condition, cycle) %>%
+  summarise(mean = mean(SNV_obs, na.rm = TRUE),
+            sd = sd(SNV_obs, na.rm = TRUE))
+
+pdf("SNV_observed_mutations_bar.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = SNV_obs, fill = factor(cycle))) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(data = stats_summary, aes(x = condition, fill = factor(cycle), y = mean, ymin = mean - sd, ymax = mean + sd),
+                    width = 0.5, position = position_dodge(0.9)) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Condition", y = "Observed SNVs Per Cell", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication(base_size = 16) + 
+    scale_y_continuous(breaks = c(seq(0, 20000, by = 2000)),
+                       labels = label_comma()) +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+```
+
+## Estimated
+```{r}
+setwd("/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/4-mutation-burden")
+
+# calculate estimated mutations
+hg19_size <- 3036303846
+sample_table$SNV_est <- sample_table$SNV_obs / sample_table$Cov / sample_table$Sen_SNV * hg19_size
+
+# stats
+summary(aov(SNV_est ~ condition * factor(cycle), data = sample_table))
+lm_result <- lm(SNV_est ~ condition * factor(cycle), data = sample_table)
+emm_interaction <- emmeans(lm_result, ~ condition * factor(cycle))
+pairwise_results <- pairs(emm_interaction)
+adjusted_results <- na.omit(summary(pairwise_results, adjust = "tukey")) %>% add_significance("p.value")
+write.csv(adjusted_results, "SNV_estimated_mutation_stats.csv")
+
+# SNV.test <- sample_table %>%
+#   t_test(SNV_est ~ condition) %>%
+#   adjust_pvalue(method = "fdr") %>%
+#   add_significance("p.adj")
+# write.csv(SNV.test, "SNV_estimated_mutation_stats.csv")
+
+# box plots
+pdf("SNV_estimated_mutations_box.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = SNV_est, fill = factor(cycle))) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Condition", y = "Observed SNVs Per Cell", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    scale_y_continuous(breaks = seq(0, 60000, by = 10000),
+                       labels = function(x) format(x, scientific = TRUE)) +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+
+pdf("SNV_estimated_mutations_log10_box.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = SNV_est, fill = factor(cycle))) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    scale_y_log10(breaks = c(1000, 2500, 5000, 10000, 25000, 50000),
+                  labels = label_comma()) +
+    labs(x = "Condition", y = "Observed SNVs Per Cell", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+      theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+
+# bar plots
+stats_summary <- sample_table %>%
+  group_by(condition, cycle) %>%
+  summarise(mean = mean(SNV_est, na.rm = TRUE),
+            sd = sd(SNV_est, na.rm = TRUE))
+
+pdf("SNV_estimated_mutations_bar.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = SNV_est, fill = factor(cycle))) +
+  geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+  geom_errorbar(data = stats_summary, aes(x = condition, fill = factor(cycle), y = mean, ymin = mean - sd, ymax = mean + sd),
+                  width = 0.5, position = position_dodge(0.9)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+  guides(fill = guide_legend(override.aes = list(shape = NA))) +
+  labs(x = "Condition", y = "Estimated SNVs Per Cell", fill = "Cycle") +
+  scale_fill_viridis(discrete = TRUE, end = 0.8) +
+  theme_Publication(base_size = 16) +
+  scale_y_continuous(breaks = c(2500, seq(0, 60000, by = 10000)),
+                     labels = label_comma(),
+                     limits = c(0, 70000)) +
+    theme(legend.justification = c("center","top"),
+        legend.position = "top") +
+  scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+
+pdf("SNV_estimated_mutations_log10_bar.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = SNV_est, fill = factor(cycle))) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(data = stats_summary, aes(x = condition, fill = factor(cycle), y = mean, ymin = mean - sd, ymax = mean + sd),
+                    width = 0.5, position = position_dodge(0.9)) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Condition", y = "Observed SNVs Per Cell", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication(base_size = 16) + 
+    scale_y_log10() +
+        theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+```
+
+#### Model fit
+- Linear is best
+```{r}
+sample_table_subset <- subset(sample_table, condition_cycle != "control_9")
+
+# Linear Model
+linear_model <- lm(sample_table_subset$SNV_est ~ sample_table_subset$cycle)
+
+# Logarithmic Model
+# Requires non-zero, positive x values
+log_model <- lm(sample_table_subset$SNV_est ~ log(sample_table_subset$cycle))
+
+# Exponential Model
+# Transform the response variable to linearize the model
+exp_model <- lm(log(sample_table_subset$SNV_est) ~ sample_table_subset$cycle)
+
+# Summary of models for comparison
+summary(linear_model)
+summary(log_model)
+summary(exp_model)
+
+# Compare using AIC or BIC
+AIC(linear_model, log_model, exp_model)
+BIC(linear_model, log_model, exp_model)
+
+# Predict values using the models
+x_vals <- seq(min(sample_table_subset$cycle), max(sample_table_subset$cycle), length.out = 15)
+linear_preds <- predict(linear_model, newdata = data.frame(sample_table_subset.cycle = x_vals))
+log_preds <- predict(log_model, newdata = data.frame(sample_table_subset.cycle = x_vals))
+exp_preds <- exp(predict(exp_model, newdata = data.frame(sample_table_subset.cycle = x_vals)))
+
+# Combine into a data frame for ggplot
+plot_data <- data.frame(x = x_vals, 
+                        Linear = linear_preds, 
+                        Logarithmic = log_preds, 
+                        Exponential = exp_preds)
+
+plot_data_melted <- melt(plot_data, id.vars = 'x')
+
+# Plot
+pdf("SNV_estimated_mutations_best_fit.pdf",
+    width = 4,
+    height = 5)
+ggplot(mapping = aes(x = x, y = y)) +
+  geom_point(data = sample_table_subset, mapping = aes(x = sample_table_subset$cycle, y = sample_table_subset$SNV_est)) +  # original data points
+  geom_line(data = plot_data_melted, aes(x = x, y = value, color = variable), size = 1) +
+  labs(title = "Model Comparisons", x = "X", y = "Y", color = "Models") +
+  theme_minimal()
+dev.off()
+
+# plot linear model
+stats_summary <- subset(sample_table, condition_cycle != "control_9") %>%
+  group_by(cycle) %>%
+  summarise(mean = mean(SNV_est, na.rm = TRUE),
+            sd = sd(SNV_est, na.rm = TRUE))
+
+pdf("SNV_estimated_mutations_linear.pdf",
+    width = 4,
+    height = 5)
+ggplot(subset(sample_table, condition_cycle != "control_9"), aes(x = cycle, y = SNV_est)) +
+  geom_smooth(method='lm') +
+  geom_errorbar(data = stats_summary, aes(x = cycle, y = mean, ymin = mean - sd, ymax = mean + sd),
+                  width = 0.5, position = position_dodge(0.9)) +
+  geom_jitter(size = 2, alpha = 0.5, width = 0.2) +
+  stat_cor() +
+  labs(x = "Treatment Cycle", y = "Estimated SNVs Per Cell") +
+  theme_Publication(base_size = 16) +
+  scale_x_continuous(breaks = c(1, 3, 6, 9)) +
+  scale_y_continuous(breaks = c(2500, seq(0, 60000, by = 10000)),
+                     labels = label_comma())
+dev.off()
+```
+
+## INDEL
+
+### Observed
+```{r}
+stats_summary <- sample_table %>%
+  group_by(condition, cycle) %>%
+  summarise(mean = mean(INDEL_obs, na.rm = TRUE),
+            sd = sd(INDEL_obs, na.rm = TRUE))
+
+pdf("INDEL_observed_mutations_bar.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = INDEL_obs, fill = factor(cycle))) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(data = stats_summary, aes(x = condition, fill = factor(cycle), y = mean, ymin = mean - sd, ymax = mean + sd),
+                    width = 0.5, position = position_dodge(0.9)) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Condition", y = "Observed INDELs Per Cell", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication(base_size = 16) + 
+    ylim(0,50) +
+      theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+```
+
+### Estimated
+```{r}
+setwd("/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/4-mutation-burden")
+
+# calculate estimated mutations
+hg19_size <- 3036303846
+sample_table$INDEL_est <- sample_table$INDEL_obs / sample_table$Cov / sample_table$Sen_INDEL * hg19_size
+
+# stats
+summary(aov(INDEL_est ~ condition * factor(cycle), data = sample_table))
+lm_result <- lm(INDEL_est ~ condition * factor(cycle), data = sample_table)
+emm_interaction <- emmeans(lm_result, ~ condition * factor(cycle))
+pairwise_results <- pairs(emm_interaction)
+adjusted_results <- na.omit(summary(pairwise_results, adjust = "tukey")) %>% add_significance("p.value")
+write.csv(adjusted_results, "INDEL_estimated_mutation_stats.csv")
+
+# INDEL.test <- sample_table %>%
+#   t_test(INDEL_est ~ condition) %>%
+#   adjust_pvalue(method = "fdr") %>%
+#   add_significance("p.adj")
+# write.csv(INDEL.test, "INDEL_estimated_mutation_stats.csv")
+
+# box plots
+pdf("INDEL_estimated_mutations_box.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = INDEL_est, fill = factor(cycle))) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Condition", y = "Observed INDELs Per Cell", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+
+# bar plots
+stats_summary <- sample_table %>%
+  group_by(condition, cycle) %>%
+  summarise(mean = mean(INDEL_est, na.rm = TRUE),
+            sd = sd(INDEL_est, na.rm = TRUE))
+
+pdf("INDEL_estimated_mutations_bar.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = INDEL_est, fill = factor(cycle))) +
+  geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+  geom_errorbar(data = stats_summary, aes(x = condition, fill = factor(cycle), y = mean, ymin = mean - sd, ymax = mean + sd),
+                  width = 0.5, position = position_dodge(0.9)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+  guides(fill = guide_legend(override.aes = list(shape = NA))) +
+  labs(x = "Condition", y = "Estimated INDELs Per Cell", fill = "Cycle") +
+  scale_fill_viridis(discrete = TRUE, end = 0.8) +
+  theme_Publication(base_size = 16) +
+    theme(legend.justification = c("center","top"),
+        legend.position = "top") +
+  scale_x_discrete(labels = c("Control", "ENU")) +
+    scale_y_continuous(breaks = seq(0, 300, by = 50))
+dev.off()
+```
+
+## INDEL-SNV ratio
+
+### Observed
+```{r}
+setwd("/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/4-mutation-burden")
+
+# observed
+sample_table$INDEL_SNV_ratio <- sample_table$INDEL_obs / sample_table$SNV_obs
+
+# bar plot
+stats_summary <- sample_table %>%
+  group_by(cycle, condition) %>%
+  summarise(mean = mean(INDEL_SNV_ratio, na.rm = TRUE),
+            sd = sd(INDEL_SNV_ratio, na.rm = TRUE))
+
+pdf("INDEL_SNV_ratio_observed_mutation_bar.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = INDEL_SNV_ratio, fill = factor(cycle))) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(data = stats_summary, aes(x = condition, fill = factor(cycle), y = mean, ymin = mean - sd, ymax = mean + sd),
+                    width = 0.5, position = position_dodge(0.9)) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    scale_y_continuous(breaks=seq(0,0.05,0.01), limits = c(0, 0.05)) +
+    labs(x = "Condition", y = "Observed INDEL/SNV ratio Per Cell", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication(base_size = 16) +
+      theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+```
+
+### Estimated
+```{r}
+# estimated
+sample_table$INDEL_SNV_est_ratio <- sample_table$INDEL_est / sample_table$SNV_est
+
+# stats
+summary(aov(INDEL_SNV_est_ratio ~ condition * factor(cycle), data = sample_table))
+lm_result <- lm(INDEL_SNV_est_ratio ~ condition * factor(cycle), data = sample_table)
+emm_interaction <- emmeans(lm_result, ~ condition * factor(cycle))
+pairwise_results <- pairs(emm_interaction)
+adjusted_results <- na.omit(summary(pairwise_results, adjust = "tukey")) %>% add_significance("p.value")
+write.csv(adjusted_results, "INDEL_SNV_ratio_estimated_mutation_stats.csv")
+
+# bar plot
+stats_summary <- sample_table %>%
+  group_by(condition, cycle) %>%
+  summarise(mean = mean(INDEL_SNV_est_ratio, na.rm = TRUE),
+            sd = sd(INDEL_SNV_est_ratio, na.rm = TRUE))
+
+pdf("INDEL_SNV_ratio_estimated_mutation_bar.pdf",
+    width = 4,
+    height = 5)
+ggplot(sample_table, aes(x = condition, y = INDEL_SNV_est_ratio, fill = factor(cycle))) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(data = stats_summary, aes(x = condition, fill = factor(cycle), y = mean, ymin = mean - sd, ymax = mean + sd),
+                    width = 0.5, position = position_dodge(0.9)) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Condition", y = "Estimated INDEL/SNV ratio Per Cell", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication(base_size = 16) +
+      theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    scale_y_continuous(breaks = seq(0, 0.1, by = 0.01))
+dev.off()
+```
+
+# Output updated sample table
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/1-data")
+
+write.table(sample_table, "sample_table_filtered.txt", 
+            row.names = FALSE,  
+            quote = FALSE,
+            sep = "\t")
+```

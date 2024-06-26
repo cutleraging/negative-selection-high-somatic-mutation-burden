@@ -1,0 +1,11 @@
+"","condition","cycle","variant_type","mean","sd"
+"1","control","1","synonymous",1,0
+"2","control","1","nonsynonymous",4,1.73205080756888
+"3","control","9","synonymous",0.5,0.547722557505166
+"4","control","9","nonsynonymous",4.5,1.04880884817015
+"5","enu","3","synonymous",7.66666666666667,2.88675134594813
+"6","enu","3","nonsynonymous",30.6666666666667,13.6503968196288
+"7","enu","6","synonymous",18.3333333333333,8.14452781524708
+"8","enu","6","nonsynonymous",55,10
+"9","enu","9","synonymous",27.6666666666667,9.114091653405
+"10","enu","9","nonsynonymous",80,35.2817233139199

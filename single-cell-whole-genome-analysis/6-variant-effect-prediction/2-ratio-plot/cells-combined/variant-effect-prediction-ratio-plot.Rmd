@@ -1,0 +1,3164 @@
+---
+title: "VEP analysis"
+output: html_document
+date: "2023-10-12"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preparation
+
+## Load libraries
+```{r}
+library(ggplot2)
+library(stringr)
+library(dplyr)
+library(ggpubr)
+library(purrr)
+library(rstatix)
+library(viridis)
+library(tidyr)
+library(emmeans)
+```
+
+## Functions
+```{r}
+# combine the permutation pvalues from each sample
+# using fishers combined test statistic
+combine_pvalues_fisher <- function(p_values) {
+  
+    chi_sq_stat = -2 * sum(log(p_values), na.rm = TRUE)
+    degrees_of_freedom = 2 * length(p_values)
+    p_combined = pchisq(chi_sq_stat, degrees_of_freedom, lower.tail = FALSE)
+    return(p_combined)
+    
+}
+
+consequences_combined_significance <- function(ratios, group_vars, group_levels) {
+  
+  res <- ratios %>%
+    subset(variant_type %in% group_levels) %>%
+    mutate(pvalue = if_else(pvalue == 0, 0.0001, pvalue)) %>% # give values to very low pvalues that are 0 
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(p_value = combine_pvalues_fisher(pvalue)) %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"),
+           significant_p_adjusted = case_when(
+                            p_adjusted <= 0.0001 ~ '****',
+                            p_adjusted <= 0.001 ~ '***',
+                            p_adjusted <= 0.01 ~ '**',
+                            p_adjusted <= 0.05 ~ '*',
+                            TRUE ~ NA_character_)) %>%
+    ungroup()
+  
+  return(res)
+}
+
+consequences_combined_significance_CADD <- function(ratios, group_vars, group_levels) {
+  
+  res <- ratios %>%
+    mutate(pvalue = if_else(pvalue == 0, 0.001, pvalue)) %>% # give values to very low pvalues that are 0 
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(p_value = combine_pvalues_fisher(pvalue)) %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"),
+           significant_p_adjusted = case_when(
+                            p_adjusted <= 0.0001 ~ '****',
+                            p_adjusted <= 0.001 ~ '***',
+                            p_adjusted <= 0.01 ~ '**',
+                            p_adjusted <= 0.05 ~ '*',
+                            TRUE ~ NA_character_)) %>%
+    ungroup()
+  
+  return(res)
+}
+
+consequences_group_significance <- function(ratios, group_vars, group_levels) {
+  
+  res <- ratios %>%
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(p_value = suppressWarnings(wilcox.test(log2fc, mu = 0)$p.value)) %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"),
+           significant_p_adjusted = case_when(
+                            p_adjusted <= 0.0001 ~ '****',
+                            p_adjusted <= 0.001 ~ '***',
+                            p_adjusted <= 0.01 ~ '**',
+                            p_adjusted <= 0.05 ~ '*',
+                            TRUE ~ NA_character_)) %>%
+    ungroup()
+
+  
+  return(res)
+}
+
+score_combined_significance <- function(ratios, group_vars, group_levels) {
+  
+  res <- ratios %>%
+    mutate(pvalue = if_else(pvalue == 0, 0.001, pvalue)) %>% # give values to very low pvalues that are 0 
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(p_value = combine_pvalues_fisher(pvalue)) %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"),
+           significant_p_adjusted = case_when(
+                            p_adjusted <= 0.0001 ~ '****',
+                            p_adjusted <= 0.001 ~ '***',
+                            p_adjusted <= 0.01 ~ '**',
+                            p_adjusted <= 0.05 ~ '*',
+                            TRUE ~ NA_character_)) %>%
+    ungroup()
+  
+  return(res)
+}
+
+# function to calculate significance between condition groups
+group_significance <- function(combined_regions, group_vars, condition, group_levels){
+  formula <- as.formula(paste("log2fc ~", condition))
+  
+  results <- combined_regions %>%
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(
+      p_value = wilcox.test(formula = formula, 
+                            data = cur_data(),
+                            exact = FALSE)$p.value
+    ) %>%
+    ungroup() %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"),
+           significant_p_adjusted = case_when(
+                            p_adjusted <= 0.0001 ~ '****',
+                            p_adjusted <= 0.001 ~ '***',
+                            p_adjusted <= 0.01 ~ '**',
+                            p_adjusted <= 0.05 ~ '*',
+                            TRUE ~ NA_character_)
+    )
+
+  # Order by region
+  results$variant_type <- factor(results$variant_type, levels = group_levels)
+  
+  return(results)
+}
+
+ratio_significance_summarize <- function(ratios, group_vars, group_levels) {
+  
+  res <- ratios %>%
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(p_value = combine_pvalues_fisher(pvalue)) %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"),
+           significant_p_adjusted = case_when(
+                            p_adjusted <= 0.0001 ~ '****',
+                            p_adjusted <= 0.001 ~ '***',
+                            p_adjusted <= 0.01 ~ '**',
+                            p_adjusted <= 0.05 ~ '*',
+                            TRUE ~ NA_character_)) %>%
+    ungroup()
+  
+  # Order by region
+  res$type <- factor(res$type, levels = group_levels)
+  
+  return(res)
+}
+
+group_significance_summarize <- function(combined_regions, group_vars, condition, group_levels){
+  formula <- as.formula(paste("log2fc ~", condition))
+  
+  results <- combined_regions %>%
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(
+      p_value = wilcox.test(formula = formula, 
+                            data = cur_data(),
+                            exact = FALSE)$p.value
+    ) %>%
+    ungroup() %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"),
+           significant_p_adjusted = case_when(
+                            p_adjusted <= 0.0001 ~ '****',
+                            p_adjusted <= 0.001 ~ '***',
+                            p_adjusted <= 0.01 ~ '**',
+                            p_adjusted <= 0.05 ~ '*',
+                            TRUE ~ NA_character_)
+    )
+
+  # Order by region
+  results$type <- factor(results$type, levels = group_levels)
+  
+  return(results)
+}
+
+calculate_dnds <- function(df, variant_types, sample_table) {
+  variant_type2 <- "synonymous variant" # Fixed variant type2
+  
+  # Initialize an empty data frame to store results
+  all_variant_ratios <- data.frame()
+  
+  for (variant_type1 in variant_types) {
+    # Filter and calculate dnds for observed mutations
+    variant.obs <- df %>%
+      filter(variant_type %in% c(variant_type1, variant_type2)) %>%
+      select(sample, variant_type, obs.mut) %>%
+      mutate(obs.mut = obs.mut + 1) %>%
+      spread(key = variant_type, value = obs.mut, fill = 1) %>%  # fill = 1 to handle cases with 0 count
+      mutate(dnds = !!sym(variant_type1) / !!sym(variant_type2),
+             variant_type = variant_type1) %>%
+      select(sample, dnds, variant_type)
+    
+    # Combine results of this variant type with the results of previous ones
+    all_variant_ratios <- rbind(all_variant_ratios, variant.obs)
+  }
+      
+  # Combine with meta data
+  all_variant_ratios <- merge(all_variant_ratios, sample_table, by = "sample")
+  
+  return(all_variant_ratios)
+}
+
+calculate_dnds_ratio <- function(df, variant_types, sample_table) {
+  variant_type2 <- "synonymous variant" # Fixed variant type2
+  
+  # Initialize an empty data frame to store results
+  all_variant_ratios <- data.frame()
+  
+  for (variant_type1 in variant_types) {
+    # Filter and calculate dnds for observed mutations
+    variant.obs <- df %>%
+      filter(variant_type %in% c(variant_type1, variant_type2)) %>%
+      select(sample, variant_type, obs.mut) %>%
+      mutate(obs.mut = obs.mut + 1) %>%
+      spread(key = variant_type, value = obs.mut, fill = 1) %>%  # fill = 1 to handle cases with 0 count
+      mutate(dnds.obs = log2(!!sym(variant_type1)/ !!sym(variant_type2)))
+    
+    # Filter and calculate dnds for simulated mutations
+    variant.sim <- df %>%
+      filter(variant_type %in% c(variant_type1, variant_type2)) %>%
+      select(sample, variant_type, sim.mut) %>%
+      mutate(sim.mut = sim.mut + 1) %>%
+      spread(key = variant_type, value = sim.mut, fill = 1) %>%
+      mutate(dnds.sim = log2(!!sym(variant_type1)/ !!sym(variant_type2)))
+    
+    # Calculate the observed/simulated ratio
+    variant.ratio <- variant.obs
+    colnames(variant.ratio)[2] <- "nonsynonymous variant"
+    variant.ratio$dnds.sim <- variant.sim$dnds.sim
+    variant.ratio$dnds.ratio <- variant.ratio$dnds.obs - variant.ratio$dnds.sim
+    variant.ratio$variant_type <- variant_type1  # Add column to indicate the current variant type
+    
+    
+    # Combine results of this variant type with the results of previous ones
+    all_variant_ratios <- rbind(all_variant_ratios, variant.ratio)
+  }
+      
+  # Combine with meta data
+  all_variant_ratios <- merge(all_variant_ratios, sample_table, by = "sample")
+  
+  return(all_variant_ratios)
+}
+
+ratio_significance_dnds <- function(combined_regions, group_vars, group_levels, variable){
+  
+  results <- combined_regions %>%
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(
+      p_value = wilcox.test(x = !!sym(variable), mu = 0, exact = FALSE)$p.value
+    ) %>%
+    ungroup() %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"),
+           significant_p_adjusted = case_when(
+             p_adjusted <= 0.0001 ~ '****',
+             p_adjusted <= 0.001 ~ '***',
+             p_adjusted <= 0.01 ~ '**',
+             p_adjusted <= 0.05 ~ '*',
+             TRUE ~ NA_character_)
+    )
+
+  # Order by region
+  results$variant_type <- factor(results$variant_type, levels = group_levels)
+  
+  return(results)
+}
+
+group_significance_dnds <- function(combined_regions, group_vars, condition, group_levels, variable){
+  formula <- as.formula(paste(variable, " ~", condition))
+  
+  results <- combined_regions %>%
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(
+      p_value = wilcox.test(formula = formula, 
+                            data = cur_data(),
+                            exact = FALSE)$p.value
+    ) %>%
+    ungroup() %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"),
+           significant_p_adjusted = case_when(
+                            p_adjusted <= 0.0001 ~ '****',
+                            p_adjusted <= 0.001 ~ '***',
+                            p_adjusted <= 0.01 ~ '**',
+                            p_adjusted <= 0.05 ~ '*',
+                            TRUE ~ NA_character_)
+    )
+
+  # Order by region
+  results$variant_type <- factor(results$variant_type, levels = group_levels)
+  
+  return(results)
+}
+
+calculate_stat_summary <- function(observed, group_vars, mut_var){
+  results <- observed %>%
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(mean = mean(!!sym(mut_var), na.rm = TRUE),
+              sd = sd(!!sym(mut_var), na.rm = TRUE))
+}
+
+theme_Publication <- function(base_size=16, base_family="helvetica") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family = "")
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               #legend.key.size= unit(0.2, "cm"),
+               legend.margin = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+          ))
+      
+}
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_fill_Publication_2 <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#7fc97f","#ef3b2c","#386cb0","#fdb462","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+wrap_labels <- function(labels, width = 5) {
+  wrapped_labels <- str_wrap(labels, width)
+  names(wrapped_labels) <- names(labels)
+  return(wrapped_labels)
+}
+```
+
+## Load sample table
+```{r}
+sample_table <- read.table("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/1-data/sample_table_filtered.txt", header = TRUE, sep = "\t")
+```
+
+## Load ratio results
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/5-variant-effect-prediction/1-calculate-ratio/cells-combined")
+
+# consequences
+consequences.main.mean <- read.csv("consequence_main_oe_mean.csv", header = TRUE, row.names = NULL)
+consequences.syn_non.mean <- read.csv("consequence_synonymous_nonsynonymous_oe_mean.csv", header = TRUE, row.names = NULL)
+```
+
+# Consequences
+
+## Number of different types of variants
+```{r}
+print(consequences.main.mean %>%
+  group_by(variant_type) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+print(consequences.syn_non.mean %>%
+  group_by(variant_type) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+```
+
+## Get number of SNV vs INDEL variants
+```{r}
+consequences.main.mean <- consequences.main.mean %>%
+  mutate(mutation_type = case_when(
+    variant_type == "inframe insertion" ~ "INDEL",
+    variant_type == "inframe deletion" ~ "INDEL",
+    variant_type == "frameshift variant" ~ "INDEL",
+    .default = "SNV"
+    )
+  )
+
+consequences.main.mean %>%
+  group_by(mutation_type) %>%
+  summarize(total = sum(obs.mut))
+```
+
+## Get number of coding vs non-coding
+```{r}
+consequences.main.mean <- consequences.main.mean %>%
+  mutate(group = case_when(
+    variant_type == "synonymous variant" ~ "coding",
+    variant_type == "missense variant" ~ "coding",
+    variant_type == "start lost" ~ "coding",
+    variant_type == "stop gained" ~ "coding",
+    variant_type == "stop lost" ~ "coding",
+    variant_type == "splice acceptor variant" ~ "coding",
+    variant_type == "splice donor variant" ~ "coding",
+    variant_type == "inframe insertion" ~ "coding",
+    variant_type == "inframe deletion" ~ "coding",
+    variant_type == "frameshift variant" ~ "coding",
+    variant_type == "coding sequence variant / NMD transcript variant" ~ "coding",
+    variant_type == "synonymous variant / NMD transcript variant" ~ "coding",
+    .default = "non-coding"
+    )
+  )
+
+consequences.main.mean %>%
+  group_by(group) %>%
+  summarize(total = sum(obs.mut))
+```
+
+### All Variants
+- Using mean as this allows the estimates to be more accurate
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences")
+
+# plot mean
+consequences.main.mean$cycle <- factor(consequences.main.mean$cycle, 
+                                       levels = c(1, 3, 6, 9))
+consequences.main.mean$condition <- factor(consequences.main.mean$condition, 
+                                           levels = c("control", "enu"))
+
+pdf("consequences_cycle_main_mean.pdf",
+    width = 30,
+    height = 30)
+ggplot(consequences.main.mean, aes(x = condition, y = log2fc, color = cycle)) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_pointrange(aes(ymin=log2fc - log2fc.sd, ymax=log2fc + log2fc.sd),
+                    position=position_dodge(width = 0.7),
+                    fatten = 12) +
+    guides(fill = guide_legend(override.aes = list(shape = 16)), 
+           color = guide_legend(override.aes = list(shape = 16))) +
+    labs(x = "Consequence", y = "Log2(observed/expected)\nVariants Per Cell") +
+    facet_wrap(.~variant_type, scales = "free", labeller = labeller(variant_type = label_wrap_gen(30))) + 
+    scale_color_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top",
+          axis.text.x = element_text(size = 12))
+dev.off()
+
+# plot median
+# consequences.main.median$cycle <- factor(consequences.main.median$cycle, 
+#                                        levels = c(1, 3, 6, 9))
+# consequences.main.median$condition <- factor(consequences.main.median$condition, 
+#                                            levels = c("control", "enu"))
+# 
+# pdf("consequences_cycle_main_median.pdf",
+#     width = 30,
+#     height = 30)
+# ggplot(consequences.main.median, aes(x = condition, y = log2fc, color = cycle)) + 
+#     geom_hline(yintercept = 0, linetype = "dashed") +
+#     geom_pointrange(aes(ymin=log2fc - log2fc.sd, ymax=log2fc + log2fc.sd),
+#                     position=position_dodge(width = 0.7),
+#                     size = 1.5) +
+#     guides(fill = guide_legend(override.aes = list(shape = 16)), 
+#            color = guide_legend(override.aes = list(shape = 16))) +
+#     labs(x = "Consequence", y = "Log2(observed/expected)\nVariants Per Cell") +
+#     facet_wrap(.~variant_type, scales = "free", labeller = labeller(variant_type = label_wrap_gen(30))) + 
+#     scale_color_viridis(discrete = TRUE, end = 0.8) +
+#     theme_Publication() +
+#     theme(legend.justification = c("center","top"),
+#           legend.position = "top",
+#           axis.text.x = element_text(size = 12))
+# dev.off()
+```
+
+### Introns
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/introns")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/introns")
+
+# plot
+pdf("consequences.main.mean.intron.pdf",
+    width = 4.5,
+    height = 4)
+ggplot(subset(consequences.main.mean, variant_type == "intron"), aes(x = condition, y = log2fc, color = cycle)) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_pointrange(aes(ymin=log2fc - log2fc.sd, ymax=log2fc + log2fc.sd),
+                    position=position_dodge(width = 0.7),
+                    fatten = 12) +
+    guides(fill = guide_legend(override.aes = list(shape = 16)), 
+           color = guide_legend(override.aes = list(shape = 16))) +
+    scale_color_viridis(discrete = TRUE, end = 0.8) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU"))
+    #scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1))
+dev.off()
+```
+
+### Synonymous and Non-Synonymous
+
+#### Unnormalized
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/synonymous_nonsynonymous")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/synonymous_nonsynonymous")
+
+# set levels
+consequences.syn_non.mean$variant_type <- factor(consequences.syn_non.mean$variant_type,
+                                                 levels = c("synonymous", "nonsynonymous"))
+
+consequences.syn_non.mean$cycle <- factor(consequences.syn_non.mean$cycle, 
+                                       levels = c(1, 3, 6, 9))
+consequences.syn_non.mean$condition <- factor(consequences.syn_non.mean$condition, 
+                                           levels = c("control", "enu"))
+
+# new facet labels
+labels <- c("Synonymous",
+             "Non-Synonymous")
+names(labels) <- c("synonymous", "nonsynonymous")
+
+# plot
+pdf("consequences.syn_non.mean.pdf",
+    width = 5,
+    height = 4)
+ggplot(consequences.syn_non.mean, aes(x = condition, y = log2fc, color = cycle)) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_pointrange(aes(ymin=log2fc - log2fc.sd, ymax=log2fc + log2fc.sd),
+                    position=position_dodge(width = 0.7),
+                    fatten = 8) +
+    guides(fill = guide_legend(override.aes = list(shape = 16)), 
+           color = guide_legend(override.aes = list(shape = 16))) +
+    scale_color_viridis(discrete = TRUE, end = 0.8) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~variant_type,
+               scale = "fixed",
+               nrow = 1,
+               labeller = labeller(variant_type = labels))
+    #scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1))
+dev.off()
+```
+
+#### Intron Normalized
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/synonymous_nonsynonymous")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/synonymous_nonsynonymous")
+
+# normalize by intron
+consequences.syn_non.mean.norm <- consequences.syn_non.mean %>%
+  merge(consequences.main.mean[consequences.main.mean$variant_type == "intron", c("condition", "cycle", "log2fc")], 
+        by = c("condition", "cycle")) %>%
+  mutate(`log2fc.norm` = `log2fc.x` - `log2fc.y`)
+
+# set levels
+consequences.syn_non.mean.norm$variant_type <- factor(consequences.syn_non.mean.norm$variant_type,
+                                                 levels = c("synonymous", "nonsynonymous"))
+
+consequences.syn_non.mean.norm$cycle <- factor(consequences.syn_non.mean.norm$cycle, 
+                                       levels = c(1, 3, 6, 9))
+
+consequences.syn_non.mean.norm$condition <- factor(consequences.syn_non.mean.norm$condition, 
+                                           levels = c("control", "enu"))
+
+# facet labels
+labels <- c("Synonymous",
+             "Non-Synonymous")
+names(labels) <- c("synonymous", "nonsynonymous")
+
+# plot
+pdf("consequences.syn_non.mean.norm.pdf",
+    width = 5,
+    height = 4)
+ggplot(consequences.syn_non.mean.norm, aes(x = condition, y = log2fc.norm, color = cycle)) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_pointrange(aes(ymin=log2fc.norm - log2fc.sd, ymax=log2fc.norm + log2fc.sd),
+                    position=position_dodge(width = 0.7),
+                    fatten = 5) +
+    guides(fill = guide_legend(override.aes = list(shape = 16)), 
+           color = guide_legend(override.aes = list(shape = 16))) +
+    scale_color_viridis(discrete = TRUE, end = 0.8) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~variant_type,
+               scale = "fixed",
+               nrow = 1,
+               labeller = labeller(variant_type = labels))
+    #scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1))
+dev.off()
+```
+
+#### N/S ratio
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/synonymous_nonsynonymous")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/synonymous_nonsynonymous")
+
+# calculate the ratio and standard deviation
+syn_non.mean.ratio <- consequences.syn_non.mean.norm %>%
+  group_by(cycle, condition) %>%
+  summarise(
+    nonsyn_log2fc = log2fc.norm[variant_type == "nonsynonymous"],
+    syn_log2fc = log2fc.norm[variant_type == "synonymous"],
+    nonsyn_sd = log2fc.sd[variant_type == "nonsynonymous"],
+    syn_sd = log2fc.sd[variant_type == "synonymous"],
+    log2fc.norm.ns.ratio = nonsyn_log2fc - syn_log2fc,
+    log2fc.norm.ns.ratio.sd = sqrt(nonsyn_sd^2 + syn_sd^2)
+  )
+
+# plot
+pdf("consequences.syn_non.mean.norm.ratio.pdf",
+    width = 3,
+    height = 4)
+ggplot(syn_non.mean.ratio, aes(x = condition, y = log2fc.norm.ns.ratio, color = cycle)) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_pointrange(aes(ymin=log2fc.norm.ns.ratio - log2fc.norm.ns.ratio.sd, ymax=log2fc.norm.ns.ratio + log2fc.norm.ns.ratio.sd),
+                    position=position_dodge(width = 0.7),
+                    fatten = 5) +
+    guides(fill = guide_legend(override.aes = list(shape = 16)), 
+           color = guide_legend(override.aes = list(shape = 16))) +
+    scale_color_viridis(discrete = TRUE, end = 0.8) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Non-Syn. / Syn."))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU"))
+    #scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1))
+dev.off()
+```
+
+#### Specific SNV coding variants
+- Normalized by introns
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/snv_coding")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/snv_coding")
+
+# intron normalization
+consequences.main.mean.coding.norm <- consequences.main.mean %>%
+  filter(variant_type %in% c("synonymous variant", 
+                             "stop retained variant", 
+                             "missense variant", 
+                             "start lost", 
+                             "stop gained",
+                             "stop lost")) %>%
+  merge(consequences.main.mean[consequences.main.mean$variant_type == "intron", c("condition", "cycle", "log2fc")], 
+        by = c("condition", "cycle")) %>%
+  mutate(`log2fc.norm` = `log2fc.x` - `log2fc.y`)
+
+# set levels
+consequences.main.mean.coding.norm$variant_type <- factor(consequences.main.mean.coding.norm$variant_type,
+                                                        levels = c("synonymous variant", 
+                                                                   "stop retained variant", 
+                                                                   "missense variant", 
+                                                                   "start lost", 
+                                                                   "stop gained",
+                                                                   "stop lost"))
+
+consequences.main.mean.coding.norm$cycle <- factor(consequences.main.mean.coding.norm$cycle, 
+                                       levels = c(1, 3, 6, 9))
+
+consequences.main.mean.coding.norm$condition <- factor(consequences.main.mean.coding.norm$condition, 
+                                           levels = c("control", "enu"))
+
+# new facet labels
+labels <- c("Synonymous",
+            "Stop retained",
+            "Missense",
+            "Start lost",
+            "Stop gained",
+            "Stop lost")
+
+names(labels) <- levels(consequences.main.mean.coding.norm$variant_type)
+
+# plot
+pdf("consequences.main.mean.coding.norm.pdf",
+    width = 10,
+    height = 4)
+ggplot(consequences.main.mean.coding.norm, aes(x = condition, y = log2fc.norm, color = cycle)) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_pointrange(aes(ymin=log2fc.norm - log2fc.sd, ymax=log2fc.norm + log2fc.sd),
+                    position=position_dodge(width = 0.7),
+                    fatten = 5) +
+    guides(fill = guide_legend(override.aes = list(shape = 16)), 
+           color = guide_legend(override.aes = list(shape = 16))) +
+    scale_color_viridis(discrete = TRUE, end = 0.8) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~variant_type,
+               scale = "fixed",
+               nrow = 1,
+               labeller = labeller(variant_type = labels))
+    #scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1))
+dev.off()
+```
+
+#### Non-coding variants
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/snv_noncoding")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/snv_noncoding")
+
+# subset 
+consequences_levels <- c("intron",
+                         "intergenic variant",
+                         "upstream gene variant",
+                         "downstream gene variant",
+                         "3 prime UTR variant",
+                         "non coding transcript exon variant",
+                         "5 prime UTR variant",
+                         "splice",
+                         "TF binding site variant",
+                         "mature miRNA variant")
+consequences.main.mean.snv.noncode <- subset(consequences.main.mean, variant_type %in% consequences_levels)
+
+# set levels
+consequences.main.mean.snv.noncode$variant_type <- factor(consequences.main.mean.snv.noncode$variant_type, 
+                                                          levels = consequences_levels)
+
+consequences.main.mean.snv.noncode$cycle <- factor(consequences.main.mean.snv.noncode$cycle, 
+                                       levels = c(1, 3, 6, 9))
+
+consequences.main.mean.snv.noncode$condition <- factor(consequences.main.mean.snv.noncode$condition, 
+                                           levels = c("control", "enu"))
+
+# facet labels
+labels <- c("Intron",
+            "Intergenic",
+           "5KB Upstream",
+           "5KB Downstream",
+           "3' UTR",
+           "lncRNA",
+           "5' UTR",
+           "Splice Region",
+           "TF Binding Site",
+           "miRNA")
+
+names(labels) <- consequences_levels
+
+# plot
+pdf("consequences_cycle_main_mean_snv_noncode.pdf",
+    width = 10,
+    height = 5.5)
+ggplot(consequences.main.mean.snv.noncode, aes(x = condition, y = log2fc, color = cycle)) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_pointrange(aes(ymin=log2fc - log2fc.sd, ymax=log2fc + log2fc.sd),
+                    position=position_dodge(width = 0.7),
+                    fatten = 5) +
+    guides(fill = guide_legend(override.aes = list(shape = 16)), 
+           color = guide_legend(override.aes = list(shape = 16))) +
+    scale_color_viridis(discrete = TRUE, end = 0.8) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~variant_type,
+               scale = "free",
+               nrow = 2,
+               labeller = labeller(variant_type = wrap_labels(labels, width = 10)))
+    #scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1))
+dev.off()
+```
+
+#### INDEL Variants
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/indel_coding")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cells-combined/consequences/indel_coding")
+
+# intron normalization
+consequences.main.mean.indel.norm <- consequences.main.mean %>%
+  filter(variant_type %in% c("inframe insertion",
+                             "inframe deletion",
+                             "frameshift variant")) %>%
+  merge(consequences.main.mean[consequences.main.mean$variant_type == "intron", c("condition", "cycle", "log2fc")], 
+        by = c("condition", "cycle")) %>%
+  mutate(`log2fc.norm` = `log2fc.x` - `log2fc.y`)
+
+# set levels
+consequences.main.mean.indel.norm$variant_type <- factor(consequences.main.mean.indel.norm$variant_type,
+                                                        levels = c("inframe insertion",
+                                                                   "inframe deletion",
+                                                                   "frameshift variant"))
+
+consequences.main.mean.indel.norm$cycle <- factor(consequences.main.mean.indel.norm$cycle, 
+                                       levels = c(1, 3, 6, 9))
+
+consequences.main.mean.indel.norm$condition <- factor(consequences.main.mean.indel.norm$condition, 
+                                           levels = c("control", "enu"))
+
+labels <- c("Inframe\ninsertion",
+            "Inframe\ndeletion",
+            "Frameshift")
+names(labels) <- levels(consequences.main.mean.indel.norm$variant_type)
+
+# plot
+pdf("consequences_cycle_main_indel_code.pdf",
+    width = 5.5,
+    height = 4)
+ggplot(consequences.main.mean.indel.norm, aes(x = condition, y = log2fc.norm, color = cycle)) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_pointrange(aes(ymin=log2fc.norm - log2fc.sd, ymax=log2fc.norm + log2fc.sd),
+                    position=position_dodge(width = 0.7),
+                    fatten = 5) +
+    guides(fill = guide_legend(override.aes = list(shape = 16)), 
+           color = guide_legend(override.aes = list(shape = 16))) +
+    scale_color_viridis(discrete = TRUE, end = 0.8) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~variant_type,
+               scale = "fixed",
+               nrow = 1,
+               labeller = labeller(variant_type = labels))
+    #scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1))
+dev.off()
+```
+
+
+# CADD
+- Only SNVs
+
+## Raw score
+
+### Number of different types of variants
+```{r}
+print(cadd.raw.mean %>%
+  group_by(type) %>%
+  summarize(total = sum(obs_mut)),
+  n = Inf)
+
+print(cadd.raw.mean %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs_mut)),
+  n = Inf)
+```
+
+### By cycle
+
+#### Synonymous
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/cycle")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/cycle")
+
+# subset
+cadd.raw.mean.coding.synonymous <- subset(cadd.raw.mean, grepl("snv coding synonymous", type))
+
+# remove NA
+cadd.raw.mean.coding.synonymous <- cadd.raw.mean.coding.synonymous[!is.na(cadd.raw.mean.coding.synonymous$bin),]
+
+# set levels
+bin <- c("[-4,-3.5]", "(-3.5,-3)", "(-3,-2.5]", "(-2.5,-2]", "(-2,-1.5]", "(-1.5,-1]",
+  "(-1,-0.5]", "(-0.5,0]", "(0,0.5]", "(0.5,1]", "(1,1.5]", "(1.5,2]", "(2,2.5]",
+  "(2.5,3]", "(3,3.5]", "(3.5,4]")
+cadd.raw.mean.coding.synonymous$bin <- factor(cadd.raw.mean.coding.synonymous$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.raw.mean.coding.synonymous.combined.pvalue <- consequences_combined_significance_CADD(cadd.raw.mean.coding.synonymous,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.raw.mean.coding.synonymous.combined.pvalue, "cadd.raw.mean.coding.synonymous.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.raw.mean.coding.synonymous.cellreps.pvalue <- consequences_group_significance(cadd.raw.mean.coding.synonymous,
+#                                                    c("condition", "cycle", "variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.raw.mean.coding.synonymous.cellreps.pvalue, "cadd.raw.mean.coding.synonymous.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.raw.mean.coding.synonymous %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.raw.mean.coding.synonymous.summary.csv")
+
+
+# plot
+pdf("cadd.raw.mean.coding.synonymous.synonymous.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.raw.mean.coding.synonymous, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+#### Non-Synonymous
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/cycle")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/cycle")
+
+# subset
+cadd.raw.mean.coding.nonsynonymous <- subset(cadd.raw.mean, grepl("snv coding nonsynonymous", type))
+
+# remove NA
+cadd.raw.mean.coding.nonsynonymous <- cadd.raw.mean.coding.nonsynonymous[!is.na(cadd.raw.mean.coding.nonsynonymous$bin),]
+
+# set levels
+bin <- c("[-4,-3.5]", "(-3.5,-3)", "(-3,-2.5]", "(-2.5,-2]", "(-2,-1.5]", "(-1.5,-1]",
+  "(-1,-0.5]", "(-0.5,0]", "(0,0.5]", "(0.5,1]", "(1,1.5]", "(1.5,2]", "(2,2.5]",
+  "(2.5,3]", "(3,3.5]", "(3.5,4]")
+cadd.raw.mean.coding.nonsynonymous$bin <- factor(cadd.raw.mean.coding.nonsynonymous$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.raw.mean.coding.nonsynonymous.combined.pvalue <- consequences_combined_significance_CADD(cadd.raw.mean.coding.nonsynonymous,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.raw.mean.coding.nonsynonymous.combined.pvalue, "cadd.raw.mean.coding.nonsynonymous.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.raw.mean.coding.nonsynonymous.cellreps.pvalue <- consequences_group_significance(cadd.raw.mean.coding.nonsynonymous,
+#                                                    c("condition", "cycle", "variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.raw.mean.coding.nonsynonymous.cellreps.pvalue, "cadd.raw.mean.coding.nonsynonymous.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.raw.mean.coding.nonsynonymous %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.raw.mean.coding.nonsynonymous.summary.csv")
+
+
+# plot
+pdf("cadd.raw.mean.coding.nonsynonymous.synonymous.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.raw.mean.coding.nonsynonymous, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+## PHRED score
+- binned mutation frequency has been noramlized for total amount of mutations falling in all bins 
+-  a scaled C-score of greater of equal 10 indicates that these are predicted to be the 10% most deleterious substitutions that you can do to the human genome, a score of greater or equal 20 indicates the 1% most deleterious and so on.
+- Identify which bins have a sufficient number of SNVs to be analyzed and then look at those
+- Is there a score at which we start to see negative and posiive selection? From non synonymous this looks like 12-21
+
+### Number of different types of variants - modes
+- nonsynonymous = 21-35
+- splice = 21-35
+- 5 prime UTR = 12-21
+- synonymous = 7-12
+- 3prim UTR = 7-12
+- nmd = 4-7
+- upstream = 4-7
+- downstream = 4-7
+- noncoding transcript exon = 4-7
+- intron = 2-4
+- regulatory = 2-4
+- noncoding transcript intron = 2-4
+- intergenic = 0-1
+
+- knowing the median cadd, compare O/E of all variants of each type where ones with higher means are expected to have more negative selection
+- for each type, get bin (or top 2) with most variants, and then compare O/E for that amongst types
+- within each, divide into 10 log10 bins
+- within each, divide into 3 bins, high medium and low
+
+Note that this does not sum up to the total amount of observed variants, meaning that some were left un annotated
+```{r}
+print(cadd.phred.mean %>%
+  group_by(variant_type) %>%
+  summarize(total = sum(obs.mut, na.rm = TRUE)),
+  n = Inf)
+
+temp <- cadd.phred.mean %>%
+  group_by(variant_type) %>%
+  summarize(total = sum(obs.mut, na.rm = TRUE))
+print(cadd.phred.bin.mean %>%
+  group_by(variant_type, bin) %>%
+  summarize(total = sum(obs.mut, na.rm = TRUE)),
+  n = Inf)
+```
+
+### By cycle
+
+#### Without binning
+
+##### O/E ratio of frequency
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/")
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/")
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+
+# add sample info
+cadd.phred.mean <- merge(cadd.phred.mean,
+                                    sample_table,
+                                    by = "sample")
+
+# remove undefined
+# remove intergenic because this is probably an underestimate
+cadd.phred.mean <- subset(cadd.phred.mean, !variant_type %in% c("undefined", "snv noncoding intergenic"))
+
+# set levels
+levels <- c("snv coding synonymous",
+            "snv coding nonsynonymous",
+            "snv noncoding intron",
+            "snv noncoding transcript intron",
+            "snv noncoding upstream gene",
+            "snv noncoding downstream gene",
+            "snv noncoding regulatory",
+            "snv noncoding nmd",
+            "snv noncoding 3prime UTR",
+            "snv noncoding transcript exon",
+            "snv noncoding splice",
+            "snv noncoding 5prime UTR")
+
+cadd.phred.mean$variant_type <- factor(cadd.phred.mean$variant_type,
+                                       levels = levels)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.mean.pvalue <- consequences_combined_significance(cadd.phred.mean,
+                                                   c("condition", "cycle", "variant_type"),
+                                                   levels)
+write.csv(cadd.phred.mean.pvalue, "cadd.phred.mean.pvalue.csv")
+
+stats_summary <- cadd.phred.mean %>%
+  group_by(condition, cycle, variant_type) %>%
+  summarise(log2fc.mean = mean(log2fc, na.rm = TRUE),
+            log2fc.sd = sd(log2fc, na.rm = TRUE),
+            obs.mut.mean = mean(obs.mut, na.rm = TRUE),
+            obs.mut.sd = sd(obs.mut, na.rm = TRUE),
+            obs.sim.diff.mean = mean(obs.mut - sim.mut, na.rm = TRUE),
+            obs.sim.diff.sd = sd(obs.mut - sim.mut, na.rm = TRUE),
+            obs.prop.total.mean = mean(obs.mut / SNV_obs, na.rm = TRUE),
+            obs.prop.total.mean = sd(obs.mut / SNV_obs, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.mean.summary.csv")
+
+labels = c("Synonymous",
+           "Non-Synonymous",
+           "Intron",
+           "Non-coding RNA Intron",
+           "5KB Upstream Gene",
+           "5KB Downstream Gene",
+           "Non-coding Regulatory",
+           "Nonsense Mediated Decay",
+           "3' UTR",
+           "Non-coding RNA Exon",
+           "Splice Site",
+           "5' UTR")
+
+names(labels) <- levels
+
+# plot all
+pdf("cadd.phred.mean.pdf",
+    width = 10,
+    height = 5)
+ggplot(cadd.phred.mean, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Median CADD Score Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 10.5)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~variant_type,
+                 scale = "fixed",
+                 nrow = 2,
+                 labeller = labeller(variant_type = wrap_labels(labels, width = 15)))
+      #scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1))
+dev.off()
+
+# coding
+pdf("cadd.phred.mean.coding.pdf",
+    width = 4.5,
+    height = 4)
+ggplot(subset(cadd.phred.mean, grepl("synonymous", variant_type)), aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Median CADD Score Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 10.5)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~variant_type,
+                 scale = "fixed",
+                 nrow = 1,
+                 labeller = labeller(variant_type = wrap_labels(labels, width = 15))) +
+      scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1))
+dev.off()
+
+# noncoding
+pdf("cadd.phred.mean.noncoding.pdf",
+    width = 8.5,
+    height = 5)
+ggplot(subset(cadd.phred.mean, !grepl("synonymous", variant_type)), aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Median CADD Score Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 10.5)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~variant_type,
+                 scale = "fixed",
+                 nrow = 2,
+                 labeller = labeller(variant_type = wrap_labels(labels, width = 15))) +
+      scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1))
+dev.off()
+```
+
+##### Observed median CADD score
+- using median because low amount of observed variants in some cells
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+
+# add sample info
+cadd.phred.mean.score <- merge(cadd.phred.mean.score,
+                                    sample_table,
+                                    by = "sample")
+
+
+cadd.phred.median.score <- cadd.phred.mean.score %>%
+  select(c("sample", "type", "median")) %>%
+  mutate(group = case_when(grepl("snv coding", type) ~ "coding",
+         .default = "noncoding")
+  ) %>%
+  subset(type != "undefined")
+
+# set levels
+cadd.phred.median.score$type <- factor(cadd.phred.median.score$type,
+                                                 levels = c("snv coding nonsynonymous",
+                                                            "snv coding synonymous",
+                                                            "snv noncoding 5prime UTR",
+                                                            "snv noncoding 3prime UTR",
+                                                            "snv noncoding intron",
+                                                            "snv noncoding nmd",
+                                                            "snv noncoding splice",
+                                                            "snv noncoding upstream gene",
+                                                            "snv noncoding downstream gene",
+                                                            "snv noncoding transcript exon",
+                                                            "snv noncoding transcript intron",
+                                                            "snv noncoding regulatory",
+                                                            "snv noncoding intergenic"
+                                                            ))
+
+# Perform ANOVA
+# anova_result <- summary(aov(median ~ type, data = cadd.phred.median.score))
+# 
+# # Perform linear model
+# lm_result <- lm(median ~ type, data = cadd.phred.median.score)
+# 
+# # Compute emmeans and pairwise comparisons
+# emm_interaction <- emmeans(lm_result, ~ median)
+# pairwise_results <- pairs(emm_interaction)
+# 
+# # Adjust for multiple comparisons and add significance
+# adjusted_results <- na.omit(summary(pairwise_results, adjust = "tukey")) %>%
+#                     add_significance("p.value")
+# 
+# # Write the results to a CSV file
+# write.csv(adjusted_results, "cadd.phred.median.score.pvalue.csv")
+# anova_summary_text <- write(capture.output(anova_result), 
+#                             file = output_filename, 
+#                             append = TRUE, 
+#                             sep = "\n")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.median.score %>%
+  group_by(type) %>%
+  summarise(mean = mean(median, na.rm = TRUE),
+            sd = sd(median, na.rm = TRUE)) %>%
+  arrange(desc(mean))
+
+# sort from least to greatest
+cadd.phred.median.score$type <- factor(cadd.phred.median.score$type,
+                                       levels = stats_summary$type)
+
+labels = c("Non-Synonymous",
+           "Splice Site",
+           "5' UTR",
+           "Synonymous",
+           "3' UTR",
+           "Non-coding RNA Exon",
+           "Non-coding Regulatory",
+           "5KB Upstream Gene",
+           "Intron",
+           "Nonsesnse Mediated Decay",
+           "5KB Downstream Gene",
+           "Non-coding RNA Intron",
+           "Intergenic")
+# bar plot
+pdf("cadd.phred.mean.score.pdf",
+    width = 7,
+    height = 4)
+ggplot(cadd.phred.median.score, aes(x = type, y = median, fill = type)) + 
+    geom_hline(yintercept = 15, linetype = "dashed") +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(data = stats_summary, aes(x = type, y = mean, ymin = mean - sd, ymax = mean + sd),
+                    width = 0.5, position = position_dodge(0.9)) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", y = "Median CADD Score Per Cell", fill = "Variant Type/Location") +
+    scale_fill_viridis(option = "H",
+                       discrete = TRUE,
+                       labels = labels,
+                       begin = 0.1,
+                       end = 0.9) +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.direction = "vertical",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+dev.off()
+```
+
+#### With binning
+- This is now using the frequency of variants per bin normalized by the total amount of variants per cell
+
+##### All variant types
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/")
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+
+# add sample info
+cadd.phred.bin.mean <- merge(cadd.phred.bin.mean,
+                                    sample_table,
+                                    by = "sample")
+
+# remove NA
+cadd.phred.bin.mean <- cadd.phred.bin.mean[!is.na(cadd.phred.bin.mean$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut, na.rm = TRUE)),
+  n = Inf)
+
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean$bin <- factor(cadd.phred.bin.mean$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean,
+                                                   c("condition", "cycle", "variant_type", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.combined.pvalue, "cadd.phred.bin.mean.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean,
+#                                                    c("condition", "cycle", "variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.cellreps.pvalue, "cadd.phred.bin.mean.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.summary.csv")
+
+
+# plot all bins
+pdf("cadd.phred.bin.mean.pdf",
+    width = 10,
+    height = 10)
+ggplot(cadd.phred.bin.mean, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Binned CADD Score Frequency"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+  facet_wrap(.~bin,
+                 scale = "fixed")
+dev.off()
+```
+
+##### Coding Combined
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/")
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+
+# add sample info
+cadd.phred.coding.combined.bin.mean <- merge(cadd.phred.coding.combined.bin.mean,
+                                    sample_table,
+                                    by = "sample")
+
+# subset
+cadd.phred.mean.coding <- subset(cadd.phred.coding.combined.bin.mean, grepl("snv coding", variant_type))
+
+# remove NA
+cadd.phred.mean.coding <- cadd.phred.mean.coding[!is.na(cadd.phred.mean.coding$bin),]
+
+# check which bin has most
+print(cadd.phred.mean.coding %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+ 
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.mean.coding$bin <- factor(cadd.phred.mean.coding$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.mean.coding.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.mean.coding,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.mean.coding.combined.pvalue, "cadd.phred.mean.coding.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.mean.coding.cellreps.pvalue <- consequences_group_significance(cadd.phred.mean.coding,
+#                                                    c("condition", "cycle", "variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.mean.coding.cellreps.pvalue, "cadd.phred.mean.coding.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.mean.coding %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.mean.coding.summary.csv")
+
+
+# plot all bins
+pdf("cadd.phred.mean.coding.pdf",
+    width = 9,
+    height = 6)
+ggplot(cadd.phred.mean.coding, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Binned CADD Score Frequency"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 2)
+dev.off()
+
+# plot subset bins
+# nonsynonymous ~25
+# synonymous ~10
+cadd.phred.mean.coding.sub <- subset(cadd.phred.mean.coding, bin %in% c("(7.71,12.8]", "(21.4,35.7]"))
+
+# combine p-values from each cell into group pvalue
+cadd.phred.mean.coding.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.mean.coding.sub,
+                                                   c("condition", "cycle", "bin"))
+
+write.csv(cadd.phred.mean.coding.combined.pvalue, "cadd.phred.mean.coding.subset.bins.pvalue.csv")
+
+# new facet labels
+labels <- c("Non-synonymous\n(21.4 - 35.7)",
+            "Synonymous\n(7.7 - 12.8)")
+
+names(labels) <- unique(cadd.phred.mean.coding.sub$bin)
+
+pdf("cadd.phred.mean.coding.subset.bins.pdf",
+    width = 4.5,
+    height = 4)
+ggplot(cadd.phred.mean.coding.sub, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    scale_y_continuous(breaks = c(-0.25, 0, 0.25), lim = c(-0.25, 0.25)) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+               nrow = 1,
+               labeller = labeller(bin = labels))
+dev.off()
+```
+
+##### Synonymous
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/")
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+
+# subset
+cadd.phred.bin.mean.coding.synonymous <- subset(cadd.phred.bin.mean, grepl("snv coding synonymous", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.coding.synonymous <- cadd.phred.bin.mean.coding.synonymous[!is.na(cadd.phred.bin.mean.coding.synonymous$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.coding.synonymous %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.coding.synonymous$bin <- factor(cadd.phred.bin.mean.coding.synonymous$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.coding.synonymous.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.coding.synonymous,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.coding.synonymous.combined.pvalue, "cadd.phred.bin.mean.coding.synonymous.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.coding.synonymous.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.coding.synonymous,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.coding.synonymous.cellreps.pvalue, "cadd.phred.bin.mean.coding.synonymous.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.coding.synonymous %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.coding.synonymous.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.coding.synonymous.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.coding.synonymous, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-Synonymous
+- need to normalize by intron
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.coding.nonsynonymous <- subset(cadd.phred.bin.mean, grepl("snv coding nonsynonymous", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.coding.nonsynonymous <- cadd.phred.bin.mean.coding.nonsynonymous[!is.na(cadd.phred.bin.mean.coding.nonsynonymous$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.coding.nonsynonymous %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.coding.nonsynonymous$bin <- factor(cadd.phred.bin.mean.coding.nonsynonymous$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.coding.nonsynonymous.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.coding.nonsynonymous,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.coding.nonsynonymous.combined.pvalue, "cadd.phred.bin.mean.coding.nonsynonymous.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.coding.nonsynonymous.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.coding.nonsynonymous,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.coding.nonsynonymous.cellreps.pvalue, "cadd.phred.bin.mean.coding.nonsynonymous.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.coding.nonsynonymous %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.coding.nonsynonymous.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.coding.nonsynonymous.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.coding.nonsynonymous, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding 3' UTR
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.3primeUTR <- subset(cadd.phred.bin.mean, grepl("snv noncoding 3prime UTR", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.3primeUTR <- cadd.phred.bin.mean.noncoding.3primeUTR[!is.na(cadd.phred.bin.mean.noncoding.3primeUTR$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.3primeUTR %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.3primeUTR$bin <- factor(cadd.phred.bin.mean.noncoding.3primeUTR$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.3primeUTR.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.3primeUTR,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.3primeUTR.combined.pvalue, "cadd.phred.bin.mean.noncoding.3primeUTR.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.3primeUTR.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.3primeUTR,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.3primeUTR.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.3primeUTR.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.3primeUTR %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.3primeUTR.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.3primeUTR.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.3primeUTR, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding 5' UTR
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.5primeUTR <- subset(cadd.phred.bin.mean, grepl("snv noncoding 5prime UTR", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.5primeUTR <- cadd.phred.bin.mean.noncoding.5primeUTR[!is.na(cadd.phred.bin.mean.noncoding.5primeUTR$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.5primeUTR %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.5primeUTR$bin <- factor(cadd.phred.bin.mean.noncoding.5primeUTR$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.5primeUTR.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.5primeUTR,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.5primeUTR.combined.pvalue, "cadd.phred.bin.mean.noncoding.5primeUTR.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.5primeUTR.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.5primeUTR,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.5primeUTR.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.5primeUTR.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.5primeUTR %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.5primeUTR.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.5primeUTR.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.5primeUTR, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding upstream
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.upstream <- subset(cadd.phred.bin.mean, grepl("snv noncoding upstream", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.upstream <- cadd.phred.bin.mean.noncoding.upstream[!is.na(cadd.phred.bin.mean.noncoding.upstream$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.upstream %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.upstream$bin <- factor(cadd.phred.bin.mean.noncoding.upstream$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.upstream.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.upstream,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.upstream.combined.pvalue, "cadd.phred.bin.mean.noncoding.upstream.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.upstream.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.upstream,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.upstream.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.upstream.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.upstream %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.upstream.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.upstream.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.upstream, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding downstream
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.downstream <- subset(cadd.phred.bin.mean, grepl("snv noncoding downstream", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.downstream <- cadd.phred.bin.mean.noncoding.downstream[!is.na(cadd.phred.bin.mean.noncoding.downstream$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.downstream %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.downstream$bin <- factor(cadd.phred.bin.mean.noncoding.downstream$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.downstream.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.downstream,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.downstream.combined.pvalue, "cadd.phred.bin.mean.noncoding.downstream.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.downstream.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.downstream,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.downstream.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.downstream.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.downstream %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.downstream.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.downstream.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.downstream, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding intron
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.intron <- subset(cadd.phred.bin.mean, grepl("snv noncoding intron", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.intron <- cadd.phred.bin.mean.noncoding.intron[!is.na(cadd.phred.bin.mean.noncoding.intron$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.intron %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.intron$bin <- factor(cadd.phred.bin.mean.noncoding.intron$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.intron.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.intron,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.intron.combined.pvalue, "cadd.phred.bin.mean.noncoding.intron.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.intron.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.intron,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.intron.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.intron.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.intron %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.intron.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.intron.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.intron, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding NMD
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.nmd <- subset(cadd.phred.bin.mean, grepl("snv noncoding nmd", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.nmd <- cadd.phred.bin.mean.noncoding.nmd[!is.na(cadd.phred.bin.mean.noncoding.nmd$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.nmd %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.nmd$bin <- factor(cadd.phred.bin.mean.noncoding.nmd$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.nmd.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.nmd,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.nmd.combined.pvalue, "cadd.phred.bin.mean.noncoding.nmd.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.nmd.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.nmd,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.nmd.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.nmd.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.nmd %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.nmd.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.nmd.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.nmd, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding intergenic
+- all negative values, this doesn't make sense
+- Are these variants really in intergenic regions?
+- Could these be used to normalize non-coding variants to account for?
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.intergenic <- subset(cadd.phred.bin.mean, grepl("snv noncoding intergenic", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.intergenic <- cadd.phred.bin.mean.noncoding.intergenic[!is.na(cadd.phred.bin.mean.noncoding.intergenic$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.intergenic %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.intergenic$bin <- factor(cadd.phred.bin.mean.noncoding.intergenic$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.intergenic.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.intergenic,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.intergenic.combined.pvalue, "cadd.phred.bin.mean.noncoding.intergenic.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.intergenic.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.intergenic,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.intergenic.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.intergenic.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.intergenic %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.intergenic.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.intergenic.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.intergenic, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding regulatory
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.regulatory <- subset(cadd.phred.bin.mean, grepl("snv noncoding regulatory", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.regulatory <- cadd.phred.bin.mean.noncoding.regulatory[!is.na(cadd.phred.bin.mean.noncoding.regulatory$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.regulatory %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.regulatory$bin <- factor(cadd.phred.bin.mean.noncoding.regulatory$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.regulatory.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.regulatory,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.regulatory.combined.pvalue, "cadd.phred.bin.mean.noncoding.regulatory.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.regulatory.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.regulatory,
+#                                                    c("condition", "cycle", "variant_variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.regulatory.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.regulatory.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.regulatory %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.regulatory.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.regulatory.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.regulatory, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_variant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding splice
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.splice <- subset(cadd.phred.bin.mean, grepl("snv noncoding splice", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.splice <- cadd.phred.bin.mean.noncoding.splice[!is.na(cadd.phred.bin.mean.noncoding.splice$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.splice %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.splice$bin <- factor(cadd.phred.bin.mean.noncoding.splice$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.splice.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.splice,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.splice.combined.pvalue, "cadd.phred.bin.mean.noncoding.splice.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.splice.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.splice,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.splice.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.splice.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.splice %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.splice.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.splice.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.splice, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding transcript exon
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.exon <- subset(cadd.phred.bin.mean, grepl("snv noncoding transcript exon", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.exon <- cadd.phred.bin.mean.noncoding.exon[!is.na(cadd.phred.bin.mean.noncoding.exon$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.exon %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.exon$bin <- factor(cadd.phred.bin.mean.noncoding.exon$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.exon.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.exon,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.exon.combined.pvalue, "cadd.phred.bin.mean.noncoding.exon.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.exon.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.exon,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.exon.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.exon.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.exon %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.exon.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.exon.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.exon, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+##### Non-coding transcript intron
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/cadd/phred/cycle/")
+# subset
+cadd.phred.bin.mean.noncoding.transcript.intron <- subset(cadd.phred.bin.mean, grepl("snv noncoding transcript intron", variant_type))
+
+# remove NA
+cadd.phred.bin.mean.noncoding.transcript.intron <- cadd.phred.bin.mean.noncoding.transcript.intron[!is.na(cadd.phred.bin.mean.noncoding.transcript.intron$bin),]
+
+# check which bin has most
+print(cadd.phred.bin.mean.noncoding.transcript.intron %>%
+  group_by(bin) %>%
+  summarize(total = sum(obs.mut)),
+  n = Inf)
+
+# set levels
+bin <- c("[0,1]", "(1,1.67]", "(1.67,2.78]", "(2.78,4.63]", "(4.63,7.71]", "(7.71,12.8]", "(12.8,21.4]", "(21.4,35.7]", "(35.7,59.4]", "(59.4,99]")
+
+cadd.phred.bin.mean.noncoding.transcript.intron$bin <- factor(cadd.phred.bin.mean.noncoding.transcript.intron$bin,
+                            levels = bin)
+
+# combine p-values from each cell into group pvalue
+cadd.phred.bin.mean.noncoding.transcript.intron.combined.pvalue <- consequences_combined_significance_CADD(cadd.phred.bin.mean.noncoding.transcript.intron,
+                                                   c("condition", "cycle", "bin"),
+                                                   bin)
+write.csv(cadd.phred.bin.mean.noncoding.transcript.intron.combined.pvalue, "cadd.phred.bin.mean.noncoding.transcript.intron.combined.pvalue.csv")
+
+# calculate group pvalue with all cells as replicates
+# cadd.phred.bin.mean.noncoding.transcript.intron.cellreps.pvalue <- consequences_group_significance(cadd.phred.bin.mean.noncoding.transcript.intron,
+#                                                    c("condition", "cycle", "variant_variant_type"),
+#                                                    consequences_levels)
+# write.csv(cadd.phred.bin.mean.noncoding.transcript.intron.cellreps.pvalue, "cadd.phred.bin.mean.noncoding.transcript.intron.cellreps.pvalue.csv")
+
+# get mean and sd for each group
+stats_summary <- cadd.phred.bin.mean.noncoding.transcript.intron %>%
+  group_by(condition, cycle, bin) %>%
+  summarise(mean = mean(log2fc, na.rm = TRUE),
+            sd = sd(log2fc, na.rm = TRUE))
+
+write.csv(stats_summary, "cadd.phred.bin.mean.noncoding.transcript.intron.summary.csv")
+
+
+# plot
+pdf("cadd.phred.bin.mean.noncoding.transcript.intron.pdf",
+    width = 8,
+    height = 8)
+ggplot(cadd.phred.bin.mean.noncoding.transcript.intron, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Frequency Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~bin,
+                 scale = "fixed",
+                 nrow = 4)
+dev.off()
+```
+
+## Alpha missense
+
+### By cycle
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/alpha-missense")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/alpha-missense")
+
+# mean
+am.mean$cycle <- factor(am.mean$cycle)
+pdf("am_cycle_mean.pdf",
+    width = 5,
+    height = 4)
+ggplot(am.mean, aes(x = condition, y = log2fc, fill = cycle)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1)) +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+
+# median
+am.median$cycle <- factor(am.median$cycle)
+pdf("am_cycle_median.pdf",
+    width = 5,
+    height = 4)
+ggplot(am.median, aes(x = condition, y = log2fc, fill = cycle)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1)) +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+
+am.sum$cycle <- factor(am.sum$cycle)
+pdf("am_cycle_sum.pdf",
+    width = 5,
+    height = 4)
+ggplot(am.sum, aes(x = condition, y = log2fc, fill = cycle)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1)) +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+```
+
+
+## GERP
+
+### By condition
+
+#### Mean
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/gerp")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/gerp")
+
+# gerp_levels <- unique(gerp.mean$variant_type)
+# 
+# # combine p-values from each cell into group pvalue
+# gerp.mean.combined_pvalue <- consequences_combined_significance(gerp.mean,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.mean.combined_pvalue, "gerp_mean_combined_pvalue.csv")
+# 
+# # calculate group pvalue with all cells as replicates
+# gerp.mean.cellreps_pvalue <- consequences_group_significance(gerp.mean,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.mean.cellreps_pvalue, "gerp_mean_cellreps_pvalue.csv")
+# 
+# # get mean and sd for each group
+# stats_summary <- consequences.main.mean.snv.code %>%
+#   group_by(condition, variant_variant_type) %>%
+#   summarise(mean = mean(log2fc, na.rm = TRUE),
+#             sd = sd(log2fc, na.rm = TRUE))
+# 
+# write.csv(stats_summary, "consequences_condition_main_mean_snv_code_stat_summary.csv")
+
+# control
+pdf("gerp_condition_mean_control.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(gerp.mean, condition == "control"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n Mean GERP Score Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    # geom_text(data = subset(consequences.main.mean.snv.code.cellreps_pvalue, condition == "control"),
+    #           aes(x = variant_type, y = Inf, label = significant_p_adjusted), # pvalue of observed/expected
+    #           vjust = 4, hjust = 0.75) +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+
+# enu
+pdf("gerp_condition_mean_enu.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(gerp.mean, condition == "enu"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n Mean GERP Score Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    # geom_text(data = subset(consequences.main.mean.snv.code.cellreps_pvalue, condition == "control"),
+    #           aes(x = variant_type, y = Inf, label = significant_p_adjusted), # pvalue of observed/expected
+    #           vjust = 4, hjust = 0.75) +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+```
+
+## Transcription factor
+
+### By cycle
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/transcription-factor")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/transcription-factor")
+
+# mean
+tf.mean$cycle <- factor(tf.mean$cycle)
+pdf("tf_cycle_mean.pdf",
+    width = 5,
+    height = 4)
+ggplot(tf.mean, aes(x = condition, y = log2fc, fill = cycle)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1)) +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+
+# median
+tf.median$cycle <- factor(tf.median$cycle)
+pdf("tf_cycle_median.pdf",
+    width = 5,
+    height = 4)
+ggplot(tf.median, aes(x = condition, y = log2fc, fill = cycle)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5, position = position_dodge(width = 0.75)) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "", 
+         y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell"))), 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12)) +  # Adjust legend title size
+    scale_y_continuous(breaks = c(-1, 0, 1), lim = c(-1, 1)) +
+    scale_x_discrete(labels = c("Control", "ENU"))
+dev.off()
+```
+
+#### Median
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/transcription-factor")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/transcription-factor")
+
+# gerp_levels <- unique(gerp.mean$variant_type)
+# 
+# # combine p-values from each cell into group pvalue
+# gerp.mean.combined_pvalue <- consequences_combined_significance(gerp.mean,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.mean.combined_pvalue, "gerp_mean_combined_pvalue.csv")
+# 
+# # calculate group pvalue with all cells as replicates
+# gerp.mean.cellreps_pvalue <- consequences_group_significance(gerp.mean,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.mean.cellreps_pvalue, "gerp_mean_cellreps_pvalue.csv")
+# 
+# # get mean and sd for each group
+# stats_summary <- consequences.main.mean.snv.code %>%
+#   group_by(condition, variant_variant_type) %>%
+#   summarise(mean = mean(log2fc, na.rm = TRUE),
+#             sd = sd(log2fc, na.rm = TRUE))
+# 
+# write.csv(stats_summary, "consequences_condition_main_mean_snv_code_stat_summary.csv")
+
+# control
+pdf("tf_condition_median_control.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(tf.median, condition == "control"), aes(x = condition, y = log2fc, fill = condition)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n median Motif Score Change Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    # geom_text(data = subset(consequences.main.median.snv.code.cellreps_pvalue, condition == "control"),
+    #           aes(x = variant_type, y = Inf, label = significant_p_adjusted), # pvalue of observed/expected
+    #           vjust = 4, hjust = 0.75) +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+
+# enu
+pdf("tf_condition_median_enu.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(tf.median, condition == "enu"), aes(x = condition, y = log2fc, fill = condition)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n median Motif Score Change Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    # geom_text(data = subset(consequences.main.median.snv.code.cellreps_pvalue, condition == "control"),
+    #           aes(x = variant_type, y = Inf, label = significant_p_adjusted), # pvalue of observed/expected
+    #           vjust = 4, hjust = 0.75) +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+```
+
+#### Sum
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/transcription-factor")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/transcription-factor")
+
+# gerp_levels <- unique(gerp.mean$variant_type)
+# 
+# # combine p-values from each cell into group pvalue
+# gerp.mean.combined_pvalue <- consequences_combined_significance(gerp.mean,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.mean.combined_pvalue, "gerp_mean_combined_pvalue.csv")
+# 
+# # calculate group pvalue with all cells as replicates
+# gerp.mean.cellreps_pvalue <- consequences_group_significance(gerp.mean,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.mean.cellreps_pvalue, "gerp_mean_cellreps_pvalue.csv")
+# 
+# # get mean and sd for each group
+# stats_summary <- consequences.main.mean.snv.code %>%
+#   group_by(condition, variant_variant_type) %>%
+#   summarise(mean = mean(log2fc, na.rm = TRUE),
+#             sd = sd(log2fc, na.rm = TRUE))
+# 
+# write.csv(stats_summary, "consequences_condition_main_mean_snv_code_stat_summary.csv")
+
+# control
+pdf("tf_condition_sum_control.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(tf.sum, condition == "control"), aes(x = condition, y = log2fc, fill = condition)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n Summed Motif Score Change Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    # geom_text(data = subset(consequences.main.mean.snv.code.cellreps_pvalue, condition == "control"),
+    #           aes(x = variant_type, y = Inf, label = significant_p_adjusted), # pvalue of observed/expected
+    #           vjust = 4, hjust = 0.75) +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+
+# enu
+pdf("tf_condition_sum_enu.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(tf.sum, condition == "enu"), aes(x = condition, y = log2fc, fill = condition)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n Summed Motif Score Change Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    # geom_text(data = subset(consequences.main.mean.snv.code.cellreps_pvalue, condition == "control"),
+    #           aes(x = variant_type, y = Inf, label = significant_p_adjusted), # pvalue of observed/expected
+    #           vjust = 4, hjust = 0.75) +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+```
+
+## PhyloP
+
+### By condition
+
+#### Mean
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/phylop")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/phylop")
+
+# gerp_levels <- unique(gerp.mean$variant_type)
+# 
+# # combine p-values from each cell into group pvalue
+# gerp.mean.combined_pvalue <- consequences_combined_significance(gerp.mean,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.mean.combined_pvalue, "gerp_mean_combined_pvalue.csv")
+# 
+# # calculate group pvalue with all cells as replicates
+# gerp.mean.cellreps_pvalue <- consequences_group_significance(gerp.mean,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.mean.cellreps_pvalue, "gerp_mean_cellreps_pvalue.csv")
+# 
+# # get mean and sd for each group
+# stats_summary <- consequences.main.mean.snv.code %>%
+#   group_by(condition, variant_variant_type) %>%
+#   summarise(mean = mean(log2fc, na.rm = TRUE),
+#             sd = sd(log2fc, na.rm = TRUE))
+# 
+# write.csv(stats_summary, "consequences_condition_main_mean_snv_code_stat_summary.csv")
+
+# control
+pdf("phylop_condition_mean_control.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(phylop.mean, condition == "control"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n Mean phylop Score Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+
+# enu
+pdf("phylop_condition_mean_enu.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(phylop.mean, condition == "enu"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n Mean phylop Score Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+```
+
+#### Median
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/phylop")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/phylop")
+
+# gerp_levels <- unique(gerp.median$variant_type)
+# 
+# # combine p-values from each cell into group pvalue
+# gerp.median.combined_pvalue <- consequences_combined_significance(gerp.median,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.median.combined_pvalue, "gerp_median_combined_pvalue.csv")
+# 
+# # calculate group pvalue with all cells as replicates
+# gerp.median.cellreps_pvalue <- consequences_group_significance(gerp.median,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.median.cellreps_pvalue, "gerp_median_cellreps_pvalue.csv")
+# 
+# # get median and sd for each group
+# stats_summary <- consequences.main.median.snv.code %>%
+#   group_by(condition, variant_variant_type) %>%
+#   summarise(median = median(log2fc, na.rm = TRUE),
+#             sd = sd(log2fc, na.rm = TRUE))
+# 
+# write.csv(stats_summary, "consequences_condition_main_median_snv_code_stat_summary.csv")
+
+# control
+pdf("phylop_condition_median_control.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(phylop.median, condition == "control"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n median phylop Score Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+
+# enu
+pdf("phylop_condition_median_enu.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(phylop.median, condition == "enu"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n median phylop Score Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+```
+
+## PhastCons
+
+### By condition
+
+#### Mean
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/phastcons")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/phastcons")
+
+# gerp_levels <- unique(gerp.mean$variant_type)
+# 
+# # combine p-values from each cell into group pvalue
+# gerp.mean.combined_pvalue <- consequences_combined_significance(gerp.mean,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.mean.combined_pvalue, "gerp_mean_combined_pvalue.csv")
+# 
+# # calculate group pvalue with all cells as replicates
+# gerp.mean.cellreps_pvalue <- consequences_group_significance(gerp.mean,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.mean.cellreps_pvalue, "gerp_mean_cellreps_pvalue.csv")
+# 
+# # get mean and sd for each group
+# stats_summary <- consequences.main.mean.snv.code %>%
+#   group_by(condition, variant_variant_type) %>%
+#   summarise(mean = mean(log2fc, na.rm = TRUE),
+#             sd = sd(log2fc, na.rm = TRUE))
+# 
+# write.csv(stats_summary, "consequences_condition_main_mean_snv_code_stat_summary.csv")
+
+# control
+pdf("phastcons_condition_mean_control.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(phastcons.mean, condition == "control"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n Mean phastcons Score Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+
+# enu
+pdf("phastcons_condition_mean_enu.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(phastcons.mean, condition == "enu"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n Mean phastcons Score Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+```
+
+#### Median
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/phastcons")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/phastcons")
+
+# gerp_levels <- unique(gerp.median$variant_type)
+# 
+# # combine p-values from each cell into group pvalue
+# gerp.median.combined_pvalue <- consequences_combined_significance(gerp.median,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.median.combined_pvalue, "gerp_median_combined_pvalue.csv")
+# 
+# # calculate group pvalue with all cells as replicates
+# gerp.median.cellreps_pvalue <- consequences_group_significance(gerp.median,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.median.cellreps_pvalue, "gerp_median_cellreps_pvalue.csv")
+# 
+# # get median and sd for each group
+# stats_summary <- consequences.main.median.snv.code %>%
+#   group_by(condition, variant_variant_type) %>%
+#   summarise(median = median(log2fc, na.rm = TRUE),
+#             sd = sd(log2fc, na.rm = TRUE))
+# 
+# write.csv(stats_summary, "consequences_condition_main_median_snv_code_stat_summary.csv")
+
+# control
+pdf("phastcons_condition_median_control.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(phastcons.median, condition == "control"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n median phastcons Score Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+
+# enu
+pdf("phastcons_condition_median_enu.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(phastcons.median, condition == "enu"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = "Log2(Observed / Expected)\n median phastcons Score Per Cell") +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+```
+
+#### sum
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/phastcons")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/5-variant-effect-prediction/2-ratio-plot/phastcons")
+
+# gerp_levels <- unique(gerp.sum$variant_type)
+# 
+# # combine p-values from each cell into group pvalue
+# gerp.sum.combined_pvalue <- consequences_combined_significance(gerp.sum,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.sum.combined_pvalue, "gerp_sum_combined_pvalue.csv")
+# 
+# # calculate group pvalue with all cells as replicates
+# gerp.sum.cellreps_pvalue <- consequences_group_significance(gerp.sum,
+#                                                    c("condition", "variant_type"),
+#                                                    gerp_levels)
+# write.csv(gerp.sum.cellreps_pvalue, "gerp_sum_cellreps_pvalue.csv")
+# 
+# # get sum and sd for each group
+# stats_summary <- consequences.main.sum.snv.code %>%
+#   group_by(condition, variant_variant_type) %>%
+#   summarise(sum = sum(log2fc, na.rm = TRUE),
+#             sd = sd(log2fc, na.rm = TRUE))
+# 
+# write.csv(stats_summary, "consequences_condition_main_sum_snv_code_stat_summary.csv")
+
+# control
+pdf("phastcons_condition_sum_control.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(phastcons.sum, condition == "control"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell")))) +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+
+# enu
+pdf("phastcons_condition_sum_enu.pdf",
+    width = 5,
+    height = 4)
+ggplot(subset(phastcons.sum, condition == "enu"), aes(x = variant_type, y = log2fc, fill = variant_type)) + 
+    geom_hline(yintercept = 0, linevariant_type = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(size = 2, alpha = 0.5) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(fill = "Variant variant_type") +
+    labs(x = "", y = expression(bold(atop(Log[2] * "(Observed / Expected)", "Variants Per Cell")))) +
+    scale_fill_brewer(palette = "Dark2") +
+    theme_Publication() +
+    theme(legend.position = "right",  # Place legend on the right side
+        legend.box = "vertical",  # Stack legend items vertically
+        legend.direction = "vertical",  # Ensure legend items are vertically aligned
+        legend.justification = "left",  # Left justify the legend text
+          legend.text = element_text(size = 10),  # Adjust legend text size
+          legend.title = element_text(size = 12),  # Adjust legend title size
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+dev.off()
+```

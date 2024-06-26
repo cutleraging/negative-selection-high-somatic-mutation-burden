@@ -1,0 +1,1688 @@
+---
+title: "multiple ENU mutational signature analysis - control cells removed"
+output: html_document
+date: "2023-09-05"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preparation
+
+## Load libraries
+```{r}
+library(VariantAnnotation)
+library(GenomicRanges)
+library(GenomicFeatures)
+library(rtracklayer)
+library(MutationalPatterns)
+library(ggplot2)
+library(zFPKM)
+library(biomaRt)
+
+library(BSgenome.Hsapiens.UCSC.hg19)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+TxDb.Hsapiens.UCSC.hg19.knownGene <- keepStandardChromosomes(TxDb.Hsapiens.UCSC.hg19.knownGene)
+TxDb.Hsapiens.UCSC.hg19.knownGene <- dropSeqlevels(TxDb.Hsapiens.UCSC.hg19.knownGene, c("chrY", "chrM"), pruning.mode="coarse")
+hg19_size <- sum(seqlengths(TxDb.Hsapiens.UCSC.hg19.knownGene))
+```
+
+## Functions
+```{r}
+theme_Publication <- function(base_size=16, base_family="helvetica") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family = "")
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               #legend.key.size= unit(0.2, "cm"),
+               legend.margin = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+          ))
+      
+}
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+group_GRanges <- function(variants_list, sample_table, grouping_column = "") {
+  
+  # 1. Get unique groupings
+  unique_groupings <- unique(sample_table[[grouping_column]])
+  
+  # 2. Iterate over each grouping
+  combined_variants_list <- lapply(unique_groupings, function(group) {
+    
+    # Indices of variants belonging to this group
+    indices <- which(sample_table[[grouping_column]] == group)
+    
+    # Combine variants
+    combined_variants <- unlist(variants_list[indices])
+    return(combined_variants)
+  })
+  
+  names(combined_variants_list) <- unique_groupings
+  return(GRangesList(combined_variants_list))
+}
+```
+
+## Load vcf files and sample table
+- Remove control cells from cycle 1
+- See with-control-cells folder for analysis with these
+- Removed because C>T technical artifacts
+```{r}
+vcf_files <- list.files(path = "/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/1-data/final/filtered",
+ pattern = "\\.vcf$", full.names = TRUE)
+
+sample_table <- read.table("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/1-data/sample_table_filtered.txt", header = TRUE, sep = "\t")
+sample_table$condition_cycle <- paste(sample_table$condition, sample_table$cycle, sep = "_")
+
+# Remove control cells from cycle 1
+sample_table <- sample_table[sample_table$condition_cycle != "control_1",]
+
+# reorder vcf_files to match sample_table
+vcf_files <- vcf_files[match(sample_table$sample,tools::file_path_sans_ext(basename(vcf_files)))]
+```
+
+## Load mutations
+```{r}
+mutations <- read_vcfs_as_granges(vcf_files, sample_table$sample, BSgenome.Hsapiens.UCSC.hg19, type = "all")
+
+mutations_snv <- read_vcfs_as_granges(vcf_files, sample_table$sample, BSgenome.Hsapiens.UCSC.hg19, type = "snv")
+mutations_snv_condition <- group_GRanges(mutations_snv, sample_table, "condition")
+mutations_snv_condition_cycle <- group_GRanges(mutations_snv, sample_table, "condition_cycle")
+
+mutations_indel <- read_vcfs_as_granges(vcf_files, sample_table$sample, BSgenome.Hsapiens.UCSC.hg19, type = "indel")
+mutations_indel_condition <- group_GRanges(mutations_indel, sample_table, "condition")
+mutations_indel_condition_cycle <- group_GRanges(mutations_indel, sample_table, "condition_cycle")
+```
+
+# Mutation specturm, profiile, and contexts
+
+## SNV
+
+### SNV mutation spectrum
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/spectrum_profile_context")
+
+type_occurrences <- mut_type_occurrences(mutations_snv, BSgenome.Hsapiens.UCSC.hg19)
+
+pdf("SNV_spectrum_cell.pdf",
+    width = 10,
+    height = 10)
+plot_spectrum(type_occurrences, 
+              CT = TRUE, 
+              legend = TRUE,
+              error_bars = 'stdev',
+              by = sample_table$sample,
+              condensed = T) +
+  theme_Publication(base_size = 12) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        strip.text = element_text(size = 10))
+dev.off()
+
+pdf("SNV_spectrum_condition.pdf",
+    width = 5,
+    height = 3.5)
+plot_spectrum(type_occurrences, 
+              CT = TRUE, 
+              indv_points = TRUE, 
+              legend = TRUE,
+              error_bars = 'stdev',
+              by = sample_table$condition,
+              condensed = T) +
+  theme_Publication(base_size = 16) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        strip.text = element_text(size = 12),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size = 12))
+dev.off()
+
+pdf("SNV_spectrum_condition_cycle.pdf",
+    width = 6,
+    height = 5)
+plot_spectrum(type_occurrences, 
+              CT = TRUE, 
+              indv_points = TRUE, 
+              legend = TRUE,
+              error_bars = 'stdev',
+              by = sample_table$condition_cycle,
+              condensed = T)  +
+  theme_Publication(base_size = 12) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        strip.text = element_text(size = 10))
+dev.off()
+```
+
+### SNV mutational profile
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/spectrum_profile_context")
+
+# by cell
+mut_mat_cell <- mut_matrix(mutations_snv, BSgenome.Hsapiens.UCSC.hg19)
+
+pdf("SNV_96_profile_sample.pdf",
+    width = 10,
+    height = 20)
+plot_96_profile(mut_mat_cell,
+                ymax = 0.1,
+                condensed = TRUE)
+dev.off()
+
+# by condition
+mut_mat_condition <- mut_matrix(mutations_snv_condition, BSgenome.Hsapiens.UCSC.hg19)
+mut_mat_condition <- mut_mat_condition[,c(2,1)]
+colnames(mut_mat_condition) <- c("Control", "ENU")
+
+pdf("SNV_96_profile_condition.pdf",
+    width = 10,
+    height = 4)
+plot_96_profile(mut_mat_condition,
+                ymax = 0.1,
+                condensed = TRUE)
+dev.off()
+
+write.csv(mut_mat_condition, "mut_mat_condition.csv", quote = FALSE)
+
+# by condition and cycle
+mut_mat_condition_cycle <- mut_matrix(mutations_snv_condition_cycle, BSgenome.Hsapiens.UCSC.hg19)
+mut_mat_condition_cycle <- mut_mat_condition_cycle[,c(3, 1, 2, 4)]
+colnames(mut_mat_condition_cycle) <- c("Control Cycle 9", "ENU Cycle 3", "ENU Cycle 6", "ENU Cycle 9")
+
+pdf("SNV_96_profile_condition_cycle.pdf",
+    width = 10,
+    height = 6)
+plot_96_profile(mut_mat_condition_cycle,
+                ymax = 0.1,
+                condensed = TRUE)
+dev.off()
+```
+
+## INDEL
+
+### INDEL context profile
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/spectrum_profile_context")
+
+# by cell
+indel_grl <- get_indel_context(mutations_indel, BSgenome.Hsapiens.UCSC.hg19)
+indel_counts <- count_indel_contexts(indel_grl)
+
+
+pdf("INDEL_context_cell.pdf",
+    width = 15,
+    height = 20)
+plot_indel_contexts(indel_counts,
+                    same_y = TRUE,
+                    extra_labels = FALSE,
+                    condensed = TRUE)
+dev.off()
+
+pdf("INDEL_main_context_cell.pdf",
+    width = 4,
+    height = 15)
+plot_main_indel_contexts(indel_counts,
+                    same_y = TRUE) +
+    theme_Publication(base_size = 12) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_text(size = 5)) +
+  labs(y = "No. INDELs")
+dev.off()
+
+# by condition
+indel_grl <- get_indel_context(mutations_indel_condition, BSgenome.Hsapiens.UCSC.hg19)
+indel_counts_condition <- count_indel_contexts(indel_grl)
+colnames(indel_counts_condition) <- c("Control", "ENU")
+
+pdf("INDEL_context_condition.pdf",
+    width = 10,
+    height = 5)
+plot_indel_contexts(indel_counts_condition,
+                    same_y = TRUE,
+                    extra_labels = FALSE,
+                    condensed = TRUE) +
+  theme_Publication(base_size = 12) +
+  theme(axis.text.x = element_text(size = 5),
+        legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_text(size = 10),
+        legend.text = element_text(size = 8)) +
+  labs(y = "No. INDELs", x = "No. repeat units")
+dev.off()
+
+write.csv(indel_counts_condition, "indel_counts_condition.csv", quote = FALSE)
+
+pdf("INDEL_main_context_condition.pdf",
+    width = 4,
+    height = 4)
+plot_main_indel_contexts(indel_counts_condition,
+                    same_y = TRUE) +
+    theme_Publication(base_size = 12) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_text(size = 5)) +
+  labs(y = "No. INDELs")
+dev.off()
+
+# by condition_cycle
+indel_grl <- get_indel_context(mutations_indel_condition_cycle, BSgenome.Hsapiens.UCSC.hg19)
+indel_counts_cycle <- count_indel_contexts(indel_grl)
+colnames(indel_counts_cycle) <- c("Control Cycle 9", "ENU Cycle 3", "ENU Cycle 6", "ENU Cycle 9")
+
+pdf("INDEL_context_condition_cycle.pdf",
+    width = 10,
+    height = 5)
+plot_indel_contexts(indel_counts_cycle,
+                    same_y = TRUE,
+                    extra_labels = FALSE,
+                    condensed = TRUE) +
+  theme_Publication(base_size = 12) +
+  theme(axis.text.x = element_text(size = 5),
+        legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_text(size = 10),
+        legend.text = element_text(size = 8)) +
+  labs(y = "No. INDELs", x = "No. repeat units")
+dev.off()
+
+pdf("INDEL_context_condition_cycle.pdf",
+    width = 4,
+    height = 5)
+plot_main_indel_contexts(indel_counts_cycle,
+                    same_y = TRUE) +
+    theme_Publication(base_size = 12) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_text(size = 5)) +
+  labs(y = "No. INDELs")
+dev.off()
+```
+
+
+# Mutation signature analysis
+
+## By Condition
+
+### SNV
+
+#### Calculate factorization rank using NMF
+- How to choose the rank: Choose the smallest rank for which cophenetic correlation coefficient starts decreasing. Another approach is to choose the rank for which the plot of the residual sum of squares (RSS) between the input matrix and its estimate shows an inflection point
+- This doesn't work right becasue there are too few conditions
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/signature/condition")
+
+# generate an estimate rank plot
+estimate <- nmf(mut_mat_condition, rank = 2:5, method = "brunet", 
+                nrun = 10, seed = 123456, .opt = "v-p")
+
+# run same estimation on randomized data
+rV <- randomize(mut_mat_condition)
+rand <- nmf(rV, rank = 2:5, method = "brunet", 
+                nrun = 10, seed = 123456, .opt = "v-p")
+
+# plot
+pdf("SNV_NMF_rank_survey_estimate.pdf",
+    width = 5,
+    height = 5)
+plot(estimate)
+dev.off()
+
+pdf("SNV_NMF_rank_survey_random.pdf",
+    width = 5,
+    height = 5)
+plot(rand)
+dev.off()
+```
+
+#### De novo signature extraction
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/signature/condition")
+
+# get similarity between samples
+# cos_sim_samples <- cos_sim_matrix(mut_mat_condition, mut_mat_condition)
+# 
+# pdf("SNV_sample_cosine_heatmap.pdf",
+#     width = 5,
+#     height = 5)
+# plot_cosine_heatmap(cos_sim_samples, cluster_rows = TRUE, cluster_cols = TRUE)
+# dev.off()
+
+# extract signatures
+nmf_res_snv <- extract_signatures(mut_mat_condition, 
+                              rank = 2, 
+                              nrun = 1000, 
+                              nmf_type = "regular",
+                              single_core = FALSE)
+
+# name signatures
+colnames(nmf_res_snv$signatures) <- c("SBSA", "SBSB")
+rownames(nmf_res_snv$contribution) <- c("SBSA", "SBSB")
+
+write.csv(nmf_res_snv, "nmf_res_snv.csv", quote = FALSE)
+
+# plot profile
+pdf("SNV_de_novo_signature_profile.pdf",
+    width = 7,
+    height = 4)
+plot_96_profile(nmf_res_snv$signatures,
+                ymax= 0.06,
+                condensed = TRUE) +
+  scale_y_continuous(breaks = seq(0, 0.1, by = 0.01))
+dev.off()
+
+# compare original vs reconstructed
+pdf("SNV_de_novo_signature_profile_reconstruction.pdf",
+    width = 5,
+    height = 5)
+plot_original_vs_reconstructed(mut_mat_condition, nmf_res_snv$reconstructed, 
+                               y_intercept = 0.95)
+dev.off()
+
+# plot contribution
+pdf("SNV_de_novo_profile_contribution_relative.pdf",
+    width = 4,
+    height = 5)
+plot_contribution(nmf_res_snv$contribution, 
+                  nmf_res_snv$signature,
+                  mode = "relative",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+
+pdf("SNV_de_novo_profile_contribution_absolute.pdf",
+    width = 4,
+    height = 5)
+plot_contribution(nmf_res_snv$contribution, 
+                  nmf_res_snv$signature,
+                  mode = "absolute",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+pdf("SNV_de_novo_profile_contribution_heatmap.pdf",
+    width = 5,
+    height = 5)
+plot_contribution_heatmap(nmf_res_snv$contribution, 
+                          cluster_samples = TRUE, 
+                          cluster_sigs = TRUE)
+dev.off()
+
+# similarity between samples at signature level
+cos_sim_samples_signatures <- cos_sim_matrix(mut_mat_condition, nmf_res_snv$signature)
+
+pdf("SNV_de_novo_signature_cosine_heatmap.pdf",
+    width = 5,
+    height = 5)
+plot_cosine_heatmap(cos_sim_samples_signatures, 
+                    cluster_rows = TRUE, cluster_cols = TRUE)
+dev.off()
+```
+
+#### COSMIC Signature refitting
+```{r}
+# compare to known signatures
+cosmic_signatures = get_known_signatures(muttype = "snv",
+                                         source = "COSMIC",
+                                         tissue_type = NULL,
+                                         incl_poss_artifacts = TRUE)
+
+# get cosine similarity of all COSMIC signatures to the denovo 
+
+# SBSA
+sbsa.cos_sim_all <- apply(cosmic_signatures, 2, function(x) cos_sim(x, nmf_res_snv$signatures[,"SBSA"]))
+sbsa.cos_sim_all <- sbsa.cos_sim_all[order(sbsa.cos_sim_all, decreasing = TRUE)]
+
+pdf("SNV_signature_refit_COSMIC_SBSA_vs_SBS40.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_snv$signatures[,"SBSA"],
+  cosmic_signatures[, "SBS40"],
+  profile_names = c("SBSA", "SBS40"),
+  profile_ymax = 0.06,
+  condensed = TRUE)
+dev.off()
+
+
+# SBSB
+sbsb.cos_sim_all <- apply(cosmic_signatures, 2, function(x) cos_sim(x, nmf_res_snv$signatures[,"SBSB"]))
+sbsb.cos_sim_all <- sbsb.cos_sim_all[order(sbsb.cos_sim_all, decreasing = TRUE)]
+
+pdf("SNV_signature_refit_COSMIC_SBSB_vs_SBS5.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_snv$signatures[,"SBSB"],
+  cosmic_signatures[, "SBS5"],
+  profile_names = c("SBSB", "SBS5"),
+  profile_ymax = 0.06,
+  condensed = TRUE
+)
+dev.off()
+
+pdf("SNV_signature_refit_COSMIC_SBSB_vs_SBS25.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_snv$signatures[,"SBSB"],
+  cosmic_signatures[, "SBS25"],
+  profile_names = c("SBSB", "SBS25"),
+  profile_ymax = 0.06,
+  condensed = TRUE
+)
+dev.off()
+
+# bootstrapped refitting to ensure stability
+# contri_boots <- fit_to_signatures_bootstrapped(mut_mat_condition,
+#   cosmic_signatures,
+#   n_boots = 1000,
+#   method = "strict"
+# )
+# 
+# pdf("SNV_refit_signature_bootstrap.pdf",
+#     width = 10,
+#     height = 10)
+# plot_bootstrapped_contribution(contri_boots,
+#                                mode = "relative")
+# dev.off()
+
+# get top 10 COSMIC signatures that correalte the bset to each de novo signature
+combined_top <- unique(c(names(sbsa.cos_sim_all[1:10]), names(sbsb.cos_sim_all[1:10])))
+
+fit_res_snv <- fit_to_signatures_strict(mut_mat_condition, cosmic_signatures[,colnames(cosmic_signatures) %in% combined_top], max_delta = 0.002, method = "best_subset")
+
+# compare original vs reconstructed
+pdf("SNV_signature_refit_COSMIC_profile_reconstruction.pdf",
+    width = 5,
+    height = 5)
+plot_original_vs_reconstructed(mut_mat_condition, fit_res_snv$fit_res$reconstructed, 
+                               y_intercept = 0.95)
+dev.off()
+
+# plot contribution
+pdf("SNV_signature_refit_COSMIC_profile_contribution_relative.pdf",
+    width = 5,
+    height = 5)
+plot_contribution(fit_res_snv$fit_res$contribution, 
+                  mode = "relative",
+                  coord_flip = FALSE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+
+pdf("SNV_signature_refit_COSMIC_profile_contribution_absolute.pdf",
+    width = 8,
+    height = 8)
+plot_contribution(fit_res_snv$fit_res$contribution, 
+                  mode = "absolute",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+pdf("SNV_signature_refit_COSMIC_contribution_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_contribution_heatmap(fit_res_snv$fit_res$contribution, 
+                          cluster_samples = TRUE, 
+                          cluster_sigs = TRUE)
+dev.off()
+
+# similarity between samples at signature level
+cos_sim_samples_signatures <- cos_sim_matrix(mut_mat_condition, COSMIC_signatures)
+
+pdf("SNV_signature_refit_COSMIC_cosine_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_cosine_heatmap(cos_sim_samples_signatures, 
+                    cluster_rows = TRUE, cluster_cols = TRUE)
+dev.off()
+```
+
+#### SIGNAL exposure signature refitting
+- Purpose is to see what mutagen the ENU signature most resembles
+```{r}
+# compare to known signatures
+signal_signatures = get_known_signatures(muttype = "snv",
+                                         source = "SIGNAL",
+                                         tissue_type = NULL,
+                                         sig_type = "exposure",
+                                         incl_poss_artifacts = TRUE)
+
+# get cosine similarity of all SIGNAL signatures to the denovo 
+
+# SBSA
+sbsa.cos_sim_all <- apply(signal_signatures, 2, function(x) cos_sim(x, nmf_res_snv$signatures[,"SBSA"]))
+sbsa.cos_sim_all <- sbsa.cos_sim_all[order(sbsa.cos_sim_all, decreasing = TRUE)]
+
+pdf("SNV_signature_refit_SIGNAL_SBSA_vs_Control.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_snv$signatures[,"SBSA"],
+  signal_signatures[, "Control"],
+  profile_names = c("SBSA", "Control"),
+  profile_ymax = 0.06,
+  condensed = TRUE
+)
+dev.off()
+
+# SBSB
+sbsb.cos_sim_all <- apply(signal_signatures, 2, function(x) cos_sim(x, nmf_res_snv$signatures[,"SBSB"]))
+sbsb.cos_sim_all <- sbsb.cos_sim_all[order(sbsb.cos_sim_all, decreasing = TRUE)]
+
+pdf("SNV_signature_refit_SIGNAL_SBSB_vs_ENU.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_snv$signatures[,"SBSB"],
+  signal_signatures[, "ENU..400.uM."],
+  profile_names = c("SBSB", "ENU"),
+  profile_ymax = 0.06,
+  condensed = TRUE
+)
+dev.off()
+
+# bootstrapped refitting to ensure stability
+# contri_boots <- fit_to_signatures_bootstrapped(mut_mat_condition,
+#   signal_signatures,
+#   n_boots = 1000,
+#   method = "strict"
+# )
+# 
+# pdf("SNV_refit_signature_bootstrap.pdf",
+#     width = 10,
+#     height = 10)
+# plot_bootstrapped_contribution(contri_boots,
+#                                mode = "relative")
+# dev.off()
+
+# get top 10 signal signatures that correalte the bset to each de novo signature
+combined_top <- unique(c(names(sbs40.cos_sim_all[1:10]), names(sbsa.cos_sim_all[1:10])))
+
+fit_res_snv <- fit_to_signatures_strict(mut_mat_condition, signal_signatures[,colnames(signal_signatures) %in% combined_top], max_delta = 0.002, method = "best_subset")
+
+# compare original vs reconstructed
+pdf("SNV_signature_refit_SIGNAL_profile_reconstruction.pdf",
+    width = 5,
+    height = 5)
+plot_original_vs_reconstructed(mut_mat_condition, fit_res_snv$fit_res$reconstructed, 
+                               y_intercept = 0.95)
+dev.off()
+
+# plot contribution
+pdf("SNV_signature_refit_SIGNAL_profile_contribution_relative.pdf",
+    width = 5,
+    height = 5)
+plot_contribution(fit_res_snv$fit_res$contribution, 
+                  mode = "relative",
+                  coord_flip = FALSE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+
+pdf("SNV_signature_refit_SIGNAL_profile_contribution_absolute.pdf",
+    width = 8,
+    height = 8)
+plot_contribution(fit_res_snv$fit_res$contribution, 
+                  mode = "absolute",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+pdf("SNV_signature_refit_SIGNAL_contribution_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_contribution_heatmap(fit_res_snv$fit_res$contribution, 
+                          cluster_samples = TRUE, 
+                          cluster_sigs = TRUE)
+dev.off()
+
+# similarity between samples at signature level
+cos_sim_samples_signatures <- cos_sim_matrix(mut_mat_condition, signal_signatures)
+
+pdf("SNV_signature_refit_SIGNAL_cosine_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_cosine_heatmap(cos_sim_samples_signatures, 
+                    cluster_rows = TRUE, cluster_cols = TRUE)
+dev.off()
+```
+
+#### Signature potential damage analysis
+- Can use different subset of genes (e.g. growth, nonessential) - Looking at genes determined to be expressed in IMR90
+- Using best fit signatures: SBS5, SBS40, ENU
+- ratio_by_background is normalized ratio. Noramlized ratio of 2 means that a signature is twice as likely to cause that type of mutation, compared to a completely random “flat” signature
+```{r, eval = FALSE}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/annotation/rna")
+
+# rna expression table
+rna <- read.table("ENCFF245ZOB-IMR90-total-RNA-seq-hg19.tsv", header = TRUE)
+
+# remove version from ensemble gene id
+rna$gene_id <- gsub("\\..*", "", rna$gene_id)
+
+# plot TPM distribution
+nrow(rna)
+hist(log2(rna$TPM))
+
+# zFPKM calculation
+zfpkm <- zFPKM(rna[,"TPM", drop = FALSE])
+zFPKMPlot(rna[,"TPM", drop = FALSE])
+
+# plot zfpkm  distribution
+hist(zfpkm$TPM)
+
+# keep genes with > -3 zfpkm
+rna.filter <- rna[zfpkm$TPM > -3,]
+
+# plot filtered TPM distribution
+nrow(rna.filter)
+hist(log2(rna.filter$TPM))
+
+# get entrz id
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+gene_names <- getBM(attributes = c('ensembl_gene_id', 'external_gene_name', 'entrezgene_id'),
+                filters = 'ensembl_gene_id',
+                values = rna$gene_id, 
+                mart = ensembl)
+
+rna.filter <- merge(rna.filter, gene_names, by.x = "gene_id", by.y = "ensembl_gene_id")
+sum(duplicated(rna.filter$entrezgene_id))
+rna.filter <- rna.filter[!duplicated(rna.filter$entrezgene_id),] # remove duplicates
+
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/signature/condition")
+
+# get the ratio of “stop gain”, “mismatch”, “synonymous” and “splice site” mutations can be determined per genomic context
+contexts <- rownames(mut_mat_condition)
+context_mismatches <- context_potential_damage_analysis(contexts, TxDb.Hsapiens.UCSC.hg19.knownGene, BSgenome.Hsapiens.UCSC.hg19, rna.filter$entrezgene_id, verbose = TRUE)
+
+write.csv(context_mismatches, "context_mismatches_potential_damage.csv", row.names = FALSE)
+
+# get the ratios per signature
+signatures <- cbind(cosmic_signatures[,c("SBS5", "SBS40")], signal_signatures[,"ENU..400.uM.", drop = FALSE])
+sig_damage <- signature_potential_damage_analysis(signatures, contexts, context_mismatches)
+
+write.csv(sig_damage, "fitted_sig_potential_damage.csv", row.names = FALSE)
+```
+
+
+### INDEL
+
+#### Calculate factorization rank using NMF
+- How to choose the rank: Choose the smallest rank for which cophenetic correlation coefficient starts decreasing. Another approach is to choose the rank for which the plot of the residual sum of squares (RSS) between the input matrix and its estimate shows an inflection point
+- Choosing rank = 2
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/signature/condition")
+
+# add small pseudocount
+indel_counts_condition <- indel_counts_condition + 0.0001
+
+# generate an estimate rank plot
+estimate <- nmf(indel_counts_condition, rank = 2:5, method = "brunet", 
+                nrun = 10, seed = 123456, .opt = "v-p")
+
+# run same estimation on randomized data
+rV <- randomize(indel_counts_condition)
+rand <- nmf(rV, rank = 2:5, method = "brunet", 
+                nrun = 10, seed = 123456, .opt = "v-p")
+
+# plot
+pdf("INDEL_NMF_rank_survey_estimate.pdf",
+    width = 5,
+    height = 5)
+plot(estimate)
+dev.off()
+
+pdf("INDEL_NMF_rank_survey_random.pdf",
+    width = 5,
+    height = 5)
+plot(rand)
+dev.off()
+```
+
+#### De novo signature extraction
+- Using COSMIC database for comparison
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/signature/condition")
+
+# get similarity between samples
+cos_sim_samples <- cos_sim_matrix(indel_counts, indel_counts)
+
+pdf("INDEL_sample_cosine_heatmap.pdf",
+    width = 5,
+    height = 5)
+plot_cosine_heatmap(cos_sim_samples, cluster_rows = TRUE, cluster_cols = TRUE)
+dev.off()
+
+# extract signatures
+nmf_res_indel <- extract_signatures(indel_counts_condition, 
+                              rank = 1, 
+                              nrun = 1000, 
+                              nmf_type = "regular",
+                              single_core = FALSE)
+
+# name signatures
+colnames(nmf_res_indel$signatures) <- c("IDA")
+rownames(nmf_res_indel$contribution) <- c("IDA")
+
+# bootstrapped refitting to ensure stability
+# contri_boots <- fit_to_signatures_bootstrapped(indel_counts,
+#   nmf_res_indel$signatures,
+#   n_boots = 1000,
+#   method = "strict"
+# )
+# 
+# pdf("INDEL_de_novo_signature_context.pdf",
+#     width = 10,
+#     height = 5)
+# plot_indel_contexts(nmf_res_indel$signatures,
+#                     same_y = TRUE,
+#                     extra_labels = FALSE,
+#                     condensed = TRUE) +
+#   theme_Publication(base_size = 12) +
+#   theme(axis.text.x = element_text(size = 5),
+#         legend.position = "right",
+#         legend.direction = "vertical",
+#         strip.text = element_text(size = 10)) +
+#   labs(y = "Relative contribution", x = "No. repeat units")
+# dev.off()
+
+pdf("INDEL_de_novo_signature_main_context.pdf",
+    width = 4,
+    height = 4)
+plot_main_indel_contexts(nmf_res_indel$signatures,
+                    same_y = TRUE) +
+    theme_Publication(base_size = 12) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_text(size = 10)) +
+  labs(y = "Relative contribution")
+dev.off()
+
+# compare original vs reconstructed
+pdf("INDEL_de_novo_signature_profile_reconstruction.pdf",
+    width = 5,
+    height = 5)
+plot_original_vs_reconstructed(indel_counts_condition, nmf_res_indel$reconstructed, 
+                               y_intercept = 0.95)
+dev.off()
+
+# plot contribution
+pdf("INDEL_de_novo_profile_contribution_relative.pdf",
+    width = 4,
+    height = 5)
+plot_contribution(nmf_res_indel$contribution, 
+                  nmf_res_indel$signature,
+                  mode = "relative",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+
+pdf("INDEL_de_novo_profile_contribution_absolute.pdf",
+    width = 4,
+    height = 5)
+plot_contribution(nmf_res_indel$contribution, 
+                  nmf_res_indel$signature,
+                  mode = "absolute",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+# pdf("INDEL_de_novo_profile_contribution_heatmap.pdf",
+#     width = 5,
+#     height = 5)
+# plot_contribution_heatmap(nmf_res_indel$contribution, 
+#                           cluster_samples = TRUE, 
+#                           cluster_sigs = TRUE)
+# dev.off()
+
+# # similarity between samples at signature level
+# cos_sim_samples_signatures <- cos_sim_matrix(indel_counts_condition, nmf_res_indel$signature)
+# 
+# pdf("INDEL_de_novo_signature_cosine_heatmap.pdf",
+#     width = 5,
+#     height = 5)
+# plot_cosine_heatmap(cos_sim_samples_signatures, 
+#                     cluster_rows = TRUE, cluster_cols = TRUE)
+# dev.off()
+```
+
+#### COSMIC Signature refitting
+```{r}
+# compare to known signatures
+indel_signatures <- get_known_signatures(muttype = "indel", incl_poss_artifacts = TRUE)
+
+# get similarity
+indel.cos_sim_all <- apply(indel_signatures, 2, function(x) cos_sim(x, nmf_res_indel$signatures[,1]))
+indel.cos_sim_all <- indel.cos_sim_all[order(indel.cos_sim_all, decreasing = TRUE)]
+
+# pdf("INDEL_signature_refit_COSMIC_IDA_vs_ID1.pdf",
+#     width = 7,
+#     height = 4)
+# plot_compare_profiles(nmf_res_indel$signatures[,"IDA"],
+#   indel_signatures[, "ID1"],
+#   profile_names = c("IDA", "ID1"),
+#   profile_ymax = 0.06,
+#   condensed = TRUE,
+#   colors = NA)
+# dev.off()
+
+fit_res_indel <- fit_to_signatures_strict(indel_counts_condition, indel_signatures[,1:10], max_delta = 0.002, method = "best_subset")
+
+# # bootstrapped refitting to ensure stability
+# contri_boots <- fit_to_signatures_bootstrapped(indel_counts,
+#   cosmic_signatures,
+#   n_boots = 1000,
+#   method = "strict"
+# )
+# 
+# pdf("INDEL_refit_signature_bootstrap.pdf",
+#     width = 10,
+#     height = 4)
+# plot_bootstrapped_contribution(contri_boots,
+#                                mode = "relative")
+# dev.off()
+
+# compare original vs reconstructed
+pdf("INDEL_refit_signature_profile_reconstruction.pdf",
+    width = 5,
+    height = 5)
+plot_original_vs_reconstructed(indel_counts_condition, fit_res_indel$fit_res$reconstructed, 
+                               y_intercept = 0.95)
+dev.off()
+
+# plot contribution
+pdf("INDEL_refit_signature_profile_contribution_relative.pdf",
+    width = 8,
+    height = 8)
+plot_contribution(fit_res_indel$fit_res$contribution, 
+                  mode = "relative",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+
+pdf("INDEL_refit_signature_profile_contribution_absolute.pdf",
+    width = 8,
+    height = 8)
+plot_contribution(fit_res_indel$fit_res$contribution, 
+                  mode = "absolute",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+pdf("INDEL_refit_profile_contribution_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_contribution_heatmap(fit_res_indel$fit_res$contribution, 
+                          cluster_samples = TRUE, 
+                          cluster_sigs = TRUE)
+dev.off()
+
+# similarity between samples at signature level
+cos_sim_samples_signatures <- cos_sim_matrix(indel_counts, indel_signatures)
+
+pdf("INDEL_refit_signature_cosine_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_cosine_heatmap(cos_sim_samples_signatures, 
+                    cluster_rows = TRUE, cluster_cols = TRUE)
+dev.off()
+```
+
+#### Signature potential damage analysis
+- Can use different subset of genes (e.g. growth, nonessential) - Looking at genes determined to be expressed in IMR90
+- Using de novo signatures
+- ratio_by_background is normalized ratio. Noramlized ratio of 2 means that a signature is twice as likely to cause that type of mutation, compared to a completely random “flat” signature
+```{r, eval = FALSE}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/annotation/rna")
+
+# rna expression table
+rna <- read.table("ENCFF245ZOB-IMR90-total-RNA-seq-hg19.tsv", header = TRUE)
+
+# remove version from ensemble gene id
+rna$gene_id <- gsub("\\..*", "", rna$gene_id)
+
+# plot TPM distribution
+nrow(rna)
+hist(log2(rna$TPM))
+
+# zFPKM calculation
+zfpkm <- zFPKM(rna[,"TPM", drop = FALSE])
+zFPKMPlot(rna[,"TPM", drop = FALSE])
+
+# plot zfpkm  distribution
+hist(zfpkm$TPM)
+
+# keep genes with > -3 zfpkm
+rna.filter <- rna[zfpkm$TPM > -3,]
+
+# plot filtered TPM distribution
+nrow(rna.filter)
+hist(log2(rna.filter$TPM))
+
+# get entrz id
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+gene_names <- getBM(attributes = c('ensembl_gene_id', 'external_gene_name', 'entrezgene_id'),
+                filters = 'ensembl_gene_id',
+                values = rna$gene_id, 
+                mart = ensembl)
+
+rna.filter <- merge(rna.filter, gene_names, by.x = "gene_id", by.y = "ensembl_gene_id")
+sum(duplicated(rna.filter$entrezgene_id))
+rna.filter <- rna.filter[!duplicated(rna.filter$entrezgene_id),] # remove duplicates
+
+# get the ratio of “stop gain”, “mismatch”, “synonymous” and “splice site” mutations can be determined per genomic context
+contexts <- rownames(indel_counts)
+context_mismatches <- context_potential_damage_analysis(contexts, TxDb.Hsapiens.UCSC.hg19.knownGene, BSgenome.Hsapiens.UCSC.hg19, rna.filter$entrezgene_id)
+
+# get the ratios per signature
+sig_damage_indel <- signature_potential_damage_analysis(nmf_res_indel$signatures, contexts, context_mismatches)
+sig_damage_indel <- sig_damage_indel[order(sig_damage_indel$ratio_by_background, decreasing = TRUE),]
+```
+
+## By Cell
+
+### SNV
+
+#### Calculate factorization rank using NMF
+- How to choose the rank: Choose the smallest rank for which cophenetic correlation coefficient starts decreasing. Another approach is to choose the rank for which the plot of the residual sum of squares (RSS) between the input matrix and its estimate shows an inflection point
+- This doesn't work right becasue there are too few conditions
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/signature/cell")
+
+# generate an estimate rank plot
+estimate <- nmf(mut_mat_cell, rank = 2:5, method = "brunet", 
+                nrun = 10, seed = 123456, .opt = "v-p")
+
+# run same estimation on randomized data
+rV <- randomize(mut_mat_cell)
+rand <- nmf(rV, rank = 2:5, method = "brunet", 
+                nrun = 10, seed = 123456, .opt = "v-p")
+
+# plot
+pdf("SNV_NMF_rank_survey_estimate.pdf",
+    width = 5,
+    height = 5)
+plot(estimate)
+dev.off()
+
+pdf("SNV_NMF_rank_survey_random.pdf",
+    width = 5,
+    height = 5)
+plot(rand)
+dev.off()
+```
+
+#### De novo signature extraction
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/signature/cell")
+
+# get similarity between samples
+# cos_sim_samples <- cos_sim_matrix(mut_mat_cell, mut_mat_cell)
+# 
+# pdf("SNV_sample_cosine_heatmap.pdf",
+#     width = 5,
+#     height = 5)
+# plot_cosine_heatmap(cos_sim_samples, cluster_rows = TRUE, cluster_cols = TRUE)
+# dev.off()
+
+# extract signatures
+nmf_res_snv <- extract_signatures(mut_mat_cell, 
+                              rank = 2, 
+                              nrun = 1000, 
+                              nmf_type = "regular",
+                              single_core = FALSE)
+
+# name signatures
+colnames(nmf_res_snv$signatures) <- c("SBSB", "SBSA")
+rownames(nmf_res_snv$contribution) <- c("SBSB", "SBSA")
+
+write.csv(nmf_res_snv, "nmf_res_snv.csv", quote = FALSE)
+
+# plot profile
+pdf("SNV_de_novo_signature_profile.pdf",
+    width = 7,
+    height = 4)
+plot_96_profile(nmf_res_snv$signatures,
+                ymax= 0.06,
+                condensed = TRUE) +
+  scale_y_continuous(breaks = seq(0, 0.1, by = 0.01))
+dev.off()
+
+# compare original vs reconstructed
+pdf("SNV_de_novo_signature_profile_reconstruction.pdf",
+    width = 5,
+    height = 5)
+plot_original_vs_reconstructed(mut_mat_cell, nmf_res_snv$reconstructed, 
+                               y_intercept = 0.95)
+dev.off()
+
+# plot contribution
+pdf("SNV_de_novo_profile_contribution_relative.pdf",
+    width = 4,
+    height = 5)
+plot_contribution(nmf_res_snv$contribution, 
+                  nmf_res_snv$signature,
+                  mode = "relative",
+                  coord_flip = TRUE,
+                  index = c(7:9, 13:15, 1:6, 10:12, 16:18)) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+
+pdf("SNV_de_novo_profile_contribution_absolute.pdf",
+    width = 4,
+    height = 5)
+plot_contribution(nmf_res_snv$contribution, 
+                  nmf_res_snv$signature,
+                  mode = "absolute",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+pdf("SNV_de_novo_profile_contribution_heatmap.pdf",
+    width = 5,
+    height = 5)
+plot_contribution_heatmap(nmf_res_snv$contribution, 
+                          cluster_samples = TRUE, 
+                          cluster_sigs = TRUE)
+dev.off()
+
+# similarity between samples at signature level
+cos_sim_samples_signatures <- cos_sim_matrix(mut_mat_cell, nmf_res_snv$signature)
+
+pdf("SNV_de_novo_signature_cosine_heatmap.pdf",
+    width = 5,
+    height = 5)
+plot_cosine_heatmap(cos_sim_samples_signatures, 
+                    cluster_rows = TRUE, cluster_cols = TRUE)
+dev.off()
+```
+
+#### COSMIC Signature refitting
+```{r}
+# compare to known signatures
+cosmic_signatures = get_known_signatures(muttype = "snv",
+                                         source = "COSMIC",
+                                         tissue_type = NULL,
+                                         incl_poss_artifacts = TRUE)
+
+# get cosine similarity of all COSMIC signatures to the denovo 
+
+# SBSA
+sbsa.cos_sim_all <- apply(cosmic_signatures, 2, function(x) cos_sim(x, nmf_res_snv$signatures[,"SBSA"]))
+sbsa.cos_sim_all <- sbsa.cos_sim_all[order(sbsa.cos_sim_all, decreasing = TRUE)]
+
+pdf("SNV_signature_refit_COSMIC_SBSA_vs_SBS40.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_snv$signatures[,"SBSA"],
+  cosmic_signatures[, "SBS40"],
+  profile_names = c("SBSA", "SBS40"),
+  profile_ymax = 0.06,
+  condensed = TRUE)
+dev.off()
+
+
+# SBSB
+sbsb.cos_sim_all <- apply(cosmic_signatures, 2, function(x) cos_sim(x, nmf_res_snv$signatures[,"SBSB"]))
+sbsb.cos_sim_all <- sbsb.cos_sim_all[order(sbsb.cos_sim_all, decreasing = TRUE)]
+
+pdf("SNV_signature_refit_COSMIC_SBSB_vs_SBS5.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_snv$signatures[,"SBSB"],
+  cosmic_signatures[, "SBS5"],
+  profile_names = c("SBSB", "SBS5"),
+  profile_ymax = 0.06,
+  condensed = TRUE
+)
+dev.off()
+
+pdf("SNV_signature_refit_COSMIC_SBSB_vs_SBS25.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_snv$signatures[,"SBSB"],
+  cosmic_signatures[, "SBS25"],
+  profile_names = c("SBSB", "SBS25"),
+  profile_ymax = 0.06,
+  condensed = TRUE
+)
+dev.off()
+
+# bootstrapped refitting to ensure stability
+# contri_boots <- fit_to_signatures_bootstrapped(mut_mat_cell,
+#   cosmic_signatures,
+#   n_boots = 1000,
+#   method = "strict"
+# )
+# 
+# pdf("SNV_refit_signature_bootstrap.pdf",
+#     width = 10,
+#     height = 10)
+# plot_bootstrapped_contribution(contri_boots,
+#                                mode = "relative")
+# dev.off()
+
+# get top 10 COSMIC signatures that correalte the bset to each de novo signature
+combined_top <- unique(c(names(sbsa.cos_sim_all[1:10]), names(sbsb.cos_sim_all[1:10])))
+
+fit_res_snv <- fit_to_signatures_strict(mut_mat_cell, cosmic_signatures[,colnames(cosmic_signatures) %in% combined_top], max_delta = 0.002, method = "best_subset")
+
+# compare original vs reconstructed
+pdf("SNV_signature_refit_COSMIC_profile_reconstruction.pdf",
+    width = 5,
+    height = 5)
+plot_original_vs_reconstructed(mut_mat_cell, fit_res_snv$fit_res$reconstructed, 
+                               y_intercept = 0.95)
+dev.off()
+
+# plot contribution
+pdf("SNV_signature_refit_COSMIC_profile_contribution_relative.pdf",
+    width = 5,
+    height = 5)
+plot_contribution(fit_res_snv$fit_res$contribution, 
+                  mode = "relative",
+                  coord_flip = FALSE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+
+pdf("SNV_signature_refit_COSMIC_profile_contribution_absolute.pdf",
+    width = 8,
+    height = 8)
+plot_contribution(fit_res_snv$fit_res$contribution, 
+                  mode = "absolute",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+pdf("SNV_signature_refit_COSMIC_contribution_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_contribution_heatmap(fit_res_snv$fit_res$contribution, 
+                          cluster_samples = TRUE, 
+                          cluster_sigs = TRUE)
+dev.off()
+
+# similarity between samples at signature level
+cos_sim_samples_signatures <- cos_sim_matrix(mut_mat_cell, COSMIC_signatures)
+
+pdf("SNV_signature_refit_COSMIC_cosine_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_cosine_heatmap(cos_sim_samples_signatures, 
+                    cluster_rows = TRUE, cluster_cols = TRUE)
+dev.off()
+```
+
+#### SIGNAL exposure signature refitting
+- Purpose is to see what mutagen the ENU signature most resembles
+```{r}
+# compare to known signatures
+signal_signatures = get_known_signatures(muttype = "snv",
+                                         source = "SIGNAL",
+                                         tissue_type = NULL,
+                                         sig_type = "exposure",
+                                         incl_poss_artifacts = TRUE)
+
+# get cosine similarity of all SIGNAL signatures to the denovo 
+
+# SBSA
+sbsa.cos_sim_all <- apply(signal_signatures, 2, function(x) cos_sim(x, nmf_res_snv$signatures[,"SBSA"]))
+sbsa.cos_sim_all <- sbsa.cos_sim_all[order(sbsa.cos_sim_all, decreasing = TRUE)]
+
+pdf("SNV_signature_refit_SIGNAL_SBSA_vs_Control.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_snv$signatures[,"SBSA"],
+  signal_signatures[, "Control"],
+  profile_names = c("SBSA", "Control"),
+  profile_ymax = 0.06,
+  condensed = TRUE
+)
+dev.off()
+
+# SBSB
+sbsb.cos_sim_all <- apply(signal_signatures, 2, function(x) cos_sim(x, nmf_res_snv$signatures[,"SBSB"]))
+sbsb.cos_sim_all <- sbsb.cos_sim_all[order(sbsb.cos_sim_all, decreasing = TRUE)]
+
+pdf("SNV_signature_refit_SIGNAL_SBSB_vs_ENU.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_snv$signatures[,"SBSB"],
+  signal_signatures[, "ENU..400.uM."],
+  profile_names = c("SBSB", "ENU"),
+  profile_ymax = 0.06,
+  condensed = TRUE
+)
+dev.off()
+
+# bootstrapped refitting to ensure stability
+# contri_boots <- fit_to_signatures_bootstrapped(mut_mat_cell,
+#   signal_signatures,
+#   n_boots = 1000,
+#   method = "strict"
+# )
+# 
+# pdf("SNV_refit_signature_bootstrap.pdf",
+#     width = 10,
+#     height = 10)
+# plot_bootstrapped_contribution(contri_boots,
+#                                mode = "relative")
+# dev.off()
+
+# get top 10 signal signatures that correalte the bset to each de novo signature
+combined_top <- unique(c(names(sbs40.cos_sim_all[1:10]), names(sbsa.cos_sim_all[1:10])))
+
+fit_res_snv <- fit_to_signatures_strict(mut_mat_cell, signal_signatures[,colnames(signal_signatures) %in% combined_top], max_delta = 0.002, method = "best_subset")
+
+# compare original vs reconstructed
+pdf("SNV_signature_refit_SIGNAL_profile_reconstruction.pdf",
+    width = 5,
+    height = 5)
+plot_original_vs_reconstructed(mut_mat_cell, fit_res_snv$fit_res$reconstructed, 
+                               y_intercept = 0.95)
+dev.off()
+
+# plot contribution
+pdf("SNV_signature_refit_SIGNAL_profile_contribution_relative.pdf",
+    width = 5,
+    height = 5)
+plot_contribution(fit_res_snv$fit_res$contribution, 
+                  mode = "relative",
+                  coord_flip = FALSE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+
+pdf("SNV_signature_refit_SIGNAL_profile_contribution_absolute.pdf",
+    width = 8,
+    height = 8)
+plot_contribution(fit_res_snv$fit_res$contribution, 
+                  mode = "absolute",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+pdf("SNV_signature_refit_SIGNAL_contribution_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_contribution_heatmap(fit_res_snv$fit_res$contribution, 
+                          cluster_samples = TRUE, 
+                          cluster_sigs = TRUE)
+dev.off()
+
+# similarity between samples at signature level
+cos_sim_samples_signatures <- cos_sim_matrix(mut_mat_cell, signal_signatures)
+
+pdf("SNV_signature_refit_SIGNAL_cosine_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_cosine_heatmap(cos_sim_samples_signatures, 
+                    cluster_rows = TRUE, cluster_cols = TRUE)
+dev.off()
+```
+
+### INDEL
+
+#### Calculate factorization rank using NMF
+- How to choose the rank: Choose the smallest rank for which cophenetic correlation coefficient starts decreasing. Another approach is to choose the rank for which the plot of the residual sum of squares (RSS) between the input matrix and its estimate shows an inflection point
+- Choosing rank = 2
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/signature/condition")
+
+# add small pseudocount
+indel_counts_condition <- indel_counts_condition + 0.0001
+
+# generate an estimate rank plot
+estimate <- nmf(indel_counts_condition, rank = 2:5, method = "brunet", 
+                nrun = 10, seed = 123456, .opt = "v-p")
+
+# run same estimation on randomized data
+rV <- randomize(indel_counts_condition)
+rand <- nmf(rV, rank = 2:5, method = "brunet", 
+                nrun = 10, seed = 123456, .opt = "v-p")
+
+# plot
+pdf("INDEL_NMF_rank_survey_estimate.pdf",
+    width = 5,
+    height = 5)
+plot(estimate)
+dev.off()
+
+pdf("INDEL_NMF_rank_survey_random.pdf",
+    width = 5,
+    height = 5)
+plot(rand)
+dev.off()
+```
+
+#### De novo signature extraction
+- Using COSMIC database for comparison
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/4-mutational-signatures/without-control-cells/signature/condition")
+
+# get similarity between samples
+cos_sim_samples <- cos_sim_matrix(indel_counts, indel_counts)
+
+pdf("INDEL_sample_cosine_heatmap.pdf",
+    width = 5,
+    height = 5)
+plot_cosine_heatmap(cos_sim_samples, cluster_rows = TRUE, cluster_cols = TRUE)
+dev.off()
+
+# extract signatures
+nmf_res_indel <- extract_signatures(indel_counts_condition, 
+                              rank = 1, 
+                              nrun = 1000, 
+                              nmf_type = "regular",
+                              single_core = FALSE)
+
+# name signatures
+colnames(nmf_res_indel$signatures) <- c("IDA")
+rownames(nmf_res_indel$contribution) <- c("IDA")
+
+# bootstrapped refitting to ensure stability
+# contri_boots <- fit_to_signatures_bootstrapped(indel_counts,
+#   nmf_res_indel$signatures,
+#   n_boots = 1000,
+#   method = "strict"
+# )
+# 
+# pdf("INDEL_de_novo_signature_context.pdf",
+#     width = 10,
+#     height = 5)
+# plot_indel_contexts(nmf_res_indel$signatures,
+#                     same_y = TRUE,
+#                     extra_labels = FALSE,
+#                     condensed = TRUE) +
+#   theme_Publication(base_size = 12) +
+#   theme(axis.text.x = element_text(size = 5),
+#         legend.position = "right",
+#         legend.direction = "vertical",
+#         strip.text = element_text(size = 10)) +
+#   labs(y = "Relative contribution", x = "No. repeat units")
+# dev.off()
+
+pdf("INDEL_de_novo_signature_main_context.pdf",
+    width = 4,
+    height = 4)
+plot_main_indel_contexts(nmf_res_indel$signatures,
+                    same_y = TRUE) +
+    theme_Publication(base_size = 12) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_text(size = 10)) +
+  labs(y = "Relative contribution")
+dev.off()
+
+# compare original vs reconstructed
+pdf("INDEL_de_novo_signature_profile_reconstruction.pdf",
+    width = 5,
+    height = 5)
+plot_original_vs_reconstructed(indel_counts_condition, nmf_res_indel$reconstructed, 
+                               y_intercept = 0.95)
+dev.off()
+
+# plot contribution
+pdf("INDEL_de_novo_profile_contribution_relative.pdf",
+    width = 4,
+    height = 5)
+plot_contribution(nmf_res_indel$contribution, 
+                  nmf_res_indel$signature,
+                  mode = "relative",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+
+pdf("INDEL_de_novo_profile_contribution_absolute.pdf",
+    width = 4,
+    height = 5)
+plot_contribution(nmf_res_indel$contribution, 
+                  nmf_res_indel$signature,
+                  mode = "absolute",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+# pdf("INDEL_de_novo_profile_contribution_heatmap.pdf",
+#     width = 5,
+#     height = 5)
+# plot_contribution_heatmap(nmf_res_indel$contribution, 
+#                           cluster_samples = TRUE, 
+#                           cluster_sigs = TRUE)
+# dev.off()
+
+# # similarity between samples at signature level
+# cos_sim_samples_signatures <- cos_sim_matrix(indel_counts_condition, nmf_res_indel$signature)
+# 
+# pdf("INDEL_de_novo_signature_cosine_heatmap.pdf",
+#     width = 5,
+#     height = 5)
+# plot_cosine_heatmap(cos_sim_samples_signatures, 
+#                     cluster_rows = TRUE, cluster_cols = TRUE)
+# dev.off()
+```
+
+#### COSMIC Signature refitting
+```{r}
+# compare to known signatures
+indel_signatures <- get_known_signatures(muttype = "indel", incl_poss_artifacts = TRUE)
+
+# get similarity
+indel.cos_sim_all <- apply(indel_signatures, 2, function(x) cos_sim(x, nmf_res_indel$signatures[,1]))
+indel.cos_sim_all <- indel.cos_sim_all[order(indel.cos_sim_all, decreasing = TRUE)]
+
+pdf("INDEL_signature_refit_COSMIC_IDA_vs_ID1.pdf",
+    width = 7,
+    height = 4)
+plot_compare_profiles(nmf_res_indel$signatures[,"IDA"],
+  indel_signatures[, "ID1"],
+  profile_names = c("IDA", "ID1"),
+  profile_ymax = 0.06,
+  condensed = TRUE,
+  colors = NA)
+dev.off()
+
+fit_res_indel <- fit_to_signatures_strict(indel_counts_condition, indel_signatures[,1:10], max_delta = 0.002, method = "best_subset")
+
+# # bootstrapped refitting to ensure stability
+# contri_boots <- fit_to_signatures_bootstrapped(indel_counts,
+#   cosmic_signatures,
+#   n_boots = 1000,
+#   method = "strict"
+# )
+# 
+# pdf("INDEL_refit_signature_bootstrap.pdf",
+#     width = 10,
+#     height = 4)
+# plot_bootstrapped_contribution(contri_boots,
+#                                mode = "relative")
+# dev.off()
+
+# compare original vs reconstructed
+pdf("INDEL_refit_signature_profile_reconstruction.pdf",
+    width = 5,
+    height = 5)
+plot_original_vs_reconstructed(indel_counts_condition, fit_res_indel$fit_res$reconstructed, 
+                               y_intercept = 0.95)
+dev.off()
+
+# plot contribution
+pdf("INDEL_refit_signature_profile_contribution_relative.pdf",
+    width = 8,
+    height = 8)
+plot_contribution(fit_res_indel$fit_res$contribution, 
+                  mode = "relative",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+
+pdf("INDEL_refit_signature_profile_contribution_absolute.pdf",
+    width = 8,
+    height = 8)
+plot_contribution(fit_res_indel$fit_res$contribution, 
+                  mode = "absolute",
+                  coord_flip = TRUE) +
+  theme_Publication(base_size = 14)
+dev.off()
+
+pdf("INDEL_refit_profile_contribution_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_contribution_heatmap(fit_res_indel$fit_res$contribution, 
+                          cluster_samples = TRUE, 
+                          cluster_sigs = TRUE)
+dev.off()
+
+# similarity between samples at signature level
+cos_sim_samples_signatures <- cos_sim_matrix(indel_counts, indel_signatures)
+
+pdf("INDEL_refit_signature_cosine_heatmap.pdf",
+    width = 10,
+    height = 5)
+plot_cosine_heatmap(cos_sim_samples_signatures, 
+                    cluster_rows = TRUE, cluster_cols = TRUE)
+dev.off()
+```
+
+#### Signature potential damage analysis
+- Can use different subset of genes (e.g. growth, nonessential) - Looking at genes determined to be expressed in IMR90
+- Using de novo signatures
+- ratio_by_background is normalized ratio. Noramlized ratio of 2 means that a signature is twice as likely to cause that type of mutation, compared to a completely random “flat” signature
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/annotation/rna")
+
+# rna expression table
+rna <- read.table("ENCFF245ZOB-IMR90-total-RNA-seq-hg19.tsv", header = TRUE)
+
+# remove version from ensemble gene id
+rna$gene_id <- gsub("\\..*", "", rna$gene_id)
+
+# plot TPM distribution
+nrow(rna)
+hist(log2(rna$TPM))
+
+# zFPKM calculation
+zfpkm <- zFPKM(rna[,"TPM", drop = FALSE])
+zFPKMPlot(rna[,"TPM", drop = FALSE])
+
+# plot zfpkm  distribution
+hist(zfpkm$TPM)
+
+# keep genes with > -3 zfpkm
+rna.filter <- rna[zfpkm$TPM > -3,]
+
+# plot filtered TPM distribution
+nrow(rna.filter)
+hist(log2(rna.filter$TPM))
+
+# get entrz id
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+gene_names <- getBM(attributes = c('ensembl_gene_id', 'external_gene_name', 'entrezgene_id'),
+                filters = 'ensembl_gene_id',
+                values = rna$gene_id, 
+                mart = ensembl)
+
+rna.filter <- merge(rna.filter, gene_names, by.x = "gene_id", by.y = "ensembl_gene_id")
+sum(duplicated(rna.filter$entrezgene_id))
+rna.filter <- rna.filter[!duplicated(rna.filter$entrezgene_id),] # remove duplicates
+
+# get the ratio of “stop gain”, “mismatch”, “synonymous” and “splice site” mutations can be determined per genomic context
+contexts <- rownames(indel_counts)
+context_mismatches <- context_potential_damage_analysis(contexts, TxDb.Hsapiens.UCSC.hg19.knownGene, BSgenome.Hsapiens.UCSC.hg19, rna.filter$entrezgene_id)
+
+# get the ratios per signature
+sig_damage_indel <- signature_potential_damage_analysis(nmf_res_indel$signatures, contexts, context_mismatches)
+sig_damage_indel <- sig_damage_indel[order(sig_damage_indel$ratio_by_background, decreasing = TRUE),]
+```
+
+# Strand Bias analysis
+## By condition
+### Transcriptional strand bias
+```{r}
+
+```
+
+### Replicative strand bias
+
+```{r}
+
+```
+
+
+# Mutational patterns of genomic regions
+- only do interesting regions - methylation
+
+## Load genomic regions
+```{r}
+# generic
+
+
+```
+
+- By condition
+```{r}
+# signature contribution
+plot_contribution_heatmap(nmf_res_region$contribution, 
+                          cluster_samples = TRUE, 
+                          cluster_sigs = TRUE)
+
+# mutation specturm
+type_occurrences_region <- mut_type_occurrences(grl_region, ref_genome)
+plot_spectrum_region(type_occurrences_region)
+```
+
+
+# Lesion Segregation

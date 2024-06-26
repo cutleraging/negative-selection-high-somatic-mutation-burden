@@ -1,0 +1,1525 @@
+---
+title: "Multiple ENU treatment bulk mRNA analysis"
+output: html_document
+date: "2023-09-27"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Notes
+
+# Preparation
+
+## Load libraries
+```{r}
+library(biomaRt)
+library(msigdbr)
+library(KEGGREST)
+
+library(tximport)
+library(SummarizedExperiment)
+library(DESeq2)
+library(limma)
+library(PCAtools)
+library(genefilter)
+library(zFPKM)
+library(sva)
+library(clusterProfiler)
+library(enrichplot)
+library(org.Hs.eg.db)
+
+library(ggplot2)
+library(cowplot)
+library(PerformanceAnalytics)
+library(ggrepel)
+library(EnhancedVolcano)
+library(ComplexHeatmap)
+library(UpSetR)
+library(ggpubr)
+library(ggcorrplot)
+library(ggvenn)
+
+library(data.table)
+library(tibble)
+library(purrr)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(stringr)
+
+library(viridis)
+library(RColorBrewer)
+
+library(BiocParallel)
+library(parallel)
+num_cores <- detectCores() # Detect the number of cores
+```
+
+## Functions
+```{r}
+theme_Publication <- function(base_size=16, base_family="helvetica") {
+  library(grid)
+  library(ggthemes)
+  (theme_foundation(base_size=base_size, base_family = "")
+    + theme(plot.title = element_text(face = "bold",
+                                      size = rel(1.2), hjust = 0.5),
+            text = element_text(),
+            panel.background = element_rect(colour = NA),
+            plot.background = element_rect(colour = NA),
+            panel.border = element_rect(colour = NA),
+            axis.title = element_text(face = "bold",size = rel(1)),
+            axis.title.y = element_text(angle=90,vjust =2),
+            axis.title.x = element_text(vjust = -0.2),
+            axis.text = element_text(), 
+            axis.line = element_line(colour="black"),
+            axis.ticks = element_line(),
+            panel.grid.major = element_line(colour="#f0f0f0"),
+            panel.grid.minor = element_blank(),
+            legend.key = element_rect(colour = NA),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            #legend.key.size= unit(0.2, "cm"),
+            legend.margin = unit(0, "cm"),
+            legend.title = element_text(face="italic"),
+            plot.margin=unit(c(10,5,5,5),"mm"),
+            strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+            strip.text = element_text(face="bold")
+    ))
+  
+}
+
+scale_fill_Publication <- function(...){
+  library(scales)
+  discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+  
+}
+
+scale_colour_Publication <- function(...){
+  library(scales)
+  discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+  
+}
+
+# Function to clean row names
+remove_version <- function(df) {
+  rownames(df) <- sub("\\..*", "", rownames(df))
+  return(df)
+}
+```
+
+## Load data
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/1-data")
+
+# sample table
+sample.table <- read.csv('sample_table.csv', header = TRUE)
+rownames(sample.table) <- sample.table$sample
+
+# files
+files <- paste0(sample.table$sample, ".genes.results")
+names(files) <- sample.table$sample
+all(file.exists(files))
+
+# import gene level counts
+txi <- tximport(files, 
+                type = "rsem",
+                txIn = FALSE,
+                txOut = FALSE)
+
+# remove ensemble id version
+# there are duplicate genes when you do this so store in row data
+row.data <- data.frame(ensemble_id.clean = rownames(remove_version(txi[[1]])),
+                       row.names = rownames(txi[[1]]))
+sum(duplicated(row.data$ensemble_id.clean))
+
+# create summarize experiment object
+se <- SummarizedExperiment(assays=SimpleList(counts = as.matrix(round(txi$counts)),
+                                             tpm = as.matrix(txi$abundance),
+                                             effective.length = as.matrix(txi$length)),
+                           colData = sample.table,
+                           rowData = row.data)
+```
+
+### Save
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis")
+
+saveRDS(se, "se.RDS")
+```
+
+# Quality Control
+
+## Raw genes expressed per sample
+```{r}
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+df <- data.frame(Sample = se$sample, 
+                 Frequency = colSums(assay(se, "tpm") > 1)) 
+
+pdf("raw_genes_expressed.pdf",
+    width = 5,
+    height = 5)
+ggplot(df, aes(x = Sample, y = Frequency)) +
+    geom_col() + 
+    theme_Publication() +
+    coord_flip() +
+    labs(subtitle = "TPM > 1")
+dev.off()
+```
+
+## Distribution of raw counts
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+df <- as.data.frame(log2(assay(se) + 1))
+colnames(df) <- se$sample
+df <- gather(df, key = "Sample", value = "Value")
+
+pdf("raw_count_distribution.pdf",
+    width = 5,
+    height = 5)
+ggplot(df, aes(x = Value, fill = Sample)) +  # Use Value for density and Sample for color fill
+    geom_density(alpha = 0.7) +  # Adjust alpha for transparency
+    theme_Publication() +
+    labs(x = "log2(Counts + 1)",  # Adjust the x-axis label for the density plot
+         y = "Density") +  # Density plots typically have "Density" as the y-axis label
+    theme(legend.position = "right",
+          legend.direction = "vertical")
+dev.off()
+```
+
+## Filter for expressed genes
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+# filtering non-expressed genes
+assay(se, "zfpkm") <- zFPKM(se, assayName = "tpm")
+assay(se, "zfpkm")[assay(se, "zfpkm") == -Inf] <- NA
+
+pdf("zFPKM_distribution.pdf",
+    width = 5,
+    height = 5)
+zFPKMPlot(se, assayName = "tpm", FacetTitles = TRUE)
+dev.off()
+
+# To determine which genes are active, we compute the median expression within each group
+# detach(package:plyr)
+activeGenes <- assay(se, "zfpkm") %>%
+  mutate(gene=rownames(assay(se, "zfpkm"))) %>%
+  gather(sample, zfpkm, -gene) %>%
+  left_join(dplyr::select(as.data.frame(colData(se)), sample, condition, cycle), by="sample") %>%
+  group_by(gene, condition) %>%
+  summarize(median_zfpkm=median(zfpkm)) %>%
+  ungroup() %>%
+  mutate(active=(median_zfpkm > -3)) %>%
+  filter(active) %>%
+  dplyr::select(gene) %>%
+  distinct()
+
+# filter for active genes
+se.filter <- se[rownames(se) %in% activeGenes$gene]
+```
+
+### Save
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis")
+
+saveRDS(se.filter, "se.filter.RDS")
+```
+
+## Filtered genes expressed per sample
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+df <- data.frame(Sample = se$sample, 
+                 Frequency = colSums(assay(se.filter, "tpm") > 1)) 
+
+pdf("filtered_genes_expressed.pdf",
+    width = 5,
+    height = 5)
+ggplot(df, aes(x = Sample, y = Frequency)) +
+    geom_col() + 
+    theme_Publication() +
+    coord_flip() +
+    labs(subtitle = "TPM > 1")
+dev.off()
+```
+
+## Distribution of filtered counts
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+df <- as.data.frame(log2(assay(se.filter) + 1))
+colnames(df) <- se$sample
+df <- gather(df, key = "Sample", value = "Value")
+
+pdf("filtered_count_distribution.pdf",
+    width = 5,
+    height = 5)
+ggplot(df, aes(x = Value, fill = Sample)) +  # Use Value for density and Sample for color fill
+    geom_density(alpha = 0.25) +  # Adjust alpha for transparency
+    theme_Publication() +
+    labs(x = "log2(Counts + 1)",  # Adjust the x-axis label for the density plot
+         y = "Density") +  # Density plots typically have "Density" as the y-axis label
+    theme(legend.position = "right",
+          legend.direction = "vertical")
+dev.off()
+```
+
+## Sample Correlation
+
+### All samples
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+# tpm
+df <- log2(assay(se.filter, "tpm") + 1)
+colnames(df) <- se.filter$sample
+
+pdf("sample_correlation.pdf",
+    width = 10,
+    height = 10)
+chart.Correlation(df, histogram=TRUE, pch=19)
+dev.off()
+```
+
+### Control cycle 1
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+# tpm
+df <- log2(assay(se.filter, "tpm") + 1)
+colnames(df) <- se.filter$sample
+df <- df %>%
+  as.data.frame() %>%
+  select(contains("C1E"))
+
+pdf("control_cycle_1_correlation.pdf",
+    width = 5,
+    height = 5)
+chart.Correlation(df, histogram=TRUE, pch=19)
+dev.off()
+```
+
+### Control cycle 9
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+# tpm
+df <- log2(assay(se.filter, "tpm") + 1)
+colnames(df) <- se.filter$sample
+df <- df %>%
+  as.data.frame() %>%
+  select(contains("CTL"))
+
+pdf("control_cycle_9_correlation.pdf",
+    width = 5,
+    height = 5)
+chart.Correlation(df, histogram=TRUE, pch=19)
+dev.off()
+```
+
+### ENU cycle 9
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+# tpm
+df <- log2(assay(se.filter, "tpm") + 1)
+colnames(df) <- se.filter$sample
+df <- df %>%
+  as.data.frame() %>%
+  select(contains("ENU"))
+
+pdf("enu_cycle_9_correlation.pdf",
+    width = 5,
+    height = 5)
+chart.Correlation(df, histogram=TRUE, pch=19)
+dev.off()
+```
+
+## Overlap analysis
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+binary_expr <- as.data.frame(t(apply(assay(se.filter, "tpm"), 1, function(x) as.integer(x > 0))))
+colnames(binary_expr) <- se.filter$sample
+
+pdf("overlap_expressed_genes_all.pdf",
+    width = 10,
+    height = 7)
+upset(binary_expr, 
+      sets = colnames(binary_expr),
+      text.scale = 1.25,
+      #nintersects = 10,
+      order.by = "freq",
+      show.numbers = FALSE)
+dev.off()
+
+pdf("overlap_expressed_genes_top_10.pdf",
+    width = 10,
+    height = 7)
+upset(binary_expr, 
+      sets = colnames(binary_expr),
+      text.scale = 1.25,
+      nintersects = 10,
+      order.by = "freq",
+      show.numbers = FALSE)
+dev.off()
+```
+
+## Map gene IDs
+```{r}
+# get database
+mart <- useMart(biomart = "ENSEMBL_MART_ENSEMBL", 
+                dataset = "hsapiens_gene_ensembl")
+
+# mapping
+names <- getBM(attributes = c('ensembl_gene_id', 
+                              'external_gene_name', 
+                              'entrezgene_id',
+                              'gene_biotype',
+                              'chromosome_name',
+                              'start_position',
+                              'end_position',
+                              'percentage_gene_gc_content'),
+                filters = 'ensembl_gene_id',
+                values = rowData(se.filter)$ensemble_id.clean,
+                mart = mart)
+
+# remove duplicates - 1739
+sum(duplicated(names$external_gene_name))
+names <- names %>%
+  distinct(external_gene_name, .keep_all = TRUE)
+
+# match to genes in dataset
+names.match <- names[match(rowData(se.filter)$ensemble_id.clean, names$ensembl_gene_id),]
+nrow(names.match) == nrow(rowData(se.filter))
+all(rowData(se.filter)$ensemble_id.clean == names.match$ensembl_gene_id, na.rm = TRUE)
+
+# add to se object row data
+rowData(se.filter) <- names.match
+```
+
+### Save
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis")
+
+saveRDS(se.filter, "se.filter.RDS")
+#se.filter <- readRDS("se.filter.RDS")
+```
+
+## Output tables
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+
+write.csv(merge(rowData(se.filter), assay(se.filter, "counts"), by = 'row.names'), "counts.filtered",
+          row.names = FALSE)
+
+write.csv(merge(rowData(se.filter), assay(se.filter, "tpm"), by = 'row.names'), "tpm.filtered",
+          row.names = FALSE)
+```
+
+# Normalization
+
+## DeSeq2 normalization and modeling
+```{r}
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+
+# combine condition and cycle variables
+se.filter$condition.cycle <- paste(se.filter$condition,
+                                   se.filter$cycle,
+                                   sep = "_")
+# set factors
+se.filter$condition <- factor(se.filter$condition,
+                              levels = c("control", "enu"))
+
+se.filter$cycle <- factor(se.filter$cycle,
+                              levels = c("1", "9"))
+
+se.filter$batch <- factor(se.filter$batch,
+                              levels = c("1", "2", "3"))
+
+se.filter$condition.cycle <- factor(se.filter$condition.cycle,
+                                    levels = c("control_1", "control_9", "enu_9"))
+
+
+# run deseq
+dds <- DESeqDataSet(se.filter, 
+                    design = ~condition.cycle + batch)
+
+dds <- DESeq(dds)
+
+resultsNames(dds)
+```
+
+### Save and output normalized counts
+```{r}
+# save object
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis")
+
+saveRDS(dds, "dds.RDS")
+dds <- readRDS("dds.RDS")
+
+# save norm counts
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+
+write.csv(merge(rowData(se.filter), counts(dds, normalized = TRUE), by = 'row.names'), "counts.filtered.normalized.csv",
+          row.names = FALSE)
+```
+
+## DESeq2 model estimates
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+
+# Mean and variance relationship
+pdf("mean-variance.pdf",
+    width = 5,
+    height = 5)
+norm.counts <- counts(dds, normalized=TRUE) 
+mean.counts <- rowMeans(norm.counts)
+variance.counts <- apply(norm.counts, MARGIN = 1, var)
+mean.var.col <- densCols(x=log2(mean.counts), y=log2(variance.counts)) 
+plot(x=log2(mean.counts), y=log2(variance.counts), pch=16, cex=0.5,
+col=mean.var.col, main="Mean-variance relationship", xlab="Mean log2(normalized counts) per gene", ylab="Variance of log2(normalized counts)", panel.first = grid())
+abline(a=1, b=1, col="red") # a linear line to compare against 
+dev.off()
+
+# dispersion
+pdf("dispersion.pdf",
+    width = 5,
+    height = 5)
+plotDispEsts(dds)
+dev.off()
+```
+
+## Distribution of normalized counts
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+
+df <- as.data.frame(log2(counts(dds, normalized=TRUE) + 1))
+colnames(df) <- dds$sample
+df <- gather(df, key = "Sample", value = "Value")
+
+pdf("normalized_count_distribution_box.pdf",
+    width = 5,
+    height = 5)
+ggplot(df, aes(x = Sample, y = Value)) +
+    geom_boxplot() +
+    theme_Publication() +
+    coord_flip() +
+    labs(y = "Log2(counts + 1)",
+         subtitle = "Normalized counts")
+dev.off()
+
+pdf("normalized_count_distribution_density.pdf",
+    width = 6,
+    height = 5)
+ggplot(df, aes(x = Value, fill = Sample)) +
+    geom_density(alpha = 0.25) +
+    theme_Publication() +
+    labs(x = "Log2(counts + 1)",
+         subtitle = "Normalized counts") +
+    theme(legend.position = "right",
+          legend.direction = "vertical")
+dev.off()
+```
+
+## Sample-sample correlations
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+
+df <- as.data.frame(log2(counts(dds, normalized=TRUE) + 1))
+colnames(df) <- dds$sample
+df.cor <- cor(df)
+df.cor <- df.cor[order(rownames(df.cor)), order(colnames(df.cor))]
+
+pdf("normalized_count_sample_correlations.pdf",
+    width = 8,
+    height = 8)
+ggcorrplot(df.cor, 
+           hc.order = FALSE, 
+           type = "lower",
+           lab = TRUE)
+dev.off()
+
+# Transform counts to stabalize mean-variance
+# blind = TRUE to compare samples in a manner unbiased by prior information on samples
+df <- assay(vst(dds, blind = TRUE))
+colnames(df) <- dds$sample
+df.cor <- cor(df)
+df.cor <- df.cor[order(rownames(df.cor)), order(colnames(df.cor))]
+
+pdf("vst_count_sample_correlations.pdf",
+    width = 8,
+    height = 8)
+ggcorrplot(df.cor, 
+           hc.order = FALSE, 
+           type = "lower",
+           lab = TRUE)
+dev.off()
+```
+
+## Principle component analysis
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+
+# Transform counts to stabalize mean-variance
+# blind = FALSE for downstream analysis, where the full use of the design information should be made
+dds_vst <- vst(dds, blind = FALSE)
+
+# PCA
+p <- pca(assay(dds_vst), 
+         metadata = colData(dds), 
+         removeVar = 0.1)
+
+pdf("screeplot.pdf",
+    width = 5,
+    height = 5)
+screeplot(p)
+dev.off()
+
+pdf("eingencor.pdf",
+    width = 5,
+    height = 5)
+eigencorplot(p,
+             components = getComponents(p, seq_len(9)),
+             main = "Principle component correlations",
+             cexMain = 1.5,
+             metavars = c("condition", "cycle", "batch"),
+             col = viridis(100),
+             colCorval = 'firebrick',
+             fontCorval = 2,
+             cexCorval = 0.5,
+             rotLabX = 45,
+             posColKey = 'top')
+dev.off()
+
+pdf("pca.pdf",
+    width = 5.5,
+    height = 5)
+biplot(p,
+       colby = "condition.cycle",
+       shape = "batch",
+       hline = 0,
+       vline = 0,
+       gridlines.major = FALSE, 
+       gridlines.minor = FALSE,
+       max.overlaps = Inf,
+       lab = dds$sample.description) +
+       theme_Publication() +
+       theme(legend.position = "right",
+             legend.box="vertical",
+             legend.direction = "vertical",
+             legend.margin=margin())
+dev.off()
+```
+
+# Batch effect correction
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+# mod <- model.matrix(~condition.cycle, data=colData(dds))
+# mod
+# 
+# counts <- counts(dds, normalized = FALSE)
+# # counts <- na.omit(counts)
+# # zero_var_genes <- apply(counts, 1, function(x) var(x) == 0)
+# # counts <- counts[!zero_var_genes,]
+# # head(counts)
+# 
+# dds$batch
+# 
+# param <- MulticoreParam(workers = num_cores - 1)
+# 
+# ComBat(dat = counts,
+#        batch = dds$batch,
+#        ref.batch = "1",
+#        mod = mod,
+#        par.prior = FALSE,
+#        mean.only = TRUE,
+#        BPPARAM = param)
+# 
+# assays(dds, withDimnames=FALSE)[["counts.batchCorrect"]] <- ComBat(dat = na.omit(counts(dds, normalized = FALSE)),
+#                                                                                  batch = dds$batch,
+#                                                                                  ref.batch = "2",
+#                                                                                  mod = mod)
+
+assays(dds, withDimnames=FALSE)[["counts.normalized.batchCorrect"]] <- removeBatchEffect(log2(counts(dds, normalized = TRUE) + 1),
+                                                                              batch = dds$batch,
+                                                                              group = dds$condition.cycle)
+```
+
+## Principle component analysis
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+
+# Transform counts to stabalize mean-variance
+# blind = FALSE for downstream analysis, where the full use of the design information should be made
+# dds_vst <- vst(assay(dds, "counts.batchCorrect"), blind = FALSE)
+
+# PCA
+p <- pca(assay(dds, "counts.normalized.batchCorrect"), 
+         metadata = colData(dds), 
+         removeVar = 0.1)
+
+pdf("batchCorrect_screeplot.pdf",
+    width = 5,
+    height = 5)
+screeplot(p)
+dev.off()
+
+pdf("batchCorrect_eingencor.pdf",
+    width = 5,
+    height = 5)
+eigencorplot(p,
+             components = getComponents(p, seq_len(9)),
+             main = "Principle component correlations",
+             cexMain = 1.5,
+             metavars = c("condition", "cycle", "batch"),
+             col = viridis(100),
+             colCorval = 'firebrick',
+             fontCorval = 2,
+             cexCorval = 0.5,
+             rotLabX = 45,
+             posColKey = 'top')
+dev.off()
+
+pdf("batchCorrect_pca.pdf",
+    width = 5.5,
+    height = 5)
+biplot(p,
+       colby = "condition.cycle",
+       shape = "batch",
+       hline = 0,
+       vline = 0,
+       gridlines.major = FALSE, 
+       gridlines.minor = FALSE,
+       max.overlaps = Inf,
+       lab = dds$sample.description) +
+       theme_Publication() +
+       theme(legend.position = "right",
+             legend.box="vertical",
+             legend.direction = "vertical",
+             legend.margin=margin())
+dev.off()
+```
+
+
+# Differential Expression
+
+## Control 9 vs Control 1
+- Effect of passaging
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/4-differential-expression")
+
+# get results
+control9_vs_control1 <- results(dds, 
+                  alpha = 0.05, 
+                  contrast = c("condition.cycle", "control_1", "control_9"))
+
+# get a summary of the amount of significantly DEG 
+summary(control9_vs_control1, 
+        alpha = 0.05)
+
+# pdf("control9_vs_control1_ma.pdf",
+#     width = 5,
+#     height = 5)
+# DESeq2::plotMA(control9_vs_control1)
+# dev.off()
+
+# get shrunken fold change
+# control9_vs_control1 <- lfcShrink(dds = dds, 
+#                               res = control9_vs_control1, 
+#                               contrast = c("condition", "no infect", "background"),
+#                               type = "ashr")
+
+cols <- c("ensembl_gene_id",
+          "external_gene_name",
+          "entrezgene_id",
+          "gene_biotype",
+          "chromosome_name",
+          "start_position",
+          "end_position",
+          "percentage_gene_gc_content")
+
+control9_vs_control1 <- merge(as.data.frame(rowData(dds)[,cols]),
+                         as.data.frame(control9_vs_control1),
+                         by = "row.names")
+
+counts <- counts(dds, normalized = TRUE)
+colnames(counts) <- dds$sample.description
+control9_vs_control1 <- merge(control9_vs_control1, 
+                         counts,
+                         by.x = "Row.names",
+                         by = "row.names")
+
+control9_vs_control1$ensembl_gene_id <- NULL
+colnames(control9_vs_control1)[1] <- "ensembl_gene_id"
+
+# write results
+write.csv(control9_vs_control1, "control9_vs_control1.csv",
+          row.names = FALSE)
+
+# p-value distribution histogram
+pdf("control9_vs_control1_pvalue_distribution.pdf",
+    width = 5,
+    height = 5)
+hist(control9_vs_control1$pvalue, 
+     main = "P-value distribution", 
+     xlab = "P-value", 
+     ylab = "Frequency")
+dev.off()
+
+
+# ma plot
+control9_vs_control1 <- control9_vs_control1 %>%
+  as.data.frame() %>%
+  mutate(sig = case_when(log2FoldChange > 0 & control9_vs_control1$padj < 0.05 ~ "sig.up",
+                         log2FoldChange < 0 & control9_vs_control1$padj < 0.05 ~ "sig.down",
+                         .default = "")
+         )
+
+
+pdf("control9_vs_control1_ma.pdf",
+    width = 5,
+    height = 5)
+ggplot(control9_vs_control1, aes(baseMean, log2FoldChange, color = sig)) +
+  geom_point(alpha = 0.5, size = 4) +
+  theme_Publication() +
+  scale_colour_manual(values = c("grey", "blue", "red")) +
+  geom_hline(yintercept= 0, 
+             size=1,
+             linetype = "dashed") +
+  labs(title = "Control 9 vs Control 1",
+       x = "Average Normalized counts",
+       y = "Log2(fold change)")
+dev.off()
+
+pdf("control9_vs_control1_ma_log2.pdf",
+    width = 5,
+    height = 5)
+ggplot(control9_vs_control1, aes(log2(baseMean + 1), log2FoldChange, color = sig)) +
+  geom_point(alpha = 0.5, size = 4) +
+  theme_Publication() +
+  scale_colour_manual(values = c("grey", "blue", "red")) +
+  geom_hline(yintercept= 0, 
+             size=1,
+             linetype = "dashed") +
+  labs(title = "Control 9 vs Control 1",
+       x = "Average Normalized Log2(counts) + 1",
+       y = "Log2(fold change)")
+dev.off()
+
+# volcano plot
+# control9_vs_control1$volcano.label <- ""
+# control9_vs_control1$volcano.score <- abs(control9_vs_control1$log2FoldChange) * -log10(control9_vs_control1$pvalue)
+# control9_vs_control1 <- control9_vs_control1[order(control9_vs_control1$volcano.score, decreasing = TRUE),]
+# control9_vs_control1$volcano.label[1:10] <- control9_vs_control1$external_gene_name[1:10]
+
+pdf("control9_vs_control1_volcano.pdf",
+    width = 5,
+    height = 5)
+EnhancedVolcano(control9_vs_control1,
+                lab = control9_vs_control1$external_gene_name,
+                #selectLab = control9_vs_control1$volcano.label,
+                title = "Control Cycle 9 vs Control Cycle 1",
+                col = c("grey30", "grey30", "grey30", "red2"),
+                subtitle = NULL,
+                caption = "FC > 2; padj < 0.05",
+                x = 'log2FoldChange',
+                y = 'pvalue',
+                pointSize = 2,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 2,
+                pCutoff = 0.05,
+                pCutoffCol = 'padj',
+                labSize = 3,
+                labCol = 'black',
+                labFace = 'bold',
+                boxedLabels = TRUE,
+                drawConnectors = TRUE,
+                widthConnectors = 1.0,
+                colConnectors = 'black',
+                max.overlaps = 10,
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE,
+                ylim = c(0, 40),
+                xlim = c(-10, 10))
+dev.off()
+
+# heatmap of significant changes
+ha <- HeatmapAnnotation(Condition = subset(colData(dds), condition.cycle %in% c("control_1", "control_9"))$condition,
+                        Cycle = subset(colData(dds), condition.cycle %in% c("control_1", "control_9"))$cycle,
+                        Batch = subset(colData(dds), condition.cycle %in% c("control_1", "control_9"))$batch
+)
+
+# get normalized counts
+mat <- as.matrix(counts(dds, normalized = TRUE)[,colData(dds)$condition.cycle %in% c("control_1", "control_9")])
+
+# order by results
+mat.order <- mat[match(control9_vs_control1$ensembl_gene_id, rownames(mat)),]
+
+# get significant genes
+mat.sig <- mat.order[control9_vs_control1$padj < 0.05,]
+mat.sig <- mat.sig[!is.na(row.names(mat.sig)),]
+
+# scale and center normalized counts
+mat.sig.scaled <- t(scale(t(mat.sig)))
+
+pdf("control9_vs_control1_sig_heatmap.pdf",
+    width = 4,
+    height = 5)
+Heatmap(mat.sig.scaled, 
+        name = "Z-score",
+        top_annotation = ha,
+        column_split = subset(colData(dds), condition.cycle %in% c("control_1", "control_9"))$condition.cycle,
+        border = TRUE,
+        cluster_rows = TRUE,
+        cluster_columns = TRUE,
+        show_row_names = FALSE,
+        show_column_names = FALSE,
+        row_dend_width = unit(10, "mm"),
+        column_dend_height = unit(10, "mm"))
+dev.off()
+```
+
+## ENU 9 vs Control 9
+- Effect of ENu-treatment
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/4-differential-expression")
+
+# get results
+enu9_vs_control9 <- results(dds, 
+                  alpha = 0.05, 
+                  contrast = c("condition.cycle", "enu_9", "control_9"))
+
+# get a summary of the amount of significantly DEG 
+summary(enu9_vs_control9, 
+        alpha = 0.05)
+
+# pdf("enu9_vs_control9_ma.pdf",
+#     width = 5,
+#     height = 5)
+# DESeq2::plotMA(enu9_vs_control9)
+# dev.off()
+
+# get shrunken fold change
+# enu9_vs_control9 <- lfcShrink(dds = dds, 
+#                               res = enu9_vs_control9, 
+#                               contrast = c("condition", "no infect", "background"),
+#                               type = "ashr")
+
+cols <- c("ensembl_gene_id",
+          "external_gene_name",
+          "entrezgene_id",
+          "gene_biotype",
+          "chromosome_name",
+          "start_position",
+          "end_position",
+          "percentage_gene_gc_content")
+
+enu9_vs_control9 <- merge(as.data.frame(rowData(dds)[,cols]),
+                         as.data.frame(enu9_vs_control9),
+                         by = "row.names")
+
+counts <- counts(dds, normalized = TRUE)
+colnames(counts) <- dds$sample.description
+enu9_vs_control9 <- merge(enu9_vs_control9, 
+                         counts,
+                         by.x = "Row.names",
+                         by = "row.names")
+
+enu9_vs_control9$ensembl_gene_id <- NULL
+colnames(enu9_vs_control9)[1] <- "ensembl_gene_id"
+
+# write results
+write.csv(enu9_vs_control9, "enu9_vs_control9.csv",
+          row.names = FALSE)
+
+# p-value distribution histogram
+pdf("enu9_vs_control9_pvalue_distribution.pdf",
+    width = 5,
+    height = 5)
+hist(enu9_vs_control9$pvalue, 
+     main = "P-value distribution", 
+     xlab = "P-value", 
+     ylab = "Frequency")
+dev.off()
+
+
+# ma plot
+enu9_vs_control9 <- enu9_vs_control9 %>%
+  as.data.frame() %>%
+  mutate(sig = case_when(log2FoldChange > 0 & enu9_vs_control9$padj < 0.05 ~ "sig.up",
+                         log2FoldChange < 0 & enu9_vs_control9$padj < 0.05 ~ "sig.down",
+                         .default = "")
+         )
+
+
+pdf("enu9_vs_control9_ma.pdf",
+    width = 5,
+    height = 5)
+ggplot(enu9_vs_control9, aes(baseMean, log2FoldChange, color = sig)) +
+  geom_point(alpha = 0.5, size = 4) +
+  theme_Publication() +
+  scale_colour_manual(values = c("grey", "blue", "red")) +
+  geom_hline(yintercept= 0, 
+             size=1,
+             linetype = "dashed") +
+  labs(title = "ENU 9 vs Control 9",
+       x = "Average Normalized counts",
+       y = "Log2(fold change)")
+dev.off()
+
+pdf("enu9_vs_control9_ma_log2.pdf",
+    width = 5,
+    height = 5)
+ggplot(enu9_vs_control9, aes(log2(baseMean + 1), log2FoldChange, color = sig)) +
+  geom_point(alpha = 0.5, size = 4) +
+  theme_Publication() +
+  scale_colour_manual(values = c("grey", "blue", "red")) +
+  geom_hline(yintercept= 0, 
+             size=1,
+             linetype = "dashed") +
+  labs(title = "ENU 9 vs Control 9",
+       x = "Average Normalized Log2(counts) + 1",
+       y = "Log2(fold change)")
+dev.off()
+
+# volcano plot
+enu9_vs_control9$volcano.label <- ""
+# enu9_vs_control9$volcano.score <- abs(enu9_vs_control9$log2FoldChange) * -log10(enu9_vs_control9$pvalue)
+enu9_vs_control9$volcano.score <- -log10(enu9_vs_control9$pvalue)
+enu9_vs_control9 <- enu9_vs_control9[order(enu9_vs_control9$volcano.score, decreasing = TRUE),]
+enu9_vs_control9$volcano.label[1:10] <- enu9_vs_control9$external_gene_name[1:10]
+
+pdf("enu9_vs_control9_volcano.pdf",
+    width = 5,
+    height = 5)
+EnhancedVolcano(enu9_vs_control9,
+                lab = enu9_vs_control9$external_gene_name,
+                selectLab = enu9_vs_control9$volcano.label,
+                col = c("grey30", "grey30", "grey30", "red2"),
+                title = "ENU Cycle 9 vs Control Cycle 9",
+                subtitle = NULL,
+                caption = "FC > 2; padj < 0.05",
+                x = 'log2FoldChange',
+                y = 'pvalue',
+                pointSize = 2,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 2,
+                pCutoff = 0.05,
+                pCutoffCol = 'padj',
+                labSize = 3,
+                labCol = 'black',
+                labFace = 'bold',
+                boxedLabels = TRUE,
+                drawConnectors = TRUE,
+                widthConnectors = 1.0,
+                colConnectors = 'black',
+                max.overlaps = 10,
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE,
+                ylim = c(0,6))
+dev.off()
+
+# heatmap of significant changes
+ha <- HeatmapAnnotation(Condition = subset(colData(dds), condition.cycle %in% c("enu_9", "control_9"))$condition,
+                        Cycle = subset(colData(dds), condition.cycle %in% c("enu_9", "control_9"))$cycle,
+                        Batch = subset(colData(dds), condition.cycle %in% c("enu_9", "control_9"))$batch
+)
+
+# get normalized counts
+mat <- as.matrix(counts(dds, normalized = TRUE)[,colData(dds)$condition.cycle %in% c("enu_9", "control_9")])
+
+# order by results
+mat.order <- mat[match(enu9_vs_control9$ensembl_gene_id, rownames(mat)),]
+
+# get significant genes
+mat.sig <- mat.order[enu9_vs_control9$padj < 0.05,]
+mat.sig <- mat.sig[!is.na(row.names(mat.sig)),]
+
+# scale and center normalized counts
+mat.sig.scaled <- t(scale(t(mat.sig)))
+
+pdf("enu9_vs_control9_sig_heatmap.pdf",
+    width = 4,
+    height = 5)
+Heatmap(mat.sig.scaled, 
+        name = "Z-score",
+        top_annotation = ha,
+        column_split = subset(colData(dds), condition.cycle %in% c("enu_9", "control_9"))$condition.cycle,
+        border = TRUE,
+        cluster_rows = TRUE,
+        cluster_columns = TRUE,
+        show_row_names = FALSE,
+        show_column_names = FALSE,
+        row_dend_width = unit(10, "mm"),
+        column_dend_height = unit(10, "mm"))
+dev.off()
+```
+
+# Functional enrichment
+
+## Control 9 vs Control 1
+```{r}
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+# get score to use in enrichment
+control9_vs_control1$score <- sign(control9_vs_control1$log2FoldChange) * -log10(control9_vs_control1$pvalue)
+res.sorted <- control9_vs_control1[order(control9_vs_control1$score, decreasing = TRUE),]
+res.list <- res.sorted$score
+names(res.list) <- res.sorted$entrezgene_id
+res.list <- res.list[!is.na(names(res.list))] # remove genes witn no ID
+res.list <- res.list[!is.na(res.list)] # remove genes with no score
+```
+
+### Biological process
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+bp <- gseGO(geneList     = res.list,
+            OrgDb        = org.Hs.eg.db,
+            ont          = "BP",
+            keyType = "ENTREZID",
+            pvalueCutoff = 0.1,
+            verbose      = FALSE)
+bp.simple <- clusterProfiler::simplify(bp)
+
+write.csv(bp.simple@result, "control9_vs_control1_go_bp.csv")
+
+pdf("control9_vs_control1_go_bp.pdf",
+    width = 6,
+    height = 5)
+dotplot(bp.simple, 
+        showCategory=10, 
+        title = paste("GSE GO BP", "Control 9 vs Control 1", sep = " "), 
+        split=".sign",
+        x = "NES", 
+        font.size = 10,
+        label_format = 50) +
+        geom_vline(xintercept = 0, linetype="dotted", color = "#444444", size=1) +
+        scale_color_viridis(option = "viridis", direction = 1) +
+        labs(fill = "test")
+dev.off()
+```
+
+### Moelcular function
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+mf <- gseGO(geneList     = res.list,
+            OrgDb        = org.Hs.eg.db,
+            ont          = "MF",
+            keyType = "ENTREZID",
+            pvalueCutoff = 0.1,
+            verbose      = FALSE)
+mf.simple <- clusterProfiler::simplify(mf)
+
+write.csv(mf.simple@result, "control9_vs_control1_go_mf.csv")
+
+pdf("control9_vs_control1_go_mf.pdf",
+    width = 6,
+    height = 5)
+dotplot(mf.simple, 
+        showCategory=10, 
+        title = paste("GSE GO MF", "Control 9 vs Control 1", sep = " "), 
+        split=".sign",
+        x = "NES", 
+        font.size = 10,
+        label_format = 50) +
+        geom_vline(xintercept = 0, linetype="dotted", color = "#444444", size=1) +
+        scale_color_viridis(option = "viridis", direction = 1) +
+        labs(fill = "test")
+dev.off()
+```
+
+### Cellular component
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+cc <- gseGO(geneList     = res.list,
+            OrgDb        = org.Hs.eg.db,
+            ont          = "CC",
+            keyType = "ENTREZID",
+            pvalueCutoff = 0.1,
+            verbose      = FALSE)
+cc.simple <- clusterProfiler::simplify(cc)
+
+write.csv(cc.simple@result, "control9_vs_control1_go_cc.csv")
+
+pdf("control9_vs_control1_go_cc.pdf",
+    width = 6,
+    height = 5)
+dotplot(cc.simple, 
+        showCategory=10, 
+        title = paste("GSE GO CC", "Control 9 vs Control 1", sep = " "), 
+        split=".sign",
+        x = "NES", 
+        font.size = 10,
+        label_format = 50) +
+        geom_vline(xintercept = 0, linetype="dotted", color = "#444444", size=1) +
+        scale_color_viridis(option = "viridis", direction = 1) +
+        labs(fill = "test")
+dev.off()
+```
+
+### Hallmark DNA repair
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+# get gene set
+msigdb_dna_repair <- msigdbr(species = "human") %>%
+    filter(str_detect(gs_name, "HALLMARK_DNA_REPAIR")) %>%
+    dplyr::select(gs_name, entrez_gene) %>%
+    dplyr::rename(term = gs_name, entrez_gene = entrez_gene)
+
+# gsea
+hallmark_dna_repair <- GSEA(res.list, 
+                   TERM2GENE = msigdb_dna_repair,
+                   pvalueCutoff = 0.1)
+
+# plot
+anno <- hallmark_dna_repair[,c("NES", "pvalue", "p.adjust")]
+lab <- paste0(names(anno), "=",  round(anno, 3), collapse="\n")
+
+pdf("control9_vs_control1_hallmark_dna_repair.pdf",
+    width = 5,
+    height = 5)
+gsearank(hallmark_dna_repair, 1, title = hallmark_dna_repair[1, "Description"]) +
+  annotate("text", 10000, hallmark_dna_repair[, "enrichmentScore"] * .75, label = lab, hjust=0, vjust=0)
+dev.off()
+```
+
+### KEGG DNA repair
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+# get gene sets
+dna_repair_pathways <- c("Base excision repair",
+                         "Nucleotide excision repair",
+                         "Mismatch repair",
+                         "Homologous recombination",
+                         "Non-homologous end-joining",
+                         "Fanconi anemia pathway")
+
+pathways_list <- keggList("pathway", "hsa")
+
+# Loop through each DNA repair pathway and filter the pathways_list
+filtered_pathways <- c()
+for (pathway in dna_repair_pathways) {
+    matching_pathways <- grep(pathway, pathways_list, value = TRUE)
+    filtered_pathways <- c(filtered_pathways, matching_pathways)
+}
+
+# Loop through each DNA repair pathway and retrieve the associated genes
+filtered_pathways_genes <- list()
+for (pathway_id in names(filtered_pathways)) {
+    # Get pathway information
+    pathway_info <- keggGet(pathway_id)
+    
+    # Extract gene information
+    if (!is.null(pathway_info[[1]]$GENE)) {
+        genes <- pathway_info[[1]]$GENE
+        gene_ids <- genes[seq(1, length(genes), 2)]
+        filtered_pathways_genes[[pathway_id]] <- gene_ids
+    }
+}
+names(filtered_pathways_genes) <- filtered_pathways
+
+# Convert the list to a tibble
+kegg_dna_repair <- enframe(filtered_pathways_genes, name = "pathway", value = "entrez_id")
+
+# Unnest the tibble to create a long-format table
+kegg_dna_repair <- kegg_dna_repair %>%
+  unnest(entrez_id)
+
+# trim names
+kegg_dna_repair$pathway <-  sub(" - Homo sapiens \\(human\\)", "", kegg_dna_repair$pathway)
+
+# gsea
+kegg_dna_repair_gsea <- GSEA(res.list, 
+                   TERM2GENE = kegg_dna_repair,
+                   pvalueCutoff = 0.1)
+
+# plot
+pp <- lapply(1:nrow(kegg_dna_repair_gsea), function(i) {
+    anno <- kegg_dna_repair_gsea[i, c("NES", "pvalue", "p.adjust")]
+    lab <- paste0(names(anno), "=",  round(anno, 5), collapse="\n")
+
+    gsearank(kegg_dna_repair_gsea, i, kegg_dna_repair_gsea[i, 2]) + xlab(NULL) +ylab(NULL) +
+        annotate("text", 7000, kegg_dna_repair_gsea[i, "enrichmentScore"] * .75, label = lab, hjust=0, vjust=0, size = 2.25)
+})
+
+pdf("control9_vs_control1_kegg_dna_repair.pdf",
+    width = 6,
+    height = 6)
+plot_grid(plotlist=pp, ncol=2)
+dev.off()
+```
+
+### SenMayo
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+# get gene sets
+senmayo <- read.csv("senmayo.csv",
+                    header = TRUE)
+
+# convert symbol to entrez
+senmayo$entrez_id <- bitr(senmayo$symbol, fromType="SYMBOL", toType=c("ENTREZID"), OrgDb="org.Hs.eg.db")$ENTREZID
+senmayo <- data.frame(set = senmayo$set,
+                      entrez_id = senmayo$entrez_id)
+
+# gsea
+senmayo_gsea <- GSEA(res.list, 
+                   TERM2GENE = senmayo,
+                   pvalueCutoff = 0.1)
+
+# plot
+anno <- senmayo_gsea[,c("NES", "pvalue")]
+lab <- paste0(names(anno), "=",  round(anno, 3), collapse="\n")
+
+pdf("control9_vs_control1_senmayo.pdf",
+    width = 5,
+    height = 5)
+gsearank(senmayo_gsea, 1, title = senmayo_gsea[1, "Description"]) +
+  annotate("text", 10000, senmayo_gsea[, "enrichmentScore"] * .75, label = lab, hjust=0, vjust=0)
+dev.off()
+```
+
+## ENU 9 vs Control 9
+```{r}
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+# get score to use in enrichment
+enu9_vs_control9$score <- sign(enu9_vs_control9$log2FoldChange) * -log10(enu9_vs_control9$pvalue)
+res.sorted <- enu9_vs_control9[order(enu9_vs_control9$score, decreasing = TRUE),]
+res.list <- res.sorted$score
+names(res.list) <- res.sorted$entrezgene_id
+res.list <- res.list[!is.na(names(res.list))] # remove genes witn no ID
+res.list <- res.list[!is.na(res.list)] # remove genes with no score
+```
+
+### Biological process
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+bp <- gseGO(geneList     = res.list,
+            OrgDb        = org.Hs.eg.db,
+            ont          = "BP",
+            keyType = "ENTREZID",
+            pvalueCutoff = 0.1,
+            verbose      = FALSE)
+bp.simple <- clusterProfiler::simplify(bp)
+
+write.csv(bp.simple@result, "enu9_vs_control9_go_bp.csv")
+
+pdf("enu9_vs_control9_go_bp.pdf",
+    width = 6,
+    height = 5)
+dotplot(bp.simple, 
+        showCategory=10, 
+        title = paste("GSE GO BP", "ENU 9 vs Control 9", sep = " "), 
+        split=".sign",
+        x = "NES", 
+        font.size = 10,
+        label_format = 50) +
+        geom_vline(xintercept = 0, linetype="dotted", color = "#444444", size=1) +
+        scale_color_viridis(option = "viridis", direction = 1) +
+        labs(fill = "test")
+dev.off()
+```
+
+### Moelcular function
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+mf <- gseGO(geneList     = res.list,
+            OrgDb        = org.Hs.eg.db,
+            ont          = "MF",
+            keyType = "ENTREZID",
+            pvalueCutoff = 0.1,
+            verbose      = FALSE)
+mf.simple <- clusterProfiler::simplify(mf)
+
+write.csv(mf.simple@result, "enu9_vs_control9_go_mf.csv")
+
+pdf("enu9_vs_control9_go_mf.pdf",
+    width = 6,
+    height = 5)
+dotplot(mf.simple, 
+        showCategory=10, 
+        title = paste("GSE GO MF", "ENU 9 vs Control 9", sep = " "), 
+        split=".sign",
+        x = "NES", 
+        font.size = 10,
+        label_format = 50) +
+        geom_vline(xintercept = 0, linetype="dotted", color = "#444444", size=1) +
+        scale_color_viridis(option = "viridis", direction = 1) +
+        labs(fill = "test")
+dev.off()
+```
+
+### Cellular component
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+cc <- gseGO(geneList     = res.list,
+            OrgDb        = org.Hs.eg.db,
+            ont          = "CC",
+            keyType = "ENTREZID",
+            pvalueCutoff = 0.1,
+            verbose      = FALSE)
+cc.simple <- clusterProfiler::simplify(cc)
+
+write.csv(cc.simple@result, "enu9_vs_control9_go_cc.csv")
+
+pdf("enu9_vs_control9_go_cc.pdf",
+    width = 6,
+    height = 5)
+dotplot(cc.simple, 
+        showCategory=10, 
+        title = paste("GSE GO CC", "ENU 9 vs Control 9", sep = " "), 
+        split=".sign",
+        x = "NES", 
+        font.size = 10,
+        label_format = 50) +
+        geom_vline(xintercept = 0, linetype="dotted", color = "#444444", size=1) +
+        scale_color_viridis(option = "viridis", direction = 1) +
+        labs(fill = "test")
+dev.off()
+```
+
+### Hallmark DNA repair
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+# get gene set
+msigdb_dna_repair <- msigdbr(species = "human") %>%
+    filter(str_detect(gs_name, "HALLMARK_DNA_REPAIR")) %>%
+    dplyr::select(gs_name, entrez_gene) %>%
+    dplyr::rename(term = gs_name, entrez_gene = entrez_gene)
+
+# gsea
+hallmark_dna_repair <- GSEA(res.list, 
+                   TERM2GENE = msigdb_dna_repair,
+                   pvalueCutoff = 0.1)
+
+# plot
+anno <- hallmark_dna_repair[,c("NES", "pvalue", "p.adjust")]
+lab <- paste0(names(anno), "=",  round(anno, 3), collapse="\n")
+
+pdf("enu9_vs_control9_hallmark_dna_repair.pdf",
+    width = 5,
+    height = 5)
+gsearank(hallmark_dna_repair, 1, title = hallmark_dna_repair[1, "Description"]) +
+  annotate("text", 10000, hallmark_dna_repair[, "enrichmentScore"] * .75, label = lab, hjust=0, vjust=0)
+dev.off()
+```
+
+### KEGG DNA repair
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+# get gene sets
+dna_repair_pathways <- c("Base excision repair",
+                         "Nucleotide excision repair",
+                         "Mismatch repair",
+                         "Homologous recombination",
+                         "Non-homologous end-joining",
+                         "Fanconi anemia pathway")
+
+pathways_list <- keggList("pathway", "hsa")
+
+# Loop through each DNA repair pathway and filter the pathways_list
+filtered_pathways <- c()
+for (pathway in dna_repair_pathways) {
+    matching_pathways <- grep(pathway, pathways_list, value = TRUE)
+    filtered_pathways <- c(filtered_pathways, matching_pathways)
+}
+
+# Loop through each DNA repair pathway and retrieve the associated genes
+filtered_pathways_genes <- list()
+for (pathway_id in names(filtered_pathways)) {
+    # Get pathway information
+    pathway_info <- keggGet(pathway_id)
+    
+    # Extract gene information
+    if (!is.null(pathway_info[[1]]$GENE)) {
+        genes <- pathway_info[[1]]$GENE
+        gene_ids <- genes[seq(1, length(genes), 2)]
+        filtered_pathways_genes[[pathway_id]] <- gene_ids
+    }
+}
+names(filtered_pathways_genes) <- filtered_pathways
+
+# Convert the list to a tibble
+kegg_dna_repair <- enframe(filtered_pathways_genes, name = "pathway", value = "entrez_id")
+
+# Unnest the tibble to create a long-format table
+kegg_dna_repair <- kegg_dna_repair %>%
+  unnest(entrez_id)
+
+# trim names
+kegg_dna_repair$pathway <-  sub(" - Homo sapiens \\(human\\)", "", kegg_dna_repair$pathway)
+
+# gsea
+kegg_dna_repair_gsea <- GSEA(res.list, 
+                   TERM2GENE = kegg_dna_repair,
+                   pvalueCutoff = 0.1)
+
+# plot
+pp <- lapply(1:nrow(kegg_dna_repair_gsea), function(i) {
+    anno <- kegg_dna_repair_gsea[i, c("NES", "pvalue", "p.adjust")]
+    lab <- paste0(names(anno), "=",  round(anno, 5), collapse="\n")
+
+    gsearank(kegg_dna_repair_gsea, i, kegg_dna_repair_gsea[i, 2]) + xlab(NULL) +ylab(NULL) +
+        annotate("text", 7000, kegg_dna_repair_gsea[i, "enrichmentScore"] * .75, label = lab, hjust=0, vjust=0, size = 2.25)
+})
+
+pdf("enu9_vs_control9_kegg_dna_repair.pdf",
+    width = 6,
+    height = 6)
+plot_grid(plotlist=pp, ncol=2)
+dev.off()
+```
+
+### SenMayo
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+
+# get gene sets
+senmayo <- read.csv("senmayo.csv",
+                    header = TRUE)
+
+# convert symbol to entrez
+senmayo$entrez_id <- bitr(senmayo$symbol, fromType="SYMBOL", toType=c("ENTREZID"), OrgDb="org.Hs.eg.db")$ENTREZID
+senmayo <- data.frame(set = senmayo$set,
+                      entrez_id = senmayo$entrez_id)
+
+# gsea
+senmayo_gsea <- GSEA(res.list, 
+                   TERM2GENE = senmayo,
+                   pvalueCutoff = 0.1)
+
+# plot
+anno <- senmayo_gsea[,c("NES", "pvalue")]
+lab <- paste0(names(anno), "=",  round(anno, 3), collapse="\n")
+
+pdf("enu9_vs_control9_senmayo.pdf",
+    width = 5,
+    height = 5)
+gsearank(senmayo_gsea, 1, title = senmayo_gsea[1, "Description"]) +
+  annotate("text", 10000, senmayo_gsea[, "enrichmentScore"] * .75, label = lab, hjust=0, vjust=0)
+dev.off()
+```

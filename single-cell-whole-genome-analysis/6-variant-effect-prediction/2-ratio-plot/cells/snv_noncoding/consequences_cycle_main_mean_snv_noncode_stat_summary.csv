@@ -1,0 +1,51 @@
+"","condition","cycle","variant_type","mean","sd"
+"1","control","1","intron variant",-0.10130248414314,0.0359563777727094
+"2","control","1","intergenic variant",0.252918742970046,0.0822008368162808
+"3","control","1","upstream gene variant",-0.0950708344873228,0.382450932771487
+"4","control","1","downstream gene variant",-0.294030962417097,0.122169411655782
+"5","control","1","3 prime UTR variant",-0.322229153692197,0.183833614344516
+"6","control","1","non coding transcript exon variant",-0.162269148252247,1.01222216502648
+"7","control","1","5 prime UTR variant",-0.188762764303959,1.23499898979414
+"8","control","1","splice region variant",-0.088873908295685,0.634322490632955
+"9","control","1","TF binding site variant",-0.080485714585617,0.0154363822329786
+"10","control","1","mature miRNA variant",-0.00516666666666667,0.000971253485622231
+"11","control","9","intron variant",-0.147349781250634,0.085770129077481
+"12","control","9","intergenic variant",0.391941361809227,0.124824242978989
+"13","control","9","upstream gene variant",-0.149680431165898,0.383199200702647
+"14","control","9","downstream gene variant",-0.393711385989395,0.282095153799434
+"15","control","9","3 prime UTR variant",-0.175516330403535,0.504718351113242
+"16","control","9","non coding transcript exon variant",0.187013124412664,0.321843328108288
+"17","control","9","5 prime UTR variant",-0.223541925489093,0.55684692496763
+"18","control","9","splice region variant",-0.356529840745119,0.0447554058196289
+"19","control","9","TF binding site variant",-0.0673636593767428,0.00883184217362749
+"20","control","9","mature miRNA variant",-0.00345,0.000882609766544649
+"21","enu","3","intron variant",-0.0766465270800867,0.0285092608341967
+"22","enu","3","intergenic variant",0.12027421400784,0.0134004286506926
+"23","enu","3","upstream gene variant",0.0836887219079104,0.0740450721241921
+"24","enu","3","downstream gene variant",-0.0409319914540483,0.102528609735179
+"25","enu","3","3 prime UTR variant",-0.268020484744297,0.438013718750747
+"26","enu","3","non coding transcript exon variant",0.182216424005494,0.219526892995117
+"27","enu","3","5 prime UTR variant",-0.203818820803067,0.751151910382771
+"28","enu","3","splice region variant",0.034048856952715,0.457195450889975
+"29","enu","3","TF binding site variant",0.204601556228499,0.53372893671587
+"30","enu","3","mature miRNA variant",-0.0278698245835016,0.00293535859127897
+"31","enu","6","intron variant",-0.0833844709449508,0.0160319147061812
+"32","enu","6","intergenic variant",0.13253386242357,0.0238002610768835
+"33","enu","6","upstream gene variant",-0.0224424376572528,0.133651758788778
+"34","enu","6","downstream gene variant",-0.0536382720060391,0.078514284080498
+"35","enu","6","3 prime UTR variant",-0.0890052175377317,0.133914454860725
+"36","enu","6","non coding transcript exon variant",-0.0432097744729291,0.196760379375453
+"37","enu","6","5 prime UTR variant",0.402670470585027,0.421939310405793
+"38","enu","6","splice region variant",-0.0211046926407543,0.288837243397122
+"39","enu","6","TF binding site variant",-0.231778870113594,0.723472636872155
+"40","enu","6","mature miRNA variant",-0.0618887720845112,0.0163334282294668
+"41","enu","9","intron variant",-0.0818695688196473,0.0146319148850393
+"42","enu","9","intergenic variant",0.134326536908226,0.016939588430972
+"43","enu","9","upstream gene variant",-0.0199467996003604,0.0854213066615821
+"44","enu","9","downstream gene variant",-0.0393249729091598,0.0522625231987694
+"45","enu","9","3 prime UTR variant",-0.356290837761608,0.167861288499403
+"46","enu","9","non coding transcript exon variant",-0.0108293326097721,0.178081524430823
+"47","enu","9","5 prime UTR variant",-0.0353747662548476,0.505914155078151
+"48","enu","9","splice region variant",-0.380990013353748,0.133525092641222
+"49","enu","9","TF binding site variant",0.0833235321522564,0.948249374056464
+"50","enu","9","mature miRNA variant",-0.0841064980979772,0.0333960266383221

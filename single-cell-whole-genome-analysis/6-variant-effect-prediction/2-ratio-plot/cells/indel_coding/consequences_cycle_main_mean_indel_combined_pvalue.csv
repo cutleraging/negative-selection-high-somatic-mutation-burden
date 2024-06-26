@@ -1,0 +1,16 @@
+"","condition","cycle","variant_type","p_value","p_adjusted","significant_p_adjusted"
+"1","control","1","inframe insertion",1,1,NA
+"2","control","1","inframe deletion",0.157810692971335,0.275778661593326,NA
+"3","control","1","frameshift variant",0.183852441062217,0.275778661593326,NA
+"4","control","9","inframe insertion",1,1,NA
+"5","control","9","inframe deletion",0.863964497043966,1,NA
+"6","control","9","frameshift variant",0.125196792718629,0.375590378155888,NA
+"7","enu","3","inframe insertion",1,1,NA
+"8","enu","3","inframe deletion",0.000351617570254886,0.00105485271076466,"**"
+"9","enu","3","frameshift variant",1,1,NA
+"10","enu","6","inframe insertion",0.226551998789589,0.679655996368766,NA
+"11","enu","6","inframe deletion",1,1,NA
+"12","enu","6","frameshift variant",0.768652023229994,1,NA
+"13","enu","9","inframe insertion",1,1,NA
+"14","enu","9","inframe deletion",0.733334116287801,1,NA
+"15","enu","9","frameshift variant",0.883699257483239,1,NA

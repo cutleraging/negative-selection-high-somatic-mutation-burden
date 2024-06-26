@@ -1,0 +1,6 @@
+"","condition","cycle","variant_type","p_value","p_adjusted","significant_p_adjusted"
+"1","control","1","intron variant",0.0226019255480206,0.0226019255480206,"*"
+"2","control","9","intron variant",8.0391284714056e-06,8.0391284714056e-06,"****"
+"3","enu","3","intron variant",1.60647726940071e-06,1.60647726940071e-06,"****"
+"4","enu","6","intron variant",4.10367685070374e-10,4.10367685070374e-10,"****"
+"5","enu","9","intron variant",4.71320841104648e-18,4.71320841104648e-18,"****"

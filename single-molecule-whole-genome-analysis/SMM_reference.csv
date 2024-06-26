@@ -1,0 +1,15 @@
+condition,cycle,batch, SMM SNVs per MB,scWGS  SNVs per MB (average across cell replicates), SMM SNVs per cell,scWGS  SNVs per cell (average across cell replicates)
+control,1,2,0.4043,NA,2455.01,NA
+control,1,3,0.4025,NA,2444.43,NA
+control,1,2,0.5352,0.3028,3249.86,1839.08
+control,9,3,0.4534,0.2653,2753.11,1611.13
+control,9,"2, 3",0.5246,NA,3185.56,NA
+enu,3,2,1.9105,NA,11601.79,NA
+enu,3,3,1.8862,NA,11454.24,NA
+enu,3,2,2.0624,NA,12524.07,NA
+enu,6,2,3.6459,NA,22139.87,NA
+enu,6,3,3.8462,NA,23356.44,NA
+enu,6,1,4.2671,2.7751,25912.45,16852.14
+enu,9,2,5.0001,9.3151,30363.53,56567.11
+enu,9,3,5.6972,9.1134,34596.93,55341.86
+enu,9,"2, 3",6.0342,NA,36643.63,NA

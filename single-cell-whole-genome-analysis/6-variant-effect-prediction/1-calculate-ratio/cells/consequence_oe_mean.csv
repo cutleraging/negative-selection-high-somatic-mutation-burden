@@ -1,0 +1,1764 @@
+"variant_type","obs.mut","sim.mut","sim.mut.normality","log2fc","pvalue","pvalue.adj",sample
+"3 prime UTR variant",3,4.8478,3.7e-24,-0.436959151766465,0.3977,0.604504,C1_05_24
+"downstream gene variant",36,43.9333,3.7e-24,-0.265125704184472,0.1918,0.347066666666667,C1_05_24
+"frameshift variant",1,0.1032,3.7e-24,0.899275187496394,0.0054,0.0152,C1_05_24
+"intergenic variant",194,172.9239,5.89484989059594e-10,0.167959889866833,0.0773,0.158778378378378,C1_05_24
+"intron variant",204,234.2059,8.14934967780634e-08,-0.196428054377271,0.0079,0.0200133333333333,C1_05_24
+"intron variant / NMD transcript variant",4,5.9955,3.7e-24,-0.389510102673708,0.2919,0.482269565217391,C1_05_24
+"intron variant / non coding transcript variant",63,59.3546,6.98375673496612e-21,0.0954475155756443,0.632,0.923692307692308,C1_05_24
+"missense variant",5,5.3738,3.7e-24,0.0137908997696502,0.8266,1,C1_05_24
+"non coding transcript exon variant",7,3.3943,3.7e-24,1.00609694010432,0.205,0.362325581395349,C1_05_24
+"regulatory region variant",42,34.6196,3.7e-24,0.290039415135909,0.2494,0.421208888888889,C1_05_24
+"splice donor variant",1,0.0765,3.7e-24,0.924662104997981,0.0737,0.155588888888889,C1_05_24
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",1,0.0471,3.7e-24,0.953315037499279,0.0461,0.100102857142857,C1_05_24
+"synonymous variant",1,2.2974,3.7e-24,-0.554517034735237,0.411,0.612470588235294,C1_05_24
+"upstream gene variant",50,41.4554,3.7e-24,0.280473163329825,0.2289,0.395372727272727,C1_05_24
+"5 prime UTR variant",0,1.2354,3.7e-24,-0.981408005508041,0.3297,0.511371428571429,C1_05_24
+"splice donor 5th base variant / intron variant",0,0.0528,3.7e-24,-0.0523849625007212,1,1,C1_05_24
+"splice polypyrimidine tract variant / intron variant",0,0.3804,3.7e-24,-0.354237371891259,0.3202,0.506983333333333,C1_05_24
+"splice region variant / intron variant",0,0.0907,3.7e-24,-0.0890228575027404,1,1,C1_05_24
+"splice donor region variant / intron variant",0,0.1045,3.7e-24,-0.102123020312806,0.099,0.192923076923077,C1_05_24
+"missense variant / splice region variant",0,0.1746,3.7e-24,-0.168196993759736,0.1595,0.295658536585366,C1_05_24
+"splice acceptor variant",0,0.0969,3.7e-24,-0.0948908275033173,1,1,C1_05_24
+"splice region variant / splice polypyrimidine tract variant / intron variant",0,0.2582,3.7e-24,-0.245667684078888,1,1,C1_05_24
+"stop gained / splice region variant",0,0.0137,3.7e-24,-0.0137,1,1,C1_05_24
+"missense variant / NMD transcript variant",0,0.0406,3.7e-24,-0.0403094737505048,1,1,C1_05_24
+"stop gained",0,0.381,3.7e-24,-0.35424700845183,0.3194,0.506983333333333,C1_05_24
+"splice region variant / intron variant / non coding transcript variant",0,0.0113,3.7e-24,-0.0112169925001442,1,1,C1_05_24
+"splice region variant / non coding transcript exon variant",0,0.0366,3.7e-24,-0.0362679700005769,1,1,C1_05_24
+"3 prime UTR variant / NMD transcript variant",0,0.1288,3.7e-24,-0.125387218755409,0.1207,0.22933,C1_05_24
+"5 prime UTR variant / NMD transcript variant",0,0.017,3.7e-24,-0.0168754887502163,0.0167,0.0384606060606061,C1_05_24
+"TF binding site variant",0,0.0997,3.7e-24,-0.0976983462529567,0.095,0.19,C1_05_24
+"splice region variant / synonymous variant",0,0.0688,3.7e-24,-0.0678869175015865,1,1,C1_05_24
+"stop retained variant",0,0.0024,3.7e-24,-0.0024,1,1,C1_05_24
+"splice acceptor variant / non coding transcript exon variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"synonymous variant / NMD transcript variant",0,0.0153,3.7e-24,-0.0153,1,1,C1_05_24
+"splice acceptor variant / non coding transcript variant",0,0.0121,3.7e-24,-0.0121,1,1,C1_05_24
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0333,3.7e-24,-0.0330924812503606,0.0328,0.0733176470588235,C1_05_24
+"splice region variant / 5 prime UTR variant",0,0.0204,3.7e-24,-0.0202339850002885,1,1,C1_05_24
+"splice donor variant / non coding transcript variant",0,0.01,3.7e-24,-0.01,1,1,C1_05_24
+"stop lost",0,0.0063,3.7e-24,-0.0063,0.0063,0.0165103448275862,C1_05_24
+"mature miRNA variant",0,0.006,3.7e-24,-0.006,1,1,C1_05_24
+"stop gained / NMD transcript variant",0,0.0033,3.7e-24,-0.0033,1,1,C1_05_24
+"splice donor region variant / intron variant / non coding transcript variant",0,0.0118,3.7e-24,-0.0117169925001442,0.0116,0.02755,C1_05_24
+"inframe deletion",0,0.0095,3.7e-24,-0.00945849625007212,0.0094,0.0230451612903226,C1_05_24
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0037,3.7e-24,-0.0037,1,1,C1_05_24
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.003,3.7e-24,-0.003,1,1,C1_05_24
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0059,3.7e-24,-0.0059,0.0059,0.0160142857142857,C1_05_24
+"start lost",0,0.0105,3.7e-24,-0.0105,1,1,C1_05_24
+"splice region variant / intron variant / NMD transcript variant",0,0.0021,3.7e-24,-0.0021,1,1,C1_05_24
+"missense variant / splice region variant / NMD transcript variant",0,0.0025,3.7e-24,-0.0025,0.0025,0.00730769230769231,C1_05_24
+"frameshift variant / NMD transcript variant",0,0.0013,3.7e-24,-0.0013,1,1,C1_05_24
+"splice donor variant / NMD transcript variant",0,9e-04,3.7e-24,-9e-04,9e-04,0.00325714285714286,C1_05_24
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0079,3.7e-24,-0.00785849625007212,1,1,C1_05_24
+"start lost / splice region variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00114,C1_05_24
+"splice acceptor variant / NMD transcript variant",0,0.0016,3.7e-24,-0.0016,0.0016,0.00506666666666667,C1_05_24
+"splice region variant / synonymous variant / NMD transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00114,C1_05_24
+"frameshift variant / splice region variant",0,0.002,3.7e-24,-0.002,0.002,0.00608,C1_05_24
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0016,3.7e-24,-0.0016,0.0016,0.00506666666666667,C1_05_24
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00114,C1_05_24
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00414545454545455,C1_05_24
+"frameshift variant / stop lost",0,2e-04,3.7e-24,-2e-04,2e-04,0.000894117647058824,C1_05_24
+"splice donor variant / splice donor region variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.000894117647058824,C1_05_24
+"stop gained / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"splice region variant / 3 prime UTR variant",0,0.0024,3.7e-24,-0.0024,1,1,C1_05_24
+"stop lost / splice region variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.000894117647058824,C1_05_24
+"stop lost / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.000894117647058824,C1_05_24
+"splice acceptor variant / coding sequence variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"coding sequence variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"inframe deletion / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"start lost / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"splice donor region variant / non coding transcript exon variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"incomplete terminal codon variant / coding sequence variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"missense variant / splice donor 5th base variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"inframe deletion / splice region variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"start lost / 5 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"splice donor 5th base variant / non coding transcript exon variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000584615384615385,C1_05_24
+"3 prime UTR variant",3,3.6503,3.7e-24,-0.0806993459172385,0.8024,1,C2_05_24
+"5 prime UTR variant",3,0.8997,3.7e-24,1.2420137446273,0.0632,0.12008,C2_05_24
+"downstream gene variant",29,33.6595,3.7e-24,-0.188906295698461,0.3719,0.601370212765957,C2_05_24
+"intergenic variant",179,149.7937,8.49590531790109e-12,0.258744758591196,0.0096,0.0228,C2_05_24
+"intron variant",184,189.309,5.45830814623601e-10,-0.0384895585609299,0.613,0.970583333333333,C2_05_24
+"intron variant / NMD transcript variant",4,4.9067,3.7e-24,-0.126481972591538,0.828,1,C2_05_24
+"intron variant / non coding transcript variant",42,49.3179,3.7e-24,-0.213913757550316,0.2327,0.417116279069767,C2_05_24
+"missense variant",2,3.9188,3.7e-24,-0.581966911889624,0.2954,0.498897777777778,C2_05_24
+"non coding transcript exon variant",1,2.676,3.7e-24,-0.718448191739939,0.3063,0.506060869565217,C2_05_24
+"regulatory region variant",29,27.8651,3.7e-24,0.0793043359054536,0.8404,1,C2_05_24
+"splice polypyrimidine tract variant / intron variant",1,0.2804,3.7e-24,0.735320724359676,0.244,0.421454545454545,C2_05_24
+"splice region variant / splice polypyrimidine tract variant / intron variant",1,0.1939,3.7e-24,0.814555474677675,0.174,0.322536585365854,C2_05_24
+"synonymous variant",1,1.5782,3.7e-24,-0.184996431725669,0.7476,1,C2_05_24
+"upstream gene variant",22,31.633,3.7e-24,-0.484073410732981,0.048,0.0985945945945946,C2_05_24
+"frameshift variant",0,0.1427,3.7e-24,-0.138996692505913,1,1,C2_05_24
+"stop gained",0,0.2667,3.7e-24,-0.253541217828239,0.236,0.417116279069767,C2_05_24
+"splice acceptor variant",0,0.0634,3.7e-24,-0.0628189475010096,0.062,0.12008,C2_05_24
+"splice region variant / synonymous variant",0,0.0425,3.7e-24,-0.0422924812503606,1,1,C2_05_24
+"missense variant / splice region variant",0,0.1291,3.7e-24,-0.125745715005481,1,1,C2_05_24
+"splice donor region variant / intron variant",0,0.0622,3.7e-24,-0.0612869175015865,0.06,0.12,C2_05_24
+"frameshift variant / NMD transcript variant",0,0.0021,3.7e-24,-0.0021,1,1,C2_05_24
+"splice region variant / 5 prime UTR variant",0,0.0127,3.7e-24,-0.0125754887502163,0.0124,0.0285575757575758,C2_05_24
+"splice region variant / intron variant",0,0.0715,3.7e-24,-0.0702963912520913,1,1,C2_05_24
+"splice region variant / non coding transcript exon variant",0,0.0269,3.7e-24,-0.0268169925001442,1,1,C2_05_24
+"3 prime UTR variant / NMD transcript variant",0,0.1103,3.7e-24,-0.107775790004038,1,1,C2_05_24
+"TF binding site variant",0,0.0688,3.7e-24,-0.0678699250014423,1,1,C2_05_24
+"splice region variant / intron variant / non coding transcript variant",0,0.0074,3.7e-24,-0.0074,0.0074,0.0193931034482759,C2_05_24
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0046,3.7e-24,-0.0046,1,1,C2_05_24
+"splice donor variant",0,0.0572,3.7e-24,-0.0564359400011539,1,1,C2_05_24
+"splice donor 5th base variant / intron variant",0,0.0369,3.7e-24,-0.0368169925001442,1,1,C2_05_24
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0057,3.7e-24,-0.0057,1,1,C2_05_24
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0203,3.7e-24,-0.0202169925001442,0.0201,0.0436457142857143,C2_05_24
+"splice donor region variant / intron variant / non coding transcript variant",0,0.01,3.7e-24,-0.01,1,1,C2_05_24
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0347,3.7e-24,-0.0344924812503606,1,1,C2_05_24
+"stop gained / splice region variant",0,0.0102,3.7e-24,-0.0101584962500721,1,1,C2_05_24
+"missense variant / NMD transcript variant",0,0.0317,3.7e-24,-0.0314924812503606,0.0312,0.0658666666666667,C2_05_24
+"stop retained variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.004256,C2_05_24
+"synonymous variant / NMD transcript variant",0,0.0132,3.7e-24,-0.0132,0.0132,0.0295058823529412,C2_05_24
+"5 prime UTR variant / NMD transcript variant",0,0.0123,3.7e-24,-0.0123,1,1,C2_05_24
+"inframe deletion",0,0.0087,3.7e-24,-0.0087,0.0087,0.02204,C2_05_24
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0016,3.7e-24,-0.0016,0.0016,0.00467692307692308,C2_05_24
+"splice acceptor variant / non coding transcript variant",0,0.0089,3.7e-24,-0.0089,1,1,C2_05_24
+"start lost",0,0.006,3.7e-24,-0.00595849625007212,1,1,C2_05_24
+"missense variant / splice region variant / NMD transcript variant",0,0.0011,3.7e-24,-0.0011,1,1,C2_05_24
+"splice donor variant / non coding transcript variant",0,0.0092,3.7e-24,-0.00915849625007212,0.0091,0.0223096774193548,C2_05_24
+"mature miRNA variant",0,0.0054,3.7e-24,-0.0054,1,1,C2_05_24
+"start lost / splice region variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00152,C2_05_24
+"frameshift variant / splice region variant",0,0.0045,3.7e-24,-0.00445849625007212,1,1,C2_05_24
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0064,3.7e-24,-0.0064,0.0064,0.0173714285714286,C2_05_24
+"splice region variant / 3 prime UTR variant",0,0.0021,3.7e-24,-0.0021,1,1,C2_05_24
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.004256,C2_05_24
+"splice donor variant / NMD transcript variant",0,9e-04,3.7e-24,-9e-04,9e-04,0.00325714285714286,C2_05_24
+"splice acceptor variant / NMD transcript variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.00304,C2_05_24
+"stop lost",0,0.0041,3.7e-24,-0.0041,1,1,C2_05_24
+"splice donor variant / splice donor 5th base variant / intron variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00211111111111111,C2_05_24
+"stop gained / NMD transcript variant",0,0.0023,3.7e-24,-0.0023,0.0023,0.00647407407407407,C2_05_24
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.004256,C2_05_24
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00152,C2_05_24
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00178823529411765,C2_05_24
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,7e-04,3.7e-24,-7e-04,1,1,C2_05_24
+"splice region variant / intron variant / NMD transcript variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.004256,C2_05_24
+"splice donor 5th base variant / non coding transcript exon variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00126666666666667,C2_05_24
+"splice region variant / synonymous variant / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00178823529411765,C2_05_24
+"frameshift variant / start lost",0,6e-04,3.7e-24,-6e-04,6e-04,0.0024,C2_05_24
+"splice donor region variant / non coding transcript exon variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00152,C2_05_24
+"splice donor variant / coding sequence variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00152,C2_05_24
+"non coding transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00152,C2_05_24
+"stop gained / frameshift variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00126666666666667,C2_05_24
+"inframe deletion / splice region variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00152,C2_05_24
+"start lost / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00152,C2_05_24
+"splice acceptor variant / coding sequence variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00152,C2_05_24
+"splice donor variant / splice donor region variant / 5 prime UTR variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00152,C2_05_24
+"start lost / synonymous variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00126666666666667,C2_05_24
+"frameshift variant / stop lost / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00126666666666667,C2_05_24
+"splice acceptor variant / coding sequence variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00126666666666667,C2_05_24
+"stop gained / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00126666666666667,C2_05_24
+"3 prime UTR variant",2,4.5339,3.7e-24,-0.763107308665296,0.0762,0.140045454545455,C3_05_24
+"3 prime UTR variant / NMD transcript variant",1,0.1159,3.7e-24,0.886907217495817,0.1093,0.183717021276596,C3_05_24
+"downstream gene variant",28,38.4727,3.7e-24,-0.428060887368358,0.0395,0.0800128205128205,C3_05_24
+"intergenic variant",190,151.0901,6.68105675701017e-10,0.332051580452108,0.0012,0.00364615384615385,C3_05_24
+"intron variant",192,212.3111,3.76994365395474e-09,-0.142333168284844,0.064,0.123317073170732,C3_05_24
+"intron variant / NMD transcript variant",4,5.1526,3.7e-24,-0.193248484862636,0.4997,0.717750909090909,C3_05_24
+"intron variant / non coding transcript variant",58,51.4021,3.7e-24,0.183473155225374,0.3793,0.554901851851852,C3_05_24
+"missense variant",4,4.4898,3.7e-24,-0.0154561225877477,0.8269,1,C3_05_24
+"non coding transcript exon variant",1,2.8102,3.7e-24,-0.774456193121122,0.2452,0.387416,C3_05_24
+"regulatory region variant",24,29.2936,3.7e-24,-0.255026781071188,0.3018,0.458503846153846,C3_05_24
+"splice donor region variant / intron variant",1,0.0804,3.7e-24,0.920630074998558,0.078,0.140045454545455,C3_05_24
+"stop gained",1,0.3942,3.7e-24,0.635858066866747,0.3254,0.485030188679245,C3_05_24
+"synonymous variant",1,1.9066,3.7e-24,-0.367746627360885,0.2702,0.418545098039216,C3_05_24
+"upstream gene variant",33,35.4387,3.7e-24,-0.0816122560588123,0.6078,0.857432142857143,C3_05_24
+"5 prime UTR variant",0,0.9646,3.7e-24,-0.800529620572122,0.0765,0.140045454545455,C3_05_24
+"splice region variant / synonymous variant",0,0.0513,3.7e-24,-0.0508019550008654,1,1,C3_05_24
+"start lost",0,0.006,3.7e-24,-0.006,1,1,C3_05_24
+"stop gained / NMD transcript variant",0,0.0026,3.7e-24,-0.0026,1,1,C3_05_24
+"splice region variant / splice polypyrimidine tract variant / intron variant",0,0.2438,3.7e-24,-0.23039007751774,0.2129,0.34324693877551,C3_05_24
+"splice donor 5th base variant / intron variant",0,0.0533,3.7e-24,-0.0526359400011538,0.0517,0.1021075,C3_05_24
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0298,3.7e-24,-0.0296754887502163,0.0295,0.0649081081081081,C3_05_24
+"frameshift variant",0,0.124,3.7e-24,-0.120894737505048,1,1,C3_05_24
+"splice region variant / intron variant",0,0.0878,3.7e-24,-0.0857663162535337,0.0829,0.142371739130435,C3_05_24
+"splice donor variant",0,0.0627,3.7e-24,-0.061994436251226,1,1,C3_05_24
+"missense variant / splice region variant",0,0.153,3.7e-24,-0.148645877815546,0.1429,0.235189583333333,C3_05_24
+"splice polypyrimidine tract variant / intron variant",0,0.3256,3.7e-24,-0.305251619706519,1,1,C3_05_24
+"TF binding site variant",0,0.0773,3.7e-24,-0.0758888725024519,1,1,C3_05_24
+"splice acceptor variant",0,0.0843,3.7e-24,-0.082747368752524,0.0806,0.141497777777778,C3_05_24
+"5 prime UTR variant / NMD transcript variant",0,0.0102,3.7e-24,-0.0101584962500721,1,1,C3_05_24
+"splice acceptor variant / non coding transcript variant",0,0.0099,3.7e-24,-0.0099,0.0099,0.024440625,C3_05_24
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0365,3.7e-24,-0.0360019550008654,0.0353,0.0733868421052632,C3_05_24
+"stop gained / splice region variant",0,0.0162,3.7e-24,-0.0162,1,1,C3_05_24
+"synonymous variant / NMD transcript variant",0,0.0135,3.7e-24,-0.0135,0.0135,0.0313676470588235,C3_05_24
+"splice region variant / intron variant / non coding transcript variant",0,0.01,3.7e-24,-0.01,1,1,C3_05_24
+"missense variant / NMD transcript variant",0,0.0308,3.7e-24,-0.0306339850002885,0.0304,0.0649081081081081,C3_05_24
+"splice region variant / 5 prime UTR variant",0,0.0128,3.7e-24,-0.0128,1,1,C3_05_24
+"splice region variant / non coding transcript exon variant",0,0.0306,3.7e-24,-0.0303924812503606,0.0301,0.0649081081081081,C3_05_24
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0059,3.7e-24,-0.0059,0.0059,0.0155366666666667,C3_05_24
+"stop lost",0,0.0063,3.7e-24,-0.0063,0.0063,0.0160548387096774,C3_05_24
+"frameshift variant / splice region variant",0,0.0031,3.7e-24,-0.0031,0.0031,0.0084448275862069,C3_05_24
+"mature miRNA variant",0,0.0041,3.7e-24,-0.0041,1,1,C3_05_24
+"splice donor variant / non coding transcript variant",0,0.0083,3.7e-24,-0.0083,1,1,C3_05_24
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0041,3.7e-24,-0.0041,1,1,C3_05_24
+"inframe deletion",0,0.0071,3.7e-24,-0.00705849625007212,1,1,C3_05_24
+"splice donor region variant / intron variant / non coding transcript variant",0,0.0108,3.7e-24,-0.0107584962500721,0.0107,0.0256151515151515,C3_05_24
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0036,3.7e-24,-0.0036,1,1,C3_05_24
+"splice acceptor variant / coding sequence variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.000877777777777778,C3_05_24
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.001185,C3_05_24
+"frameshift variant / start lost / start retained variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00079,C3_05_24
+"frameshift variant / NMD transcript variant",0,7e-04,3.7e-24,-7e-04,1,1,C3_05_24
+"stop retained variant",0,0.0027,3.7e-24,-0.0027,1,1,C3_05_24
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00164583333333333,C3_05_24
+"frameshift variant / start lost",0,2e-04,3.7e-24,-2e-04,2e-04,0.000877777777777778,C3_05_24
+"splice acceptor variant / NMD transcript variant",0,0.0011,3.7e-24,-0.0011,1,1,C3_05_24
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0021,3.7e-24,-0.0021,1,1,C3_05_24
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00079,C3_05_24
+"splice donor region variant / intron variant / NMD transcript variant",0,7e-04,3.7e-24,-7e-04,1,1,C3_05_24
+"splice donor variant / NMD transcript variant",0,9e-04,3.7e-24,-9e-04,9e-04,0.002844,C3_05_24
+"non coding transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.000877777777777778,C3_05_24
+"missense variant / splice region variant / NMD transcript variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.0040962962962963,C3_05_24
+"start lost / splice region variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.0015047619047619,C3_05_24
+"splice region variant / 3 prime UTR variant",0,0.0016,3.7e-24,-0.0016,0.0016,0.00451428571428571,C3_05_24
+"stop gained / frameshift variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00079,C3_05_24
+"splice region variant / intron variant / NMD transcript variant",0,0.0013,3.7e-24,-0.0013,1,1,C3_05_24
+"splice region variant / synonymous variant / NMD transcript variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00164583333333333,C3_05_24
+"splice donor variant / coding sequence variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00164583333333333,C3_05_24
+"splice acceptor variant / non coding transcript exon variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.001185,C3_05_24
+"frameshift variant / stop retained variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.000877777777777778,C3_05_24
+"splice donor region variant / non coding transcript exon variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.000877777777777778,C3_05_24
+"stop lost / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.000877777777777778,C3_05_24
+"frameshift variant / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00079,C3_05_24
+"stop retained variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00079,C3_05_24
+"coding sequence variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00079,C3_05_24
+"incomplete terminal codon variant / coding sequence variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.000877777777777778,C3_05_24
+"splice donor variant / splice donor region variant / non coding transcript exon variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00079,C3_05_24
+"frameshift variant / stop lost",0,1e-04,3.7e-24,-1e-04,1e-04,0.00079,C3_05_24
+"inframe deletion / splice region variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00079,C3_05_24
+"splice acceptor variant / coding sequence variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.000877777777777778,C3_05_24
+"splice donor variant / splice donor 5th base variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00079,C3_05_24
+"3 prime UTR variant",27,23.3031,3.7e-24,0.234071119412836,0.4834,0.780876923076923,E1_06_14
+"5 prime UTR variant",1,4.3114,3.7e-24,-1.28461601403161,0.0705,0.14805,E1_06_14
+"5 prime UTR variant / NMD transcript variant",1,0.0652,3.7e-24,0.935647067498702,0.0632,0.137630769230769,E1_06_14
+"downstream gene variant",188,205.4618,1.93329592038653e-06,-0.124234760139018,0.1963,0.343525,E1_06_14
+"intergenic variant",946,873.7112,0.0253979305472206,0.115140831813958,0.0064,0.021,E1_06_14
+"intron variant",1095,1155.3318,0.00403900807381184,-0.076929028331496,0.0199,0.05572,E1_06_14
+"intron variant / NMD transcript variant",21,30.6115,3.7e-24,-0.500764361740788,0.0475,0.117352941176471,E1_06_14
+"intron variant / non coding transcript variant",313,294.5457,5.24900379427724e-05,0.0895622296325713,0.2781,0.467208,E1_06_14
+"missense variant",13,25.0201,3.7e-24,-0.866963252665695,0.006,0.021,E1_06_14
+"missense variant / splice region variant",1,0.7741,3.7e-24,0.331993395428511,1,1,E1_06_14
+"non coding transcript exon variant",14,15.12,3.7e-24,-0.0595163746463779,0.701,1,E1_06_14
+"regulatory region variant",150,154.6859,1.27082848561072e-08,-0.03967166148336,0.7129,1,E1_06_14
+"splice donor region variant / intron variant",1,0.6098,3.7e-24,0.460505797200043,1,1,E1_06_14
+"splice region variant / splice polypyrimidine tract variant / intron variant",1,1.0565,3.7e-24,0.131609825272995,0.6318,1,E1_06_14
+"stop gained",1,1.5221,3.7e-24,-0.155359367455097,0.7485,1,E1_06_14
+"synonymous variant",6,8.3135,3.7e-24,-0.336567458547521,0.4127,0.679741176470588,E1_06_14
+"upstream gene variant",212,190.5811,3.0022055215883e-08,0.156436856068648,0.1286,0.251218604651163,E1_06_14
+"3 prime UTR variant / NMD transcript variant",0,0.5637,3.7e-24,-0.5045718593738,0.6789,1,E1_06_14
+"splice acceptor variant",0,0.291,3.7e-24,-0.27418693283372,1,1,E1_06_14
+"splice polypyrimidine tract variant / intron variant",0,1.6816,3.7e-24,-1.24411090715704,0.1875,0.335106382978723,E1_06_14
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.2062,3.7e-24,-0.197878347512548,1,1,E1_06_14
+"splice region variant / intron variant",0,0.3976,3.7e-24,-0.367367748143639,1,1,E1_06_14
+"missense variant / NMD transcript variant",0,0.1984,3.7e-24,-0.189802858762332,0.1783,0.325591304347826,E1_06_14
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0286,3.7e-24,-0.0283754887502163,0.0281,0.0737625,E1_06_14
+"splice region variant / non coding transcript exon variant",0,0.1505,3.7e-24,-0.146181655006635,1,1,E1_06_14
+"TF binding site variant",0,0.4485,3.7e-24,-0.411438308632382,0.7084,1,E1_06_14
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0115,3.7e-24,-0.0114169925001442,1,1,E1_06_14
+"synonymous variant / NMD transcript variant",0,0.0629,3.7e-24,-0.0621529325012981,1,1,E1_06_14
+"frameshift variant",0,0.1456,3.7e-24,-0.141538359065907,0.136,0.253866666666667,E1_06_14
+"splice donor variant",0,0.5224,3.7e-24,-0.471184152188195,0.6899,1,E1_06_14
+"start lost",0,0.0978,3.7e-24,-0.0958813537528125,0.0933,0.1866,E1_06_14
+"mature miRNA variant",0,0.0267,3.7e-24,-0.0266584962500721,0.0266,0.0720774193548387,E1_06_14
+"splice donor 5th base variant / intron variant",0,0.1833,3.7e-24,-0.17759503875887,1,1,E1_06_14
+"stop lost",0,0.0531,3.7e-24,-0.052626466250649,0.052,0.121333333333333,E1_06_14
+"splice region variant / 5 prime UTR variant",0,0.0616,3.7e-24,-0.0611434587507933,0.0605,0.137351351351351,E1_06_14
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.1418,3.7e-24,-0.137936404065042,0.1328,0.253527272727273,E1_06_14
+"splice acceptor variant / non coding transcript variant",0,0.0422,3.7e-24,-0.0418509775004327,1,1,E1_06_14
+"inframe deletion",0,0.0211,3.7e-24,-0.0210169925001442,1,1,E1_06_14
+"splice region variant / synonymous variant",0,0.2541,3.7e-24,-0.242363774077157,0.2265,0.388285714285714,E1_06_14
+"start lost / splice region variant",0,0.0018,3.7e-24,-0.0018,0.0018,0.00657391304347826,E1_06_14
+"splice donor variant / non coding transcript variant",0,0.0656,3.7e-24,-0.0648774437510817,0.0639,0.137630769230769,E1_06_14
+"stop gained / splice region variant",0,0.0481,3.7e-24,-0.047726466250649,0.0472,0.117352941176471,E1_06_14
+"missense variant / splice region variant / NMD transcript variant",0,0.0073,3.7e-24,-0.0073,1,1,E1_06_14
+"splice donor region variant / intron variant / non coding transcript variant",0,0.0757,3.7e-24,-0.0747699250014423,0.0735,0.150585365853659,E1_06_14
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0112,3.7e-24,-0.0112,1,1,E1_06_14
+"stop retained variant",0,0.0115,3.7e-24,-0.0114584962500721,1,1,E1_06_14
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0235,3.7e-24,-0.0234584962500721,1,1,E1_06_14
+"splice region variant / 3 prime UTR variant",0,0.0091,3.7e-24,-0.00905849625007212,1,1,E1_06_14
+"start lost / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105,E1_06_14
+"frameshift variant / NMD transcript variant",0,0.001,3.7e-24,-0.001,1,1,E1_06_14
+"splice region variant / intron variant / non coding transcript variant",0,0.0518,3.7e-24,-0.0513434587507933,0.0507,0.121333333333333,E1_06_14
+"splice acceptor variant / NMD transcript variant",0,0.0065,3.7e-24,-0.0065,0.0065,0.021,E1_06_14
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0033,3.7e-24,-0.0033,1,1,E1_06_14
+"frameshift variant / splice region variant",0,0.0038,3.7e-24,-0.0038,1,1,E1_06_14
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0167,3.7e-24,-0.0166584962500721,1,1,E1_06_14
+"splice donor variant / NMD transcript variant",0,0.012,3.7e-24,-0.0119169925001442,0.0118,0.0354,E1_06_14
+"splice region variant / intron variant / NMD transcript variant",0,0.0075,3.7e-24,-0.00745849625007212,0.0074,0.0230222222222222,E1_06_14
+"stop gained / NMD transcript variant",0,0.0132,3.7e-24,-0.0131584962500721,0.0131,0.0379448275862069,E1_06_14
+"stop lost / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00168,E1_06_14
+"non coding transcript variant",0,0.001,3.7e-24,-0.001,1,1,E1_06_14
+"stop lost / splice region variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"splice region variant / synonymous variant / NMD transcript variant",0,0.0026,3.7e-24,-0.0026,1,1,E1_06_14
+"splice donor 5th base variant / synonymous variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105,E1_06_14
+"splice acceptor variant / coding sequence variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"incomplete terminal codon variant / coding sequence variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.00229090909090909,E1_06_14
+"coding sequence variant",0,7e-04,3.7e-24,-7e-04,1,1,E1_06_14
+"frameshift variant / start lost / start retained variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00168,E1_06_14
+"start lost / NMD transcript variant",0,0.0013,3.7e-24,-0.0013,1,1,E1_06_14
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.001,3.7e-24,-0.001,1,1,E1_06_14
+"inframe deletion / splice region variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.002,E1_06_14
+"inframe deletion / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105,E1_06_14
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"stop gained / frameshift variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00168,E1_06_14
+"frameshift variant / start lost",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"splice donor region variant / non coding transcript exon variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00168,E1_06_14
+"splice donor 5th base variant / non coding transcript exon variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"frameshift variant / stop lost",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"splice donor variant / splice donor 5th base variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"stop gained / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105,E1_06_14
+"stop retained variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"splice acceptor variant / non coding transcript exon variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"stop lost / splice region variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"splice donor variant / splice donor 5th base variant / intron variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105,E1_06_14
+"frameshift variant / splice region variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00105,E1_06_14
+"3 prime UTR variant",16,27.2455,3.7e-24,-0.707040930921771,0.0152,0.03458,E1_08_16
+"3 prime UTR variant / NMD transcript variant",1,0.8392,3.7e-24,0.285728612176899,0.6368,0.864907462686567,E1_08_16
+"5 prime UTR variant",8,5.1,3.7e-24,0.6731644933812,0.3971,0.582688888888889,E1_08_16
+"TF binding site variant",1,0.5604,3.7e-24,0.497202618256289,1,1,E1_08_16
+"downstream gene variant",248,261.2222,4.04175033630342e-05,-0.0721339005257421,0.3835,0.572106557377049,E1_08_16
+"intergenic variant",1363,1263.0324,0.0336380406759598,0.11019939497106,0.0011,0.00345172413793103,E1_08_16
+"intron variant",1410,1502.9883,0.016066116760105,-0.091774944865321,0.0017,0.004834375,E1_08_16
+"intron variant / NMD transcript variant",36,41.2769,3.7e-24,-0.175578056469783,0.3481,0.527951666666667,E1_08_16
+"intron variant / non coding transcript variant",418,415.3357,0.000512076478224397,0.0107582309158565,0.8772,1,E1_08_16
+"missense variant",35,30.018,3.7e-24,0.237229518379329,0.4034,0.582688888888889,E1_08_16
+"non coding transcript exon variant",24,20.6938,3.7e-24,0.237007129691182,0.4373,0.6217859375,E1_08_16
+"regulatory region variant",216,208.6436,6.82010098538044e-06,0.0530186120840351,0.6195,0.854159090909091,E1_08_16
+"splice donor region variant / intron variant / non coding transcript variant",1,0.102,3.7e-24,0.900582706246034,0.0959,0.164658490566038,E1_08_16
+"splice donor variant",2,0.677,3.7e-24,0.992024343406939,0.0302,0.0639116279069768,E1_08_16
+"splice polypyrimidine tract variant / intron variant",3,1.9274,3.7e-24,0.625944503431286,0.7315,0.95095,E1_08_16
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",1,0.2625,3.7e-24,0.74968345623161,0.2338,0.373259649122807,E1_08_16
+"splice region variant / splice polypyrimidine tract variant / intron variant",1,1.2577,3.7e-24,0.00496610389139818,1,1,E1_08_16
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",1,0.1877,3.7e-24,0.819352028739832,0.1712,0.283258181818182,E1_08_16
+"splice region variant / synonymous variant",1,0.2957,3.7e-24,0.720898192477067,0.2571,0.403381034482759,E1_08_16
+"stop gained",4,1.9422,3.7e-24,0.936964078409726,0.1864,0.3029,E1_08_16
+"stop gained / NMD transcript variant",1,0.0111,3.7e-24,0.9889,0.0111,0.0265815789473684,E1_08_16
+"synonymous variant",6,10.1943,3.7e-24,-0.61304683970603,0.0916,0.1603,E1_08_16
+"upstream gene variant",240,239.0589,6.42772335840329e-05,0.00841151307812371,0.9445,1,E1_08_16
+"5 prime UTR variant / NMD transcript variant",0,0.0597,3.7e-24,-0.058894436251226,0.0578,0.116884444444444,E1_08_16
+"splice acceptor variant",0,0.3367,3.7e-24,-0.314780203768099,0.2859,0.440964406779661,E1_08_16
+"missense variant / splice region variant",0,0.9196,3.7e-24,-0.769937114147316,0.4698,0.65772,E1_08_16
+"splice region variant / non coding transcript exon variant",0,0.1909,3.7e-24,-0.183763171569513,1,1,E1_08_16
+"frameshift variant",0,0.1514,3.7e-24,-0.146732632507067,1,1,E1_08_16
+"splice donor region variant / intron variant",0,0.7,3.7e-24,-0.610335329636981,0.6576,0.880023529411765,E1_08_16
+"splice donor variant / non coding transcript variant",0,0.0876,3.7e-24,-0.0859643612526683,0.0837,0.149347058823529,E1_08_16
+"splice region variant / intron variant",0,0.4694,3.7e-24,-0.428184177834581,0.7039,0.928331884057971,E1_08_16
+"missense variant / NMD transcript variant",0,0.229,3.7e-24,-0.218463635633401,1,1,E1_08_16
+"mature miRNA variant",0,0.0313,3.7e-24,-0.0312169925001442,1,1,E1_08_16
+"splice donor 5th base variant / intron variant",0,0.2066,3.7e-24,-0.198610377511971,1,1,E1_08_16
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0394,3.7e-24,-0.0391924812503606,0.0389,0.0804522727272727,E1_08_16
+"splice region variant / 5 prime UTR variant",0,0.0796,3.7e-24,-0.0786454137516587,0.0773,0.143557142857143,E1_08_16
+"stop retained variant",0,0.0117,3.7e-24,-0.0115754887502163,0.0114,0.0266,E1_08_16
+"stop gained / splice region variant",0,0.0697,3.7e-24,-0.0688699250014423,0.0677,0.128347916666667,E1_08_16
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0294,3.7e-24,-0.0291094737505048,1,1,E1_08_16
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0158,3.7e-24,-0.0157169925001442,0.0156,0.0346243902439024,E1_08_16
+"start lost",0,0.1041,3.7e-24,-0.102315338753101,0.0998,0.168181481481481,E1_08_16
+"stop lost / NMD transcript variant",0,0.002,3.7e-24,-0.002,0.002,0.00535294117647059,E1_08_16
+"stop lost",0,0.0622,3.7e-24,-0.0610624062518029,0.0595,0.11770652173913,E1_08_16
+"splice region variant / intron variant / NMD transcript variant",0,0.0123,3.7e-24,-0.0122169925001442,1,1,E1_08_16
+"synonymous variant / NMD transcript variant",0,0.0864,3.7e-24,-0.0851133837522356,0.0833,0.149347058823529,E1_08_16
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0156,3.7e-24,-0.0156,1,1,E1_08_16
+"splice acceptor variant / non coding transcript variant",0,0.0488,3.7e-24,-0.0482019550008654,1,1,E1_08_16
+"splice region variant / intron variant / non coding transcript variant",0,0.065,3.7e-24,-0.0641284212515144,0.0629,0.121785106382979,E1_08_16
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0268,3.7e-24,-0.0265509775004327,0.0262,0.0567666666666667,E1_08_16
+"splice acceptor variant / NMD transcript variant",0,0.0067,3.7e-24,-0.0067,1,1,E1_08_16
+"splice region variant / 3 prime UTR variant",0,0.0093,3.7e-24,-0.0093,0.0093,0.022872972972973,E1_08_16
+"frameshift variant / splice region variant",0,0.0033,3.7e-24,-0.0033,1,1,E1_08_16
+"inframe deletion",0,0.0077,3.7e-24,-0.0077,0.0077,0.0194638888888889,E1_08_16
+"splice donor variant / NMD transcript variant",0,0.013,3.7e-24,-0.013,1,1,E1_08_16
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.001456,E1_08_16
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0047,3.7e-24,-0.00465849625007212,1,1,E1_08_16
+"missense variant / splice region variant / NMD transcript variant",0,0.0069,3.7e-24,-0.0069,1,1,E1_08_16
+"start lost / splice region variant",0,0.0034,3.7e-24,-0.0034,0.0034,0.00884,E1_08_16
+"frameshift variant / NMD transcript variant",0,0.002,3.7e-24,-0.002,0.002,0.00535294117647059,E1_08_16
+"stop gained / splice region variant / NMD transcript variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.00195,E1_08_16
+"splice region variant / synonymous variant / NMD transcript variant",0,0.0029,3.7e-24,-0.0029,1,1,E1_08_16
+"start lost / NMD transcript variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.00410967741935484,E1_08_16
+"splice donor variant / splice donor 5th base variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00143684210526316,E1_08_16
+"incomplete terminal codon variant / coding sequence variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00364,E1_08_16
+"frameshift variant / stop retained variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00121333333333333,E1_08_16
+"splice donor variant / non coding transcript exon variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"coding sequence variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.001456,E1_08_16
+"splice acceptor variant / non coding transcript exon variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.001456,E1_08_16
+"missense variant / splice donor 5th base variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"splice donor variant / splice polypyrimidine tract variant / non coding transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"splice donor variant / 5 prime UTR variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00143684210526316,E1_08_16
+"splice donor region variant / non coding transcript exon variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.001456,E1_08_16
+"splice acceptor variant / coding sequence variant",0,0.001,3.7e-24,-0.001,1,1,E1_08_16
+"splice acceptor variant / coding sequence variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00143684210526316,E1_08_16
+"non coding transcript variant",0,0.0011,3.7e-24,-0.0011,1,1,E1_08_16
+"start lost / 5 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00168518518518519,E1_08_16
+"frameshift variant / stop lost",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00143684210526316,E1_08_16
+"missense variant / splice donor region variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00121333333333333,E1_08_16
+"stop gained / frameshift variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00168518518518519,E1_08_16
+"stop retained variant / 3 prime UTR variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00121333333333333,E1_08_16
+"splice donor 5th base variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"splice donor 5th base variant / non coding transcript exon variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.001456,E1_08_16
+"stop retained variant / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.001456,E1_08_16
+"splice donor variant / splice donor region variant / 5 prime UTR variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"splice donor variant / splice donor 5th base variant / intron variant / non coding transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"inframe deletion / splice region variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"stop lost / splice region variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"splice donor variant / splice donor region variant / non coding transcript exon variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"splice donor variant / coding sequence variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000758333333333333,E1_08_16
+"3 prime UTR variant",23,29.123,3.7e-24,-0.304207080837745,0.2373,0.452525581395349,E2_06_14
+"5 prime UTR variant",3,5.2515,3.7e-24,-0.535996066025701,0.3175,0.553936170212766,E2_06_14
+"TF binding site variant",1,0.5246,3.7e-24,0.528040359061589,1,1,E2_06_14
+"downstream gene variant",266,253.195,1.81056018189112e-06,0.0735726863026153,0.4205,0.68962,E2_06_14
+"intergenic variant",1167,1062.6599,0.0421907103379057,0.135482415238501,4e-04,0.00205,E2_06_14
+"intron variant",1273,1425.758,0.0185371866259892,-0.163066701994296,0,0,E2_06_14
+"intron variant / NMD transcript variant",27,32.58,3.7e-24,-0.240295326373809,0.2595,0.482888888888889,E2_06_14
+"intron variant / non coding transcript variant",393,365.6026,1.74762821520801e-05,0.10580956038204,0.1604,0.3216,E2_06_14
+"missense variant",34,30.5064,3.7e-24,0.173930936535364,0.5874,0.926284615384615,E2_06_14
+"missense variant / splice region variant",1,0.9614,3.7e-24,0.198952758773703,1,1,E2_06_14
+"non coding transcript exon variant",23,18.0664,3.7e-24,0.369158516971677,0.3467,0.592279166666667,E2_06_14
+"regulatory region variant",185,186.7155,1.73437724755612e-07,-0.00958673609873619,0.9146,1,E2_06_14
+"splice donor variant",1,0.7475,3.7e-24,0.352952557391731,1,1,E2_06_14
+"splice polypyrimidine tract variant / intron variant",4,2.0333,3.7e-24,0.8963448109524,0.2832,0.504834782608696,E2_06_14
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",1,0.2479,3.7e-24,0.765313344053793,0.2174,0.424447619047619,E2_06_14
+"splice region variant / intron variant",1,0.4807,3.7e-24,0.563369407187057,1,1,E2_06_14
+"splice region variant / splice polypyrimidine tract variant / intron variant",1,1.339,3.7e-24,-0.0467114799197128,1,1,E2_06_14
+"splice region variant / synonymous variant",1,0.3095,3.7e-24,0.709822052486588,0.265,0.482888888888889,E2_06_14
+"stop gained",2,1.89,3.7e-24,0.230990810248986,0.7275,1,E2_06_14
+"synonymous variant",11,10.1439,3.7e-24,0.171023236322051,0.8831,1,E2_06_14
+"upstream gene variant",247,233.0871,9.58148457658433e-08,0.0862177965769594,0.3632,0.607804081632653,E2_06_14
+"3 prime UTR variant / NMD transcript variant",0,0.678,3.7e-24,-0.593888483574387,0.6548,1,E2_06_14
+"missense variant / NMD transcript variant",0,0.2047,3.7e-24,-0.196395340012692,1,1,E2_06_14
+"splice donor region variant / intron variant",0,0.7774,3.7e-24,-0.669391575685557,0.5031,0.808905882352941,E2_06_14
+"splice region variant / 5 prime UTR variant",0,0.0749,3.7e-24,-0.0737624062518029,1,1,E2_06_14
+"synonymous variant / NMD transcript variant",0,0.0724,3.7e-24,-0.0709888725024519,1,1,E2_06_14
+"frameshift variant",0,0.2175,3.7e-24,-0.208780302513414,1,1,E2_06_14
+"splice donor 5th base variant / intron variant",0,0.227,3.7e-24,-0.216103160016154,1,1,E2_06_14
+"stop lost",0,0.0684,3.7e-24,-0.0675529325012981,0.0664,0.151244444444444,E2_06_14
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0284,3.7e-24,-0.0283169925001442,1,1,E2_06_14
+"splice donor variant / non coding transcript variant",0,0.0819,3.7e-24,-0.0806548875021635,1,1,E2_06_14
+"splice region variant / intron variant / non coding transcript variant",0,0.058,3.7e-24,-0.0573359400011538,0.0564,0.136023529411765,E2_06_14
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.1586,3.7e-24,-0.153427068758293,0.1463,0.307605128205128,E2_06_14
+"splice acceptor variant",0,0.3307,3.7e-24,-0.309723524075136,1,1,E2_06_14
+"splice donor region variant / intron variant / non coding transcript variant",0,0.0867,3.7e-24,-0.0853133837522356,0.0834,0.184832432432432,E2_06_14
+"stop retained variant",0,0.0158,3.7e-24,-0.0157169925001442,0.0156,0.04264,E2_06_14
+"splice region variant / non coding transcript exon variant",0,0.174,3.7e-24,-0.168410239068215,0.1608,0.3216,E2_06_14
+"splice region variant / 3 prime UTR variant",0,0.0116,3.7e-24,-0.0116,1,1,E2_06_14
+"5 prime UTR variant / NMD transcript variant",0,0.0626,3.7e-24,-0.0619774437510817,0.0611,0.143148571428571,E2_06_14
+"stop lost / splice region variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.00328,E2_06_14
+"start lost",0,0.1081,3.7e-24,-0.106049323753389,0.1032,0.222694736842105,E2_06_14
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0275,3.7e-24,-0.0272509775004327,1,1,E2_06_14
+"splice region variant / intron variant / NMD transcript variant",0,0.0079,3.7e-24,-0.00785849625007212,1,1,E2_06_14
+"splice donor variant / NMD transcript variant",0,0.0123,3.7e-24,-0.0122584962500721,1,1,E2_06_14
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0375,3.7e-24,-0.0370849625007212,0.0365,0.09353125,E2_06_14
+"stop gained / splice region variant",0,0.0723,3.7e-24,-0.0715529325012981,1,1,E2_06_14
+"splice acceptor variant / non coding transcript variant",0,0.0412,3.7e-24,-0.0407679700005769,0.0402,0.0998909090909091,E2_06_14
+"inframe deletion",0,0.0221,3.7e-24,-0.0220584962500721,1,1,E2_06_14
+"mature miRNA variant",0,0.0259,3.7e-24,-0.0257339850002885,0.0255,0.0674516129032258,E2_06_14
+"splice acceptor variant / NMD transcript variant",0,0.0054,3.7e-24,-0.0054,1,1,E2_06_14
+"stop gained / NMD transcript variant",0,0.0144,3.7e-24,-0.0143584962500721,0.0143,0.0404344827586207,E2_06_14
+"frameshift variant / splice region variant",0,0.0051,3.7e-24,-0.0051,0.0051,0.0154888888888889,E2_06_14
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0143,3.7e-24,-0.0143,1,1,E2_06_14
+"start lost / NMD transcript variant",0,0.0023,3.7e-24,-0.0023,0.0023,0.00785833333333333,E2_06_14
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0148,3.7e-24,-0.0147169925001442,1,1,E2_06_14
+"incomplete terminal codon variant / coding sequence variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.00328,E2_06_14
+"stop gained / splice region variant / NMD transcript variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00241176470588235,E2_06_14
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.0019,3.7e-24,-0.0019,0.0019,0.00708181818181818,E2_06_14
+"inframe deletion / splice region variant",0,7e-04,3.7e-24,-7e-04,1,1,E2_06_14
+"missense variant / splice region variant / NMD transcript variant",0,0.0108,3.7e-24,-0.0108,0.0108,0.0316285714285714,E2_06_14
+"start lost / splice region variant",0,0.0035,3.7e-24,-0.00345849625007212,0.0034,0.011152,E2_06_14
+"stop lost / NMD transcript variant",0,0.0011,3.7e-24,-0.0011,1,1,E2_06_14
+"splice region variant / stop retained variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00189230769230769,E2_06_14
+"non coding transcript variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.00273333333333333,E2_06_14
+"inframe deletion / NMD transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00189230769230769,E2_06_14
+"splice acceptor variant / coding sequence variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00149090909090909,E2_06_14
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0039,3.7e-24,-0.0039,0.0039,0.0123,E2_06_14
+"splice donor region variant / non coding transcript exon variant",0,0.001,3.7e-24,-0.001,1,1,E2_06_14
+"missense variant / splice donor region variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00149090909090909,E2_06_14
+"splice donor variant / splice donor region variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00136666666666667,E2_06_14
+"frameshift variant / NMD transcript variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.00546666666666667,E2_06_14
+"splice region variant / synonymous variant / NMD transcript variant",0,0.0022,3.7e-24,-0.0022,0.0022,0.00784347826086956,E2_06_14
+"splice donor variant / coding sequence variant",0,7e-04,3.7e-24,-7e-04,1,1,E2_06_14
+"stop gained / frameshift variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00205,E2_06_14
+"frameshift variant / start lost",0,2e-04,3.7e-24,-2e-04,2e-04,0.00149090909090909,E2_06_14
+"coding sequence variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00205,E2_06_14
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00149090909090909,E2_06_14
+"frameshift variant / stop lost",0,1e-04,3.7e-24,-1e-04,1e-04,0.00136666666666667,E2_06_14
+"splice donor variant / non coding transcript exon variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00149090909090909,E2_06_14
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00136666666666667,E2_06_14
+"splice acceptor variant / 5 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00136666666666667,E2_06_14
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00136666666666667,E2_06_14
+"3 prime UTR variant",38,40.6049,3.7e-24,-0.0756245494039155,0.7027,1,E2_08_16
+"5 prime UTR variant",12,7.6688,3.7e-24,0.666825478211846,0.1717,0.279704838709677,E2_08_16
+"TF binding site variant",1,0.7592,3.7e-24,0.345819574898223,1,1,E2_08_16
+"downstream gene variant",347,381.1163,0.000517355312171117,-0.133143144420455,0.0611,0.11427962962963,E2_08_16
+"intergenic variant",1951,1746.4302,0.090471939655546,0.160004753316561,0,0,E2_08_16
+"intron variant",2027,2187.2951,0.0101540160199348,-0.109546943215058,0,0,E2_08_16
+"intron variant / NMD transcript variant",45,56.4689,6.23412186235083e-22,-0.308952577356854,0.0829,0.152234545454545,E2_08_16
+"intron variant / non coding transcript variant",575,573.2272,0.001793509310243,0.00557888586198159,0.9468,1,E2_08_16
+"missense variant",41,46.3869,3.7e-24,-0.158959613639731,0.3764,0.567408955223881,E2_08_16
+"missense variant / splice region variant",1,1.3651,3.7e-24,-0.0645683138093949,1,1,E2_08_16
+"non coding transcript exon variant",27,29.2425,3.7e-24,-0.0871360175394253,0.6436,0.94208115942029,E2_08_16
+"regulatory region variant",351,299.7137,6.52843888747445e-07,0.229475370925214,0.0056,0.0134666666666667,E2_08_16
+"splice donor region variant / intron variant",2,1.135,3.7e-24,0.666222456936541,0.6323,0.939151470588235,E2_08_16
+"splice donor region variant / intron variant / non coding transcript variant",1,0.1474,3.7e-24,0.856959848743293,0.1371,0.227001639344262,E2_08_16
+"splice polypyrimidine tract variant / intron variant",3,2.977,3.7e-24,0.161867439234281,0.7821,1,E2_08_16
+"splice region variant / intron variant / non coding transcript variant",1,0.0925,3.7e-24,0.909318646247188,0.0882,0.156284210526316,E2_08_16
+"splice region variant / splice polypyrimidine tract variant / intron variant",2,1.9696,3.7e-24,0.191735275344722,1,1,E2_08_16
+"splice region variant / synonymous variant",1,0.4662,3.7e-24,0.575732489045431,1,1,E2_08_16
+"stop gained",3,2.6672,3.7e-24,0.282811092279139,1,1,E2_08_16
+"synonymous variant",9,15.0692,3.7e-24,-0.638832050991632,0.0509,0.100223076923077,E2_08_16
+"upstream gene variant",304,340.6976,0.00128324356059751,-0.161894526322564,0.0312,0.0670468085106383,E2_08_16
+"splice acceptor variant",0,0.4828,3.7e-24,-0.436055242506483,0.713,1,E2_08_16
+"splice region variant / non coding transcript exon variant",0,0.2784,3.7e-24,-0.263594475949668,1,1,E2_08_16
+"3 prime UTR variant / NMD transcript variant",0,1.0645,3.7e-24,-0.86972620505378,0.3695,0.56544696969697,E2_08_16
+"splice donor 5th base variant / intron variant",0,0.3036,3.7e-24,-0.28608155626132,1,1,E2_08_16
+"splice region variant / 5 prime UTR variant",0,0.1078,3.7e-24,-0.105507820003462,0.1024,0.175294915254237,E2_08_16
+"splice region variant / intron variant",0,0.7618,3.7e-24,-0.659849707476303,0.038,0.0799583333333333,E2_08_16
+"stop lost",0,0.1048,3.7e-24,-0.102932331253245,0.1003,0.174660344827586,E2_08_16
+"splice donor variant / non coding transcript variant",0,0.1372,3.7e-24,-0.133911730005192,0.1294,0.217823333333333,E2_08_16
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.2443,3.7e-24,-0.233567382825066,0.2192,0.351415873015873,E2_08_16
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.026,3.7e-24,-0.0258754887502163,0.0257,0.0576822222222222,E2_08_16
+"start lost",0,0.1826,3.7e-24,-0.175364963760313,1,1,E2_08_16
+"mature miRNA variant",0,0.0433,3.7e-24,-0.0430509775004327,0.0427,0.086254,E2_08_16
+"missense variant / NMD transcript variant",0,0.3428,3.7e-24,-0.319300943459909,0.2885,0.4552890625,E2_08_16
+"splice donor variant",0,1.1486,3.7e-24,-0.928029713110702,0.3433,0.533435384615385,E2_08_16
+"synonymous variant / NMD transcript variant",0,0.1134,3.7e-24,-0.110958797503894,1,1,E2_08_16
+"inframe insertion",0,0.0056,3.7e-24,-0.0056,1,1,E2_08_16
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.3909,3.7e-24,-0.362307459702767,1,1,E2_08_16
+"5 prime UTR variant / NMD transcript variant",0,0.0992,3.7e-24,-0.0971663162535337,1,1,E2_08_16
+"frameshift variant",0,0.1517,3.7e-24,-0.147181655006635,1,1,E2_08_16
+"stop gained / splice region variant",0,0.0919,3.7e-24,-0.0902303762523798,0.088,0.156284210526316,E2_08_16
+"stop retained variant",0,0.0204,3.7e-24,-0.0203584962500721,1,1,E2_08_16
+"splice acceptor variant / non coding transcript variant",0,0.0624,3.7e-24,-0.0615114287513702,0.0603,0.11427962962963,E2_08_16
+"splice region variant / 3 prime UTR variant",0,0.0129,3.7e-24,-0.0129,1,1,E2_08_16
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0541,3.7e-24,-0.0530624062518029,0.0516,0.100223076923077,E2_08_16
+"inframe deletion",0,0.0286,3.7e-24,-0.0282679700005769,0.0278,0.0610391304347826,E2_08_16
+"splice acceptor variant / NMD transcript variant",0,0.0083,3.7e-24,-0.00821699250014423,1,1,E2_08_16
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0251,3.7e-24,-0.0249339850002885,0.0247,0.0566977272727273,E2_08_16
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0061,3.7e-24,-0.0061,1,1,E2_08_16
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0353,3.7e-24,-0.0350509775004327,1,1,E2_08_16
+"stop gained / NMD transcript variant",0,0.0204,3.7e-24,-0.0203584962500721,1,1,E2_08_16
+"missense variant / splice region variant / NMD transcript variant",0,0.0121,3.7e-24,-0.0120169925001442,1,1,E2_08_16
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0433,3.7e-24,-0.042926466250649,0.0424,0.086254,E2_08_16
+"splice donor variant / NMD transcript variant",0,0.0245,3.7e-24,-0.0243339850002885,0.0241,0.056606976744186,E2_08_16
+"frameshift variant / splice region variant",0,0.0028,3.7e-24,-0.00275849625007212,0.0027,0.00665121951219512,E2_08_16
+"start lost / splice region variant",0,0.006,3.7e-24,-0.00595849625007212,1,1,E2_08_16
+"stop lost / splice region variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.00392777777777778,E2_08_16
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"splice region variant / intron variant / NMD transcript variant",0,0.0157,3.7e-24,-0.0157,1,1,E2_08_16
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.0024,3.7e-24,-0.0024,1,1,E2_08_16
+"splice donor region variant / non coding transcript exon variant",0,0.0013,3.7e-24,-0.0013,1,1,E2_08_16
+"splice donor variant / splice donor 5th base variant / coding sequence variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.001212,E2_08_16
+"protein altering variant",0,0.0025,3.7e-24,-0.0025,0.0025,0.0063125,E2_08_16
+"stop gained / frameshift variant",0,0.0013,3.7e-24,-0.0013,1,1,E2_08_16
+"splice donor 5th base variant / non coding transcript exon variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.00189375,E2_08_16
+"frameshift variant / NMD transcript variant",0,0.0018,3.7e-24,-0.0018,0.0018,0.00466153846153846,E2_08_16
+"non coding transcript variant",0,0.001,3.7e-24,-0.001,1,1,E2_08_16
+"stop gained / splice region variant / NMD transcript variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.00189375,E2_08_16
+"splice donor variant / splice donor 5th base variant / intron variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.00244848484848485,E2_08_16
+"splice acceptor variant / coding sequence variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.001212,E2_08_16
+"inframe deletion / splice region variant",0,0.0016,3.7e-24,-0.0016,0.0016,0.00425263157894737,E2_08_16
+"missense variant / splice donor 5th base variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00101,E2_08_16
+"stop lost / NMD transcript variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00346285714285714,E2_08_16
+"coding sequence variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00174137931034483,E2_08_16
+"frameshift variant / start lost / start retained variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00101,E2_08_16
+"incomplete terminal codon variant / coding sequence variant",0,7e-04,3.7e-24,-7e-04,1,1,E2_08_16
+"splice donor variant / splice donor 5th base variant / non coding transcript exon variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"start lost / NMD transcript variant",0,0.0016,3.7e-24,-0.0016,0.0016,0.00425263157894737,E2_08_16
+"inframe insertion / NMD transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.001212,E2_08_16
+"splice region variant / synonymous variant / NMD transcript variant",0,0.0026,3.7e-24,-0.0026,1,1,E2_08_16
+"splice region variant / stop retained variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"missense variant / splice donor region variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00174137931034483,E2_08_16
+"stop lost / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"stop retained variant / NMD transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.001212,E2_08_16
+"splice acceptor variant / coding sequence variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00101,E2_08_16
+"frameshift variant / stop lost",0,3e-04,3.7e-24,-3e-04,3e-04,0.001212,E2_08_16
+"splice acceptor variant / non coding transcript exon variant / intron variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.0014962962962963,E2_08_16
+"splice donor variant / splice donor region variant / intron variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.0014962962962963,E2_08_16
+"stop retained variant / 3 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"splice donor variant / coding sequence variant",0,9e-04,3.7e-24,-9e-04,9e-04,0.00267352941176471,E2_08_16
+"splice donor variant / non coding transcript exon variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.00189375,E2_08_16
+"stop gained / protein altering variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"inframe deletion / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"start lost / 5 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"coding sequence variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"splice donor variant / splice donor 5th base variant / intron variant / non coding transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00101,E2_08_16
+"frameshift variant / start lost",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"inframe insertion / splice region variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"stop gained / start lost",0,2e-04,3.7e-24,-2e-04,2e-04,0.00101,E2_08_16
+"splice acceptor variant / stop gained",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"start lost / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000673333333333333,E2_08_16
+"3 prime UTR variant",62,71.6006,1.56100846240713e-17,-0.194664328104692,0.2376,0.408505263157895,E3_06_14
+"3 prime UTR variant / NMD transcript variant",1,1.905,3.7e-24,-0.360600988926917,0.5602,0.795646376811594,E3_06_14
+"5 prime UTR variant",11,12.0545,3.7e-24,-0.0686809012742597,0.7783,1,E3_06_14
+"downstream gene variant",616,638.9523,0.00324280634838225,-0.0516181064891664,0.333,0.526354838709677,E3_06_14
+"intergenic variant",2908,2679.6753,0.0889109358807772,0.118116476740073,0,0,E3_06_14
+"intron variant",3459,3715.7463,0.237485418461388,-0.103153863065784,0,0,E3_06_14
+"intron variant / NMD transcript variant",89,95.5316,4.56337681583242e-16,-0.0935863718843748,0.5058,0.730820588235294,E3_06_14
+"intron variant / non coding transcript variant",984,930.4235,0.0122284660206686,0.0813988904216299,0.0776,0.161804255319149,E3_06_14
+"missense variant",57,76.3649,3.19413386144148e-16,-0.406541052156892,0.0148,0.03626,E3_06_14
+"missense variant / splice region variant",1,2.4113,3.7e-24,-0.606440958661921,0.4025,0.620615625,E3_06_14
+"non coding transcript exon variant",40,47.0614,3.7e-24,-0.214294602344795,0.2827,0.461743333333333,E3_06_14
+"regulatory region variant",486,485.9902,0.00356211669395536,0.00142962418213293,0.9842,1,E3_06_14
+"splice donor variant",5,1.9144,3.7e-24,1.21770516822783,0.1933,0.344425454545455,E3_06_14
+"splice polypyrimidine tract variant / intron variant",7,5.0281,3.7e-24,0.520575601787317,0.4053,0.620615625,E3_06_14
+"splice region variant / intron variant",3,1.2543,3.7e-24,1.00974675318123,0.4233,0.638206153846154,E3_06_14
+"splice region variant / splice polypyrimidine tract variant / intron variant",2,3.2135,3.7e-24,-0.344446636893032,0.5932,0.83048,E3_06_14
+"splice region variant / synonymous variant",2,0.7676,3.7e-24,0.923651636161496,0.5071,0.730820588235294,E3_06_14
+"stop gained",6,4.3966,3.7e-24,0.495134011302283,0.6333,0.874132394366197,E3_06_14
+"stop gained / NMD transcript variant",1,0.0406,3.7e-24,0.959690526249495,7e-04,0.00254074074074074,E3_06_14
+"synonymous variant",24,24.6884,3.7e-24,-0.0109772138371708,0.8378,1,E3_06_14
+"upstream gene variant",641,596.5849,0.0105342733672343,0.104534186170246,0.0679,0.14465652173913,E3_06_14
+"TF binding site variant",0,1.335,3.7e-24,-1.0432612505103,0.2766,0.459437288135593,E3_06_14
+"missense variant / NMD transcript variant",0,0.5788,3.7e-24,-0.518886105908983,0.665,0.905138888888889,E3_06_14
+"splice acceptor variant",0,0.841,3.7e-24,-0.71342573082918,0.491,0.729060606060606,E3_06_14
+"splice donor region variant / intron variant",0,1.8907,3.7e-24,-1.35563380699409,0.1508,0.2842,E3_06_14
+"splice donor region variant / intron variant / non coding transcript variant",0,0.2393,3.7e-24,-0.227537145016442,0.2119,0.370825,E3_06_14
+"splice region variant / 5 prime UTR variant",0,0.1942,3.7e-24,-0.186881956260457,0.1771,0.327467924528302,E3_06_14
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.6319,3.7e-24,-0.556712872133377,0.132,0.25872,E3_06_14
+"splice region variant / intron variant / non coding transcript variant",0,0.1625,3.7e-24,-0.157066617507356,0.1499,0.2842,E3_06_14
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.4077,3.7e-24,-0.375096145028845,0.333,0.526354838709677,E3_06_14
+"start lost",0,0.2851,3.7e-24,-0.2690490378317,0.2478,0.418696551724138,E3_06_14
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0927,3.7e-24,-0.0909398500028846,0.0885,0.1806875,E3_06_14
+"splice donor 5th base variant / intron variant",0,0.5125,3.7e-24,-0.464177961565467,0.6874,0.92281095890411,E3_06_14
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.066,3.7e-24,-0.0651699250014423,0.064,0.139377777777778,E3_06_14
+"splice donor variant / non coding transcript variant",0,0.2268,3.7e-24,-0.215552345325787,1,1,E3_06_14
+"splice region variant / non coding transcript exon variant",0,0.4474,3.7e-24,-0.408854639998839,0.7155,0.947554054054054,E3_06_14
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,7e-04,3.7e-24,-7e-04,1,1,E3_06_14
+"5 prime UTR variant / NMD transcript variant",0,0.1383,3.7e-24,-0.13447218125613,1,1,E3_06_14
+"frameshift variant",0,0.2283,3.7e-24,-0.218655954073696,1,1,E3_06_14
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0614,3.7e-24,-0.0606774437510817,0.0597,0.132968181818182,E3_06_14
+"stop lost",0,0.1545,3.7e-24,-0.149725113757428,1,1,E3_06_14
+"splice donor variant / NMD transcript variant",0,0.0385,3.7e-24,-0.038026466250649,1,1,E3_06_14
+"splice region variant / 3 prime UTR variant",0,0.0242,3.7e-24,-0.0241169925001442,1,1,E3_06_14
+"stop gained / splice region variant",0,0.1541,3.7e-24,-0.148974136256995,1,1,E3_06_14
+"synonymous variant / NMD transcript variant",0,0.1991,3.7e-24,-0.191942407511394,0.1821,0.330477777777778,E3_06_14
+"mature miRNA variant",0,0.0714,3.7e-24,-0.0705114287513702,1,1,E3_06_14
+"splice acceptor variant / non coding transcript variant",0,0.1077,3.7e-24,-0.105158797503894,0.1017,0.2034,E3_06_14
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0109,3.7e-24,-0.0109,0.0109,0.0273897435897436,E3_06_14
+"non coding transcript variant",0,0.0013,3.7e-24,-0.0013,1,1,E3_06_14
+"frameshift variant / splice region variant",0,0.0064,3.7e-24,-0.0064,0.0064,0.0176944444444444,E3_06_14
+"inframe deletion",0,0.0385,3.7e-24,-0.0382509775004327,1,1,E3_06_14
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0374,3.7e-24,-0.0371924812503606,1,1,E3_06_14
+"coding sequence variant",0,0.001,3.7e-24,-0.001,1,1,E3_06_14
+"inframe insertion",0,0.0107,3.7e-24,-0.0107,0.0107,0.0273897435897436,E3_06_14
+"splice region variant / intron variant / NMD transcript variant",0,0.0215,3.7e-24,-0.0214169925001442,0.0213,0.0509121951219512,E3_06_14
+"frameshift variant / start lost",0,8e-04,3.7e-24,-8e-04,8e-04,0.00270344827586207,E3_06_14
+"stop retained variant",0,0.0285,3.7e-24,-0.0282924812503606,0.028,0.0653333333333333,E3_06_14
+"splice acceptor variant / NMD transcript variant",0,0.0189,3.7e-24,-0.0188584962500721,1,1,E3_06_14
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0401,3.7e-24,-0.039726466250649,0.0392,0.0893395348837209,E3_06_14
+"stop lost / NMD transcript variant",0,0.0047,3.7e-24,-0.0047,1,1,E3_06_14
+"start retained variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00108888888888889,E3_06_14
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.0031,3.7e-24,-0.0031,0.0031,0.00920606060606061,E3_06_14
+"splice donor region variant / non coding transcript exon variant",0,0.0017,3.7e-24,-0.0017,1,1,E3_06_14
+"splice donor variant / splice donor region variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00154736842105263,E3_06_14
+"missense variant / splice region variant / NMD transcript variant",0,0.0214,3.7e-24,-0.0213584962500721,1,1,E3_06_14
+"splice donor 5th base variant / non coding transcript exon variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00170434782608696,E3_06_14
+"start lost / NMD transcript variant",0,0.0052,3.7e-24,-0.0052,0.0052,0.0149882352941176,E3_06_14
+"inframe deletion / NMD transcript variant",0,0.0013,3.7e-24,-0.0013,1,1,E3_06_14
+"splice region variant / synonymous variant / NMD transcript variant",0,0.0065,3.7e-24,-0.0065,0.0065,0.0176944444444444,E3_06_14
+"incomplete terminal codon variant / coding sequence variant",0,0.0016,3.7e-24,-0.0016,0.0016,0.0049,E3_06_14
+"missense variant / splice donor region variant",0,7e-04,3.7e-24,-7e-04,1,1,E3_06_14
+"start lost / 5 prime UTR variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00170434782608696,E3_06_14
+"start lost / splice region variant",0,0.0093,3.7e-24,-0.00925849625007212,0.0092,0.0243675675675676,E3_06_14
+"stop gained / splice region variant / NMD transcript variant",0,0.0015,3.7e-24,-0.0015,0.0015,0.00474193548387097,E3_06_14
+"frameshift variant / NMD transcript variant",0,0.0024,3.7e-24,-0.0024,1,1,E3_06_14
+"splice donor variant / coding sequence variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00108888888888889,E3_06_14
+"stop retained variant / NMD transcript variant",0,7e-04,3.7e-24,-7e-04,1,1,E3_06_14
+"splice acceptor variant / coding sequence variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00188461538461538,E3_06_14
+"frameshift variant / stop lost",0,4e-04,3.7e-24,-4e-04,4e-04,0.00170434782608696,E3_06_14
+"inframe insertion / splice region variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00170434782608696,E3_06_14
+"stop lost / splice region variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.00270344827586207,E3_06_14
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00188461538461538,E3_06_14
+"inframe deletion / splice region variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00392,E3_06_14
+"stop lost / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000816666666666667,E3_06_14
+"splice donor variant / non coding transcript exon variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00108888888888889,E3_06_14
+"splice region variant / stop retained variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00108888888888889,E3_06_14
+"splice donor variant / splice donor 5th base variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00108888888888889,E3_06_14
+"missense variant / splice donor 5th base variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00108888888888889,E3_06_14
+"inframe insertion / stop retained variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000816666666666667,E3_06_14
+"splice region variant / non coding transcript variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00188461538461538,E3_06_14
+"stop gained / inframe insertion",0,1e-04,3.7e-24,-1e-04,1e-04,0.000816666666666667,E3_06_14
+"splice acceptor variant / 5 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000816666666666667,E3_06_14
+"frameshift variant / start lost / start retained variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000816666666666667,E3_06_14
+"splice acceptor variant / synonymous variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000816666666666667,E3_06_14
+"stop gained / splice donor 5th base variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000816666666666667,E3_06_14
+"splice acceptor variant / coding sequence variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000816666666666667,E3_06_14
+"start lost / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000816666666666667,E3_06_14
+"stop lost / 3 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000816666666666667,E3_06_14
+"3 prime UTR variant",64,62.2935,7.85834752039639e-22,0.0497805402060738,0.8027,1,E3_08_16
+"3 prime UTR variant / NMD transcript variant",2,1.6944,3.7e-24,0.332863179266009,0.7333,1,E3_08_16
+"5 prime UTR variant",16,10.8817,3.7e-24,0.577793845808294,0.2414,0.400969491525424,E3_08_16
+"5 prime UTR variant / NMD transcript variant",1,0.1385,3.7e-24,0.864980588435103,0.1303,0.240932075471698,E3_08_16
+"TF binding site variant",1,1.2652,3.7e-24,0.00210506527129601,1,1,E3_08_16
+"downstream gene variant",583,573.9002,0.0103385058187639,0.0238464348915041,0.7002,1,E3_08_16
+"intergenic variant",3043,2801.4085,0.029677955297331,0.119480357214075,0,0,E3_08_16
+"intron variant",3100,3369.9504,0.0212687218607566,-0.120287137068625,0,0,E3_08_16
+"intron variant / NMD transcript variant",89,89.2232,2.36081003215589e-14,0.00423661075252009,0.9612,1,E3_08_16
+"intron variant / non coding transcript variant",913,923.4197,0.00929458473410524,-0.0156471278897649,0.7326,1,E3_08_16
+"missense variant",51,65.7279,9.70351297322534e-19,-0.348609304493173,0.0527,0.109885106382979,E3_08_16
+"non coding transcript exon variant",50,44.7709,3.7e-24,0.171801296465433,0.5051,0.811472131147541,E3_08_16
+"regulatory region variant",498,451.6839,0.00728667696572701,0.142072505508531,0.0351,0.07644,E3_08_16
+"splice donor variant",1,1.6098,3.7e-24,-0.207769528920045,0.736,1,E3_08_16
+"splice polypyrimidine tract variant / intron variant",3,4.3209,3.7e-24,-0.285088960034325,0.525,0.829838709677419,E3_08_16
+"splice region variant / intron variant",1,1.0537,3.7e-24,0.134369992496804,1,1,E3_08_16
+"splice region variant / non coding transcript exon variant",1,0.4152,3.7e-24,0.617461838424721,0.7233,1,E3_08_16
+"splice region variant / splice polypyrimidine tract variant / intron variant",2,2.8393,3.7e-24,-0.204768553259294,0.5413,0.842022222222222,E3_08_16
+"start lost",1,0.2527,3.7e-24,0.760098493730889,0.2226,0.37611724137931,E3_08_16
+"stop gained",3,3.9278,3.7e-24,-0.168495107309142,0.4571,0.746596666666667,E3_08_16
+"synonymous variant",22,21.0232,3.7e-24,0.0951939463556269,0.9097,1,E3_08_16
+"upstream gene variant",527,531.1151,0.00239310166372169,-0.00996697281944045,0.8598,1,E3_08_16
+"missense variant / NMD transcript variant",0,0.4983,3.7e-24,-0.451870092829387,0.698,1,E3_08_16
+"missense variant / splice region variant",0,2.0444,3.7e-24,-1.43177915189895,0.1301,0.240932075471698,E3_08_16
+"splice donor region variant / intron variant",0,1.6397,3.7e-24,-1.21898506918045,0.2042,0.351080701754386,E3_08_16
+"splice region variant / intron variant / non coding transcript variant",0,0.1445,3.7e-24,-0.140357143756851,1,1,E3_08_16
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.4054,3.7e-24,-0.373245354704787,1,1,E3_08_16
+"synonymous variant / NMD transcript variant",0,0.1568,3.7e-24,-0.150936542508798,0.143,0.259518518518518,E3_08_16
+"splice donor 5th base variant / intron variant",0,0.4501,3.7e-24,-0.409467535320878,0.7199,1,E3_08_16
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0323,3.7e-24,-0.0319679700005769,1,1,E3_08_16
+"frameshift variant",0,0.2023,3.7e-24,-0.194440615320595,1,1,E3_08_16
+"splice donor variant / non coding transcript variant",0,0.2115,3.7e-24,-0.202663310013269,1,1,E3_08_16
+"splice region variant / intron variant / NMD transcript variant",0,0.0213,3.7e-24,-0.0211339850002885,1,1,E3_08_16
+"splice acceptor variant",0,0.6852,3.7e-24,-0.600286854193653,0.149,0.265490909090909,E3_08_16
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.5898,3.7e-24,-0.527017061582775,0.6704,1,E3_08_16
+"stop lost",0,0.149,3.7e-24,-0.145055188755986,1,1,E3_08_16
+"splice region variant / 5 prime UTR variant",0,0.1696,3.7e-24,-0.163761053758582,1,1,E3_08_16
+"splice region variant / synonymous variant",0,0.651,3.7e-24,-0.574926418695678,0.6542,1,E3_08_16
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0642,3.7e-24,-0.0634529325012981,0.0624,0.1248,E3_08_16
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0854,3.7e-24,-0.0835323312532452,0.0809,0.158564,E3_08_16
+"stop gained / splice region variant",0,0.1416,3.7e-24,-0.137913685006058,1,1,E3_08_16
+"splice donor region variant / intron variant / non coding transcript variant",0,0.2121,3.7e-24,-0.203046317513125,0.191,0.33425,E3_08_16
+"splice acceptor variant / NMD transcript variant",0,0.016,3.7e-24,-0.016,1,1,E3_08_16
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0613,3.7e-24,-0.0604284212515144,0.0592,0.120866666666667,E3_08_16
+"splice acceptor variant / non coding transcript variant",0,0.1014,3.7e-24,-0.0993493237533894,0.0965,0.18543137254902,E3_08_16
+"start lost / splice region variant",0,0.0075,3.7e-24,-0.0075,0.0075,0.018375,E3_08_16
+"missense variant / splice region variant / NMD transcript variant",0,0.0209,3.7e-24,-0.0208169925001442,1,1,E3_08_16
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0373,3.7e-24,-0.0369924812503606,0.0366,0.0779739130434783,E3_08_16
+"inframe insertion",0,0.016,3.7e-24,-0.0159584962500721,1,1,E3_08_16
+"stop retained variant",0,0.0317,3.7e-24,-0.0315754887502163,0.0314,0.0699363636363636,E3_08_16
+"splice region variant / 3 prime UTR variant",0,0.0255,3.7e-24,-0.0254169925001442,0.0253,0.0576604651162791,E3_08_16
+"stop gained / NMD transcript variant",0,0.0299,3.7e-24,-0.0297339850002885,1,1,E3_08_16
+"splice donor variant / NMD transcript variant",0,0.0342,3.7e-24,-0.0338679700005769,1,1,E3_08_16
+"inframe deletion",0,0.0078,3.7e-24,-0.0078,0.0078,0.0186439024390244,E3_08_16
+"coding sequence variant",0,0.0018,3.7e-24,-0.0018,0.0018,0.00534545454545455,E3_08_16
+"mature miRNA variant",0,0.0733,3.7e-24,-0.0721039100017308,1,1,E3_08_16
+"stop lost / NMD transcript variant",0,0.0025,3.7e-24,-0.0025,0.0025,0.00680555555555556,E3_08_16
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0093,3.7e-24,-0.00925849625007212,0.0092,0.0214666666666667,E3_08_16
+"missense variant / splice donor region variant",0,0.001,3.7e-24,-0.001,1,1,E3_08_16
+"stop lost / splice region variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.0042875,E3_08_16
+"non coding transcript variant",0,0.002,3.7e-24,-0.002,0.002,0.0056,E3_08_16
+"start lost / NMD transcript variant",0,0.0028,3.7e-24,-0.0028,0.0028,0.00741621621621622,E3_08_16
+"frameshift variant / splice region variant",0,0.0059,3.7e-24,-0.0059,0.0059,0.014825641025641,E3_08_16
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.0024,3.7e-24,-0.0024,1,1,E3_08_16
+"frameshift variant / NMD transcript variant",0,0.0019,3.7e-24,-0.0019,0.0019,0.00547647058823529,E3_08_16
+"incomplete terminal codon variant / coding sequence variant",0,0.0017,3.7e-24,-0.0017,1,1,E3_08_16
+"splice donor region variant / non coding transcript exon variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00379354838709677,E3_08_16
+"stop retained variant / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.001568,E3_08_16
+"splice region variant / synonymous variant / NMD transcript variant",0,0.0058,3.7e-24,-0.0058,0.0058,0.014825641025641,E3_08_16
+"stop gained / frameshift variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.0021,E3_08_16
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00379354838709677,E3_08_16
+"inframe deletion / splice region variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00188461538461538,E3_08_16
+"stop gained / splice region variant / NMD transcript variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.0021,E3_08_16
+"splice donor variant / splice donor region variant / non coding transcript exon variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.00270344827586207,E3_08_16
+"stop gained / inframe insertion / splice region variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00098,E3_08_16
+"inframe deletion / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"inframe insertion / splice region variant",0,7e-04,3.7e-24,-7e-04,1,1,E3_08_16
+"splice region variant / stop retained variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"splice donor variant / splice donor 5th base variant / intron variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.001568,E3_08_16
+"missense variant / splice donor 5th base variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00127826086956522,E3_08_16
+"splice donor 5th base variant / synonymous variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00098,E3_08_16
+"stop lost / 3 prime UTR variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00098,E3_08_16
+"splice acceptor variant / coding sequence variant",0,7e-04,3.7e-24,-7e-04,1,1,E3_08_16
+"inframe insertion / NMD transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00127826086956522,E3_08_16
+"splice donor 5th base variant / non coding transcript exon variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00127826086956522,E3_08_16
+"frameshift variant / stop retained variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"splice acceptor variant / coding sequence variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00098,E3_08_16
+"splice donor variant / non coding transcript exon variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"splice acceptor variant / non coding transcript exon variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"splice donor region variant / synonymous variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"coding sequence variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"frameshift variant / stop lost",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"stop retained variant / 3 prime UTR variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"start lost / inframe deletion",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"stop gained / inframe deletion",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"splice donor variant / splice donor region variant / 5 prime UTR variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000653333333333333,E3_08_16
+"splice donor variant / coding sequence variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00098,E3_08_16
+"3 prime UTR variant",3,4.4716,3.7e-24,-0.331351064788194,0.5182,1,MMEA9_C1
+"downstream gene variant",36,35.8356,3.7e-24,0.0244874712372602,0.934,1,MMEA9_C1
+"intergenic variant",173,138.0889,1.99027947631432e-11,0.326856552034031,0.0021,0.0091,MMEA9_C1
+"intron variant",184,207.885,1.15843076845554e-08,-0.173096350493947,0.0223,0.0630217391304348,MMEA9_C1
+"intron variant / NMD transcript variant",5,5.8276,3.7e-24,-0.0902414258877334,0.8354,1,MMEA9_C1
+"intron variant / non coding transcript variant",59,50.1113,1.54122483300235e-23,0.244161152215291,0.2409,0.559232142857143,MMEA9_C1
+"missense variant",4,4.6485,3.7e-24,-0.0608692984125513,0.8239,1,MMEA9_C1
+"non coding transcript exon variant",4,2.6731,3.7e-24,0.6052335924206,0.5295,1,MMEA9_C1
+"regulatory region variant",24,27.4691,3.7e-24,-0.16367543239645,0.5007,1,MMEA9_C1
+"splice acceptor variant",1,0.0734,3.7e-24,0.927845112497837,0.0704,0.17825,MMEA9_C1
+"stop gained",1,0.3532,3.7e-24,0.671761137171763,0.2962,0.663896551724138,MMEA9_C1
+"synonymous variant",1,1.6238,3.7e-24,-0.211278643090007,0.7414,1,MMEA9_C1
+"upstream gene variant",22,35.2435,3.7e-24,-0.637579816118663,0.0102,0.0315714285714286,MMEA9_C1
+"3 prime UTR variant / NMD transcript variant",0,0.1274,3.7e-24,-0.124751278754255,0.1211,0.291537037037037,MMEA9_C1
+"5 prime UTR variant",0,1.0692,3.7e-24,-0.875504007404649,0.3638,0.788233333333333,MMEA9_C1
+"splice donor variant",0,0.0745,3.7e-24,-0.0731548875021635,0.0713,0.17825,MMEA9_C1
+"TF binding site variant",0,0.0769,3.7e-24,-0.0752888725024519,1,1,MMEA9_C1
+"frameshift variant",0,0.1444,3.7e-24,-0.141145715005481,1,1,MMEA9_C1
+"splice polypyrimidine tract variant / intron variant",0,0.3092,3.7e-24,-0.289575992512546,1,1,MMEA9_C1
+"splice acceptor variant / NMD transcript variant",0,0.002,3.7e-24,-0.002,0.002,0.0091,MMEA9_C1
+"splice donor 5th base variant / intron variant",0,0.048,3.7e-24,-0.0474604512509375,0.0467,0.126479166666667,MMEA9_C1
+"splice donor region variant / intron variant",0,0.0883,3.7e-24,-0.0864738350031731,1,1,MMEA9_C1
+"splice region variant / intron variant",0,0.0804,3.7e-24,-0.0794039100017308,1,1,MMEA9_C1
+"splice region variant / splice polypyrimidine tract variant / intron variant",0,0.2155,3.7e-24,-0.20646151782247,1,1,MMEA9_C1
+"splice region variant / synonymous variant",0,0.0422,3.7e-24,-0.0419339850002885,1,1,MMEA9_C1
+"missense variant / splice region variant",0,0.141,3.7e-24,-0.13737218125613,1,1,MMEA9_C1
+"5 prime UTR variant / NMD transcript variant",0,0.0107,3.7e-24,-0.0107,0.0107,0.0316136363636364,MMEA9_C1
+"missense variant / NMD transcript variant",0,0.0402,3.7e-24,-0.0399094737505048,1,1,MMEA9_C1
+"splice acceptor variant / non coding transcript variant",0,0.0081,3.7e-24,-0.0081,1,1,MMEA9_C1
+"missense variant / splice region variant / NMD transcript variant",0,0.0011,3.7e-24,-0.0011,1,1,MMEA9_C1
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0278,3.7e-24,-0.0275924812503606,1,1,MMEA9_C1
+"stop lost",0,0.0076,3.7e-24,-0.0076,0.0076,0.0274444444444444,MMEA9_C1
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0044,3.7e-24,-0.0044,1,1,MMEA9_C1
+"synonymous variant / NMD transcript variant",0,0.0145,3.7e-24,-0.0144584962500721,1,1,MMEA9_C1
+"splice donor region variant / intron variant / non coding transcript variant",0,0.0099,3.7e-24,-0.0099,0.0099,0.0315714285714286,MMEA9_C1
+"splice region variant / 5 prime UTR variant",0,0.0114,3.7e-24,-0.0113584962500721,1,1,MMEA9_C1
+"stop gained / splice region variant",0,0.0142,3.7e-24,-0.0141169925001442,1,1,MMEA9_C1
+"splice region variant / non coding transcript exon variant",0,0.0283,3.7e-24,-0.0281754887502163,1,1,MMEA9_C1
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0335,3.7e-24,-0.0331679700005769,1,1,MMEA9_C1
+"start lost",0,0.0067,3.7e-24,-0.0067,1,1,MMEA9_C1
+"frameshift variant / NMD transcript variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.0078,MMEA9_C1
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0016,3.7e-24,-0.0016,0.0016,0.00866666666666667,MMEA9_C1
+"frameshift variant / splice region variant",0,0.0041,3.7e-24,-0.0041,1,1,MMEA9_C1
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0034,3.7e-24,-0.0034,0.0034,0.0138125,MMEA9_C1
+"splice region variant / intron variant / non coding transcript variant",0,0.0113,3.7e-24,-0.0113,1,1,MMEA9_C1
+"splice donor variant / non coding transcript variant",0,0.0088,3.7e-24,-0.00875849625007212,0.0087,0.0297631578947368,MMEA9_C1
+"splice donor variant / NMD transcript variant",0,0.0013,3.7e-24,-0.0013,1,1,MMEA9_C1
+"stop gained / frameshift variant",0,0.001,3.7e-24,-0.001,1,1,MMEA9_C1
+"stop gained / NMD transcript variant",0,0.0044,3.7e-24,-0.0044,1,1,MMEA9_C1
+"mature miRNA variant",0,0.0044,3.7e-24,-0.0044,1,1,MMEA9_C1
+"splice donor region variant / non coding transcript exon variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.0008125,MMEA9_C1
+"stop retained variant",0,0.0027,3.7e-24,-0.0027,1,1,MMEA9_C1
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0018,3.7e-24,-0.0018,0.0018,0.009,MMEA9_C1
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0064,3.7e-24,-0.00635849625007212,0.0063,0.0240882352941176,MMEA9_C1
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0017,3.7e-24,-0.0017,1,1,MMEA9_C1
+"splice region variant / 3 prime UTR variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.00827272727272727,MMEA9_C1
+"frameshift variant / stop lost",0,1e-04,3.7e-24,-1e-04,1e-04,0.0008125,MMEA9_C1
+"frameshift variant / start lost",0,3e-04,3.7e-24,-3e-04,3e-04,0.00216666666666667,MMEA9_C1
+"frameshift variant / stop retained variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.0008125,MMEA9_C1
+"stop gained / splice donor 5th base variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.0008125,MMEA9_C1
+"splice region variant / synonymous variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.0008125,MMEA9_C1
+"start lost / splice region variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.0008125,MMEA9_C1
+"splice region variant / intron variant / NMD transcript variant",0,0.001,3.7e-24,-0.001,1,1,MMEA9_C1
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.0008125,MMEA9_C1
+"splice donor variant / coding sequence variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.0008125,MMEA9_C1
+"3 prime UTR variant",3,3.7151,3.7e-24,-0.102931790655803,0.7995,1,MMEA9_C2
+"5 prime UTR variant",1,0.7832,3.7e-24,0.326955630256901,0.6393,1,MMEA9_C2
+"downstream gene variant",26,31.6662,3.7e-24,-0.254402277617254,0.2351,0.446552631578947,MMEA9_C2
+"intergenic variant",144,126.0872,8.73126439405151e-14,0.194300689200394,0.0752,0.161793939393939,MMEA9_C2
+"intron variant",170,175.1648,6.8812718400836e-10,-0.0404235570483271,0.6317,1,MMEA9_C2
+"intron variant / NMD transcript variant",6,4.2562,3.7e-24,0.537179168903643,0.3366,0.597465,MMEA9_C2
+"intron variant / non coding transcript variant",40,44.2548,3.7e-24,-0.128290729658154,0.469,0.792833333333333,MMEA9_C2
+"missense variant",3,3.7296,3.7e-24,-0.111570884074691,0.8064,1,MMEA9_C2
+"missense variant / splice region variant",1,0.1231,3.7e-24,0.880361803744159,0.1148,0.23288,MMEA9_C2
+"non coding transcript exon variant",2,2.3112,3.7e-24,0.0248574075343769,0.7375,1,MMEA9_C2
+"regulatory region variant",20,23.6095,3.7e-24,-0.201636341867743,0.3978,0.688873170731707,MMEA9_C2
+"stop gained",1,0.2834,3.7e-24,0.732299821857801,0.2466,0.448938461538462,MMEA9_C2
+"synonymous variant",1,1.2942,3.7e-24,-0.0173568666712733,1,1,MMEA9_C2
+"upstream gene variant",31,30.3689,3.7e-24,0.0497365586987865,0.8487,1,MMEA9_C2
+"5 prime UTR variant / NMD transcript variant",0,0.0113,3.7e-24,-0.0113,1,1,MMEA9_C2
+"splice donor region variant / intron variant",0,0.0758,3.7e-24,-0.0746869175015865,1,1,MMEA9_C2
+"splice region variant / intron variant",0,0.0575,3.7e-24,-0.0567529325012981,1,1,MMEA9_C2
+"splice donor variant",0,0.055,3.7e-24,-0.0545849625007212,0.054,0.1278,MMEA9_C2
+"stop retained variant",0,7e-04,3.7e-24,-7e-04,1,1,MMEA9_C2
+"splice polypyrimidine tract variant / intron variant",0,0.2761,3.7e-24,-0.260037771890396,0.239,0.446552631578947,MMEA9_C2
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0237,3.7e-24,-0.0235754887502163,0.0234,0.0593357142857143,MMEA9_C2
+"3 prime UTR variant / NMD transcript variant",0,0.0937,3.7e-24,-0.0915493237533894,0.0886,0.185017647058824,MMEA9_C2
+"splice acceptor variant / coding sequence variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00208823529411765,MMEA9_C2
+"splice region variant / splice polypyrimidine tract variant / intron variant",0,0.1939,3.7e-24,-0.187040452510529,1,1,MMEA9_C2
+"TF binding site variant",0,0.0658,3.7e-24,-0.0648454137516587,0.0635,0.143553125,MMEA9_C2
+"missense variant / NMD transcript variant",0,0.028,3.7e-24,-0.0277509775004327,1,1,MMEA9_C2
+"splice acceptor variant",0,0.0667,3.7e-24,-0.0658699250014423,0.0647,0.143553125,MMEA9_C2
+"synonymous variant / NMD transcript variant",0,0.0094,3.7e-24,-0.00935849625007211,1,1,MMEA9_C2
+"splice region variant / intron variant / non coding transcript variant",0,0.0093,3.7e-24,-0.0093,0.0093,0.026412,MMEA9_C2
+"splice donor 5th base variant / intron variant",0,0.0302,3.7e-24,-0.0299924812503606,1,1,MMEA9_C2
+"frameshift variant",0,0.163,3.7e-24,-0.158166617507356,0.1516,0.298988888888889,MMEA9_C2
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0309,3.7e-24,-0.0305679700005769,0.0301,0.0736931034482759,MMEA9_C2
+"frameshift variant / splice region variant",0,0.0054,3.7e-24,-0.00535849625007212,1,1,MMEA9_C2
+"splice acceptor variant / non coding transcript variant",0,0.0093,3.7e-24,-0.00925849625007212,0.0092,0.026412,MMEA9_C2
+"splice region variant / non coding transcript exon variant",0,0.0227,3.7e-24,-0.0225754887502163,0.0224,0.0589037037037037,MMEA9_C2
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0062,3.7e-24,-0.0062,0.0062,0.0191391304347826,MMEA9_C2
+"stop gained / splice region variant",0,0.0106,3.7e-24,-0.0104339850002885,1,1,MMEA9_C2
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.002,3.7e-24,-0.002,0.002,0.0071,MMEA9_C2
+"splice region variant / synonymous variant",0,0.0341,3.7e-24,-0.0339339850002885,1,1,MMEA9_C2
+"stop lost",0,0.0057,3.7e-24,-0.0057,1,1,MMEA9_C2
+"splice region variant / 5 prime UTR variant",0,0.0124,3.7e-24,-0.0123584962500721,0.0123,0.0335884615384615,MMEA9_C2
+"splice donor variant / non coding transcript variant",0,0.0084,3.7e-24,-0.00831699250014423,1,1,MMEA9_C2
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.001775,MMEA9_C2
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0013,3.7e-24,-0.0013,1,1,MMEA9_C2
+"splice donor region variant / intron variant / non coding transcript variant",0,0.0123,3.7e-24,-0.0122584962500721,1,1,MMEA9_C2
+"mature miRNA variant",0,0.0022,3.7e-24,-0.0022,0.0022,0.00743809523809524,MMEA9_C2
+"missense variant / splice region variant / NMD transcript variant",0,7e-04,3.7e-24,-7e-04,1,1,MMEA9_C2
+"splice acceptor variant / NMD transcript variant",0,0.0011,3.7e-24,-0.0011,1,1,MMEA9_C2
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0037,3.7e-24,-0.0037,1,1,MMEA9_C2
+"stop gained / NMD transcript variant",0,0.0021,3.7e-24,-0.0021,1,1,MMEA9_C2
+"start lost / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00157777777777778,MMEA9_C2
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0034,3.7e-24,-0.0034,0.0034,0.0109727272727273,MMEA9_C2
+"splice region variant / 3 prime UTR variant",0,0.0011,3.7e-24,-0.0011,1,1,MMEA9_C2
+"splice region variant / intron variant / NMD transcript variant",0,9e-04,3.7e-24,-9e-04,9e-04,0.00355,MMEA9_C2
+"start lost",0,0.0081,3.7e-24,-0.0081,1,1,MMEA9_C2
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00208823529411765,MMEA9_C2
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00208823529411765,MMEA9_C2
+"frameshift variant / NMD transcript variant",0,0.0015,3.7e-24,-0.0015,0.0015,0.00560526315789474,MMEA9_C2
+"stop gained / frameshift variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00202857142857143,MMEA9_C2
+"splice donor variant / coding sequence variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.001775,MMEA9_C2
+"frameshift variant / stop lost",0,2e-04,3.7e-24,-2e-04,2e-04,0.00157777777777778,MMEA9_C2
+"splice donor variant / NMD transcript variant",0,7e-04,3.7e-24,-7e-04,1,1,MMEA9_C2
+"coding sequence variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00157777777777778,MMEA9_C2
+"splice acceptor variant / coding sequence variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00157777777777778,MMEA9_C2
+"splice donor variant / splice donor region variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.001775,MMEA9_C2
+"start lost / splice region variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00202857142857143,MMEA9_C2
+"stop gained / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00157777777777778,MMEA9_C2
+"splice region variant / synonymous variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00157777777777778,MMEA9_C2
+"stop lost / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00157777777777778,MMEA9_C2
+"splice donor variant / splice donor 5th base variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00157777777777778,MMEA9_C2
+"splice donor region variant / non coding transcript exon variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00157777777777778,MMEA9_C2
+"3 prime UTR variant",6,4.6442,3.7e-24,0.425132781262765,0.502,0.849538461538462,MMEA9_C3
+"5 prime UTR variant",1,1.0023,3.7e-24,0.174146440266238,1,1,MMEA9_C3
+"downstream gene variant",30,38.4608,3.7e-24,-0.331455394879092,0.1166,0.219874285714286,MMEA9_C3
+"intergenic variant",200,141.4413,3.51375649970124e-12,0.500608565432802,0,0,MMEA9_C3
+"intron variant",152,216.1376,3.06801527172505e-09,-0.503111595861904,0,0,MMEA9_C3
+"intron variant / NMD transcript variant",8,5.9997,3.7e-24,0.458432262991196,0.4447,0.772373684210526,MMEA9_C3
+"intron variant / non coding transcript variant",64,51.809,9.670294297924e-24,0.311964805078676,0.0958,0.185964705882353,MMEA9_C3
+"missense variant",4,4.9253,3.7e-24,-0.131790688927216,0.6888,1,MMEA9_C3
+"non coding transcript exon variant",2,2.6896,3.7e-24,-0.136459087533754,0.5406,0.89199,MMEA9_C3
+"regulatory region variant",30,28.6909,3.7e-24,0.0852893254215925,0.7779,1,MMEA9_C3
+"stop gained",2,0.3693,3.7e-24,1.24302282384259,0.0538,0.1109625,MMEA9_C3
+"synonymous variant",1,1.638,3.7e-24,-0.220656623038988,0.7422,1,MMEA9_C3
+"upstream gene variant",36,36.446,3.7e-24,0.00040062499999399,0.9291,1,MMEA9_C3
+"5 prime UTR variant / NMD transcript variant",0,0.0119,3.7e-24,-0.0119,1,1,MMEA9_C3
+"splice donor region variant / intron variant",0,0.0971,3.7e-24,-0.095115338753101,1,1,MMEA9_C3
+"3 prime UTR variant / NMD transcript variant",0,0.1331,3.7e-24,-0.129287381565474,0.1241,0.227516666666667,MMEA9_C3
+"splice region variant / intron variant",0,0.0782,3.7e-24,-0.0768718800023077,1,1,MMEA9_C3
+"splice donor 5th base variant / intron variant",0,0.0515,3.7e-24,-0.0510434587507933,0.0504,0.107303225806452,MMEA9_C3
+"splice polypyrimidine tract variant / intron variant",0,0.3411,3.7e-24,-0.318627596886933,1,1,MMEA9_C3
+"missense variant / splice region variant",0,0.1694,3.7e-24,-0.163012031259014,0.1545,0.275594594594595,MMEA9_C3
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0057,3.7e-24,-0.0057,1,1,MMEA9_C3
+"splice acceptor variant",0,0.0771,3.7e-24,-0.0759793987519471,1,1,MMEA9_C3
+"stop gained / NMD transcript variant",0,0.0047,3.7e-24,-0.0047,1,1,MMEA9_C3
+"TF binding site variant",0,0.0783,3.7e-24,-0.0771378950020192,0.0755,0.151,MMEA9_C3
+"missense variant / NMD transcript variant",0,0.0397,3.7e-24,-0.0394094737505048,0.039,0.0887586206896552,MMEA9_C3
+"splice region variant / splice polypyrimidine tract variant / intron variant",0,0.237,3.7e-24,-0.226035352825643,1,1,MMEA9_C3
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0377,3.7e-24,-0.0372019550008654,0.0365,0.0860357142857143,MMEA9_C3
+"frameshift variant",0,0.0804,3.7e-24,-0.0790133837522356,1,1,MMEA9_C3
+"splice region variant / 5 prime UTR variant",0,0.0166,3.7e-24,-0.0165584962500721,0.0165,0.0418846153846154,MMEA9_C3
+"splice donor variant",0,0.07,3.7e-24,-0.0686793987519471,1,1,MMEA9_C3
+"splice donor region variant / intron variant / non coding transcript variant",0,0.01,3.7e-24,-0.01,1,1,MMEA9_C3
+"splice region variant / intron variant / non coding transcript variant",0,0.0091,3.7e-24,-0.0091,1,1,MMEA9_C3
+"splice region variant / synonymous variant",0,0.0471,3.7e-24,-0.0466849625007212,0.0461,0.10142,MMEA9_C3
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0283,3.7e-24,-0.0281754887502163,1,1,MMEA9_C3
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0025,3.7e-24,-0.0025,0.0025,0.00825,MMEA9_C3
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.004,3.7e-24,-0.004,1,1,MMEA9_C3
+"stop gained / splice region variant",0,0.0123,3.7e-24,-0.0123,1,1,MMEA9_C3
+"splice donor variant / non coding transcript variant",0,0.0092,3.7e-24,-0.0092,0.0092,0.02508,MMEA9_C3
+"synonymous variant / NMD transcript variant",0,0.0096,3.7e-24,-0.00955849625007212,0.0095,0.02508,MMEA9_C3
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.003,3.7e-24,-0.003,1,1,MMEA9_C3
+"splice acceptor variant / NMD transcript variant",0,0.0016,3.7e-24,-0.0016,0.0016,0.0066,MMEA9_C3
+"splice acceptor variant / non coding transcript variant",0,0.0106,3.7e-24,-0.0106,1,1,MMEA9_C3
+"splice region variant / non coding transcript exon variant",0,0.0259,3.7e-24,-0.0259,0.0259,0.0633111111111111,MMEA9_C3
+"inframe deletion",0,0.0065,3.7e-24,-0.0065,0.0065,0.0195,MMEA9_C3
+"stop lost",0,0.0087,3.7e-24,-0.0087,0.0087,0.0249652173913043,MMEA9_C3
+"frameshift variant / splice region variant",0,0.003,3.7e-24,-0.003,1,1,MMEA9_C3
+"frameshift variant / NMD transcript variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.00406153846153846,MMEA9_C3
+"start lost",0,0.0058,3.7e-24,-0.0058,0.0058,0.0182285714285714,MMEA9_C3
+"start lost / splice region variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00275,MMEA9_C3
+"mature miRNA variant",0,0.0038,3.7e-24,-0.0038,1,1,MMEA9_C3
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0023,3.7e-24,-0.0023,0.0023,0.00798947368421053,MMEA9_C3
+"splice region variant / intron variant / NMD transcript variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.00616,MMEA9_C3
+"stop lost / splice region variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.0024,MMEA9_C3
+"splice donor variant / NMD transcript variant",0,0.002,3.7e-24,-0.002,0.002,0.00733333333333333,MMEA9_C3
+"missense variant / splice region variant / NMD transcript variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00565714285714286,MMEA9_C3
+"stop retained variant",0,0.0018,3.7e-24,-0.0018,0.0018,0.00698823529411765,MMEA9_C3
+"splice region variant / 3 prime UTR variant",0,0.0017,3.7e-24,-0.0017,1,1,MMEA9_C3
+"inframe deletion / splice region variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00165,MMEA9_C3
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0011,3.7e-24,-0.0011,1,1,MMEA9_C3
+"splice region variant / synonymous variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00165,MMEA9_C3
+"incomplete terminal codon variant / coding sequence variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00132,MMEA9_C3
+"splice donor region variant / non coding transcript exon variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.0024,MMEA9_C3
+"stop gained / frameshift variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00132,MMEA9_C3
+"missense variant / splice donor region variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00132,MMEA9_C3
+"splice acceptor variant / coding sequence variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.0022,MMEA9_C3
+"splice donor variant / splice donor 5th base variant / coding sequence variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00165,MMEA9_C3
+"3 prime UTR variant",76,91.8620862086209,6.97262743895134e-15,-0.262584847248364,0.0659065906590659,0.28010301030103,MMEA9_E1
+"3 prime UTR variant / NMD transcript variant",4,2.36913691369137,3.7e-24,0.739474528100866,0.533153315331533,1,MMEA9_E1
+"5 prime UTR variant",14,15.7330733073307,3.7e-24,-0.115277014037267,0.704470447044705,1,MMEA9_E1
+"TF binding site variant",2,1.53235323532353,3.7e-24,0.424306085118706,0.746574657465747,1,MMEA9_E1
+"downstream gene variant",741,791.688468846885,0.036820400245161,-0.0944745113105686,0.0573057305730573,0.254138457323993,MMEA9_E1
+"intergenic variant",3759,3416.45154515452,0.261518605021537,0.137960541528154,0,0,MMEA9_E1
+"intron variant",4145,4489.73487348735,0.181376049748642,-0.115132448337449,0,0,MMEA9_E1
+"intron variant / NMD transcript variant",142,131.552055205521,2.11029146010476e-09,0.114845607229951,0.38013801380138,1,MMEA9_E1
+"intron variant / non coding transcript variant",1169,1131.29692969297,0.0773954364428977,0.047839164658833,0.253125312531253,0.737679482233938,MMEA9_E1
+"missense variant",85,92.3172317231723,4.1869142675903e-14,-0.110273644067945,0.433143314331433,1,MMEA9_E1
+"missense variant / NMD transcript variant",3,0.806980698069807,3.7e-24,1.30790416187873,0.0474047404740474,0.226277173171863,MMEA9_E1
+"missense variant / splice region variant",1,2.91359135913591,3.7e-24,-0.81540491338781,0.240524052405241,0.737679482233938,MMEA9_E1
+"non coding transcript exon variant",55,56.3278327832783,1.19604201416255e-23,-0.0215864101095307,0.835183518351835,1,MMEA9_E1
+"regulatory region variant",595,561.510851085108,0.0029273940917011,0.0846458684358087,0.158215821582158,0.520581090367101,MMEA9_E1
+"splice acceptor variant",2,0.922492249224922,3.7e-24,0.810331456150417,0.631763176317632,1,MMEA9_E1
+"splice acceptor variant / NMD transcript variant",1,0.0216021602160216,3.7e-24,0.978522363486132,0.0213021302130213,0.120712071207121,MMEA9_E1
+"splice donor variant",3,2.38203820382038,3.7e-24,0.403580666597627,0.52045204520452,1,MMEA9_E1
+"splice donor variant / non coding transcript variant",1,0.281828182818282,3.7e-24,0.733377232392837,0.246524652465247,0.737679482233938,MMEA9_E1
+"splice polypyrimidine tract variant / intron variant",5,6.23062306230623,3.7e-24,-0.173450183509351,0.700970097009701,1,MMEA9_E1
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",1,0.134613461346135,3.7e-24,0.868635421977877,0.127012701270127,0.462563497729083,MMEA9_E1
+"splice region variant / intron variant",1,1.54065406540654,3.7e-24,-0.164004610044751,0.752475247524752,1,MMEA9_E1
+"splice region variant / splice polypyrimidine tract variant / intron variant",4,4.01500150015002,3.7e-24,0.128397679975769,1,1,MMEA9_E1
+"start lost",1,0.396739673967397,3.7e-24,0.633167310145927,0.328332833283328,0.93027636096943,MMEA9_E1
+"stop gained",6,5.6042604260426,3.7e-24,0.184227913715659,0.835683568356836,1,MMEA9_E1
+"synonymous variant",39,29.5801580158016,3.7e-24,0.411149325218972,0.131513151315132,0.462563497729083,MMEA9_E1
+"upstream gene variant",752,761.280728072807,0.026064975201586,-0.0167838530737879,0.73967396739674,1,MMEA9_E1
+"5 prime UTR variant / NMD transcript variant",0,0.209320932093209,3.7e-24,-0.199832478570759,1,1,MMEA9_E1
+"splice acceptor variant / non coding transcript variant",0,0.130613061306131,3.7e-24,-0.127258440849566,1,1,MMEA9_E1
+"splice donor 5th base variant / intron variant",0,0.647464746474647,3.7e-24,-0.572709758483194,0.656465646564656,1,MMEA9_E1
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0808080808080808,3.7e-24,-0.0791797979821059,0.077007700770077,0.314191419141914,MMEA9_E1
+"splice donor region variant / intron variant",0,2.42274227422742,3.7e-24,-1.60625199805896,0.092009200920092,0.360959172840361,MMEA9_E1
+"splice region variant / 5 prime UTR variant",0,0.244024402440244,3.7e-24,-0.232660411057548,1,1,MMEA9_E1
+"splice region variant / non coding transcript exon variant",0,0.578557855785579,3.7e-24,-0.518342291117481,0.112611261126113,0.425420319809759,MMEA9_E1
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.52035203520352,3.7e-24,-0.471753533804053,0.684668466846685,1,MMEA9_E1
+"stop gained / splice region variant",0,0.199319931993199,3.7e-24,-0.191512536265454,0.180918091809181,0.576676417641764,MMEA9_E1
+"synonymous variant / NMD transcript variant",0,0.251025102510251,3.7e-24,-0.23864792731076,1,1,MMEA9_E1
+"splice donor region variant / intron variant / non coding transcript variant",0,0.292829282928293,3.7e-24,-0.275924511831914,1,1,MMEA9_E1
+"splice region variant / synonymous variant",0,0.920792079207921,3.7e-24,-0.77199615070034,0.466446644664466,1,MMEA9_E1
+"splice region variant / intron variant / non coding transcript variant",0,0.195719571957196,3.7e-24,-0.187480265849054,1,1,MMEA9_E1
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.82018201820182,3.7e-24,-0.700027724761885,0.490949094909491,1,MMEA9_E1
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0855085508550855,3.7e-24,-0.0841633038325467,1,1,MMEA9_E1
+"frameshift variant",0,0.157615761576158,3.7e-24,-0.152915894097054,0.146414641464146,0.497809780978098,MMEA9_E1
+"splice region variant / synonymous variant / NMD transcript variant",0,0.0111011101110111,3.7e-24,-0.0111011101110111,1,1,MMEA9_E1
+"stop lost",0,0.202220222022202,3.7e-24,-0.193944972318548,1,1,MMEA9_E1
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0528052805280528,3.7e-24,-0.0523902015208732,1,1,MMEA9_E1
+"stop gained / NMD transcript variant",0,0.0482048204820482,3.7e-24,-0.0477482335741507,0.0471047104710471,0.226277173171863,MMEA9_E1
+"stop retained variant",0,0.0417041704170417,3.7e-24,-0.0412060756084262,0.0405040504050405,0.21744279691127,MMEA9_E1
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0141014101410141,3.7e-24,-0.0141014101410141,0.0141014101410141,0.0846084608460846,MMEA9_E1
+"mature miRNA variant",0,0.0828082808280828,3.7e-24,-0.0813139964022364,1,1,MMEA9_E1
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.0025002500250025,3.7e-24,-0.0025002500250025,1,1,MMEA9_E1
+"start lost / NMD transcript variant",0,0.0055005500550055,3.7e-24,-0.0055005500550055,0.0055005500550055,0.0374037403740374,MMEA9_E1
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.05000500050005,3.7e-24,-0.0497974609964602,1,1,MMEA9_E1
+"splice donor variant / NMD transcript variant",0,0.0507050705070507,3.7e-24,-0.0498994261938454,0.0488048804880488,0.226277173171863,MMEA9_E1
+"splice region variant / 3 prime UTR variant",0,0.0295029502950295,3.7e-24,-0.0293369186921577,1,1,MMEA9_E1
+"splice region variant / intron variant / NMD transcript variant",0,0.0326032603260326,3.7e-24,-0.0325202445245967,1,1,MMEA9_E1
+"incomplete terminal codon variant / coding sequence variant",0,0.0024002400240024,3.7e-24,-0.0024002400240024,1,1,MMEA9_E1
+"frameshift variant / splice region variant",0,0.0062006200620062,3.7e-24,-0.00615911216128824,0.0061006100610061,0.0388913891389139,MMEA9_E1
+"frameshift variant / NMD transcript variant",0,0.0023002300230023,3.7e-24,-0.0023002300230023,0.0023002300230023,0.0167588187390168,MMEA9_E1
+"missense variant / splice region variant / NMD transcript variant",0,0.032003200320032,3.7e-24,-0.0319201845185961,1,1,MMEA9_E1
+"inframe insertion",0,0.0058005800580058,3.7e-24,-0.0058005800580058,1,1,MMEA9_E1
+"start lost / splice region variant",0,0.0132013201320132,3.7e-24,-0.0132013201320132,1,1,MMEA9_E1
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,0.0009000900090009,3.7e-24,-0.0009000900090009,1,1,MMEA9_E1
+"non coding transcript variant",0,0.0032003200320032,3.7e-24,-0.0032003200320032,1,1,MMEA9_E1
+"splice donor variant / coding sequence variant",0,0.0012001200120012,3.7e-24,-0.0012001200120012,0.0012001200120012,0.0110511051105111,MMEA9_E1
+"splice acceptor variant / coding sequence variant",0,0.0007000700070007,3.7e-24,-0.0007000700070007,0.0007000700070007,0.00714071407140714,MMEA9_E1
+"stop retained variant / NMD transcript variant",0,0.0008000800080008,3.7e-24,-0.0008000800080008,1,1,MMEA9_E1
+"coding sequence variant",0,0.0021002100210021,3.7e-24,-0.0021002100210021,1,1,MMEA9_E1
+"splice donor region variant / non coding transcript exon variant",0,0.004000400040004,3.7e-24,-0.004000400040004,1,1,MMEA9_E1
+"splice donor 5th base variant / non coding transcript exon variant",0,0.0008000800080008,3.7e-24,-0.0008000800080008,1,1,MMEA9_E1
+"splice donor region variant / synonymous variant",0,0.0001000100010001,3.7e-24,-0.0001000100010001,1,1,MMEA9_E1
+"coding sequence variant / NMD transcript variant",0,0.0002000200020002,3.7e-24,-0.0002000200020002,1,1,MMEA9_E1
+"frameshift variant / stop lost",0,0.0013001300130013,3.7e-24,-0.0013001300130013,0.0013001300130013,0.0110511051105111,MMEA9_E1
+"stop gained / splice region variant / NMD transcript variant",0,0.0027002700270027,3.7e-24,-0.00265876212628474,1,1,MMEA9_E1
+"start lost / splice region variant / NMD transcript variant",0,0.0007000700070007,3.7e-24,-0.0007000700070007,0.0007000700070007,0.00714071407140714,MMEA9_E1
+"stop gained / frameshift variant",0,0.0023002300230023,3.7e-24,-0.0023002300230023,0.0023002300230023,0.0167588187390168,MMEA9_E1
+"protein altering variant",0,0.0024002400240024,3.7e-24,-0.0024002400240024,1,1,MMEA9_E1
+"stop lost / NMD transcript variant",0,0.004000400040004,3.7e-24,-0.004000400040004,1,1,MMEA9_E1
+"missense variant / splice donor region variant",0,0.0008000800080008,3.7e-24,-0.0008000800080008,1,1,MMEA9_E1
+"splice donor variant / splice donor 5th base variant / intron variant",0,0.0004000400040004,3.7e-24,-0.0004000400040004,0.0004000400040004,0.00582915434400583,MMEA9_E1
+"splice donor variant / non coding transcript exon variant",0,0.0002000200020002,3.7e-24,-0.0002000200020002,1,1,MMEA9_E1
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,0.0015001500150015,3.7e-24,-0.0015001500150015,1,1,MMEA9_E1
+"splice donor variant / splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0002000200020002,3.7e-24,-0.0002000200020002,1,1,MMEA9_E1
+"stop lost / splice region variant",0,0.002000200020002,3.7e-24,-0.002000200020002,1,1,MMEA9_E1
+"stop gained / inframe insertion",0,0.0001000100010001,3.7e-24,-0.0001000100010001,1,1,MMEA9_E1
+"splice donor variant / splice donor region variant / non coding transcript exon variant / intron variant",0,0.0001000100010001,3.7e-24,-0.0001000100010001,1,1,MMEA9_E1
+"splice acceptor variant / synonymous variant",0,0.0002000200020002,3.7e-24,-0.0002000200020002,1,1,MMEA9_E1
+"splice region variant / non coding transcript variant",0,0.0001000100010001,3.7e-24,-0.0001000100010001,1,1,MMEA9_E1
+"stop gained / protein altering variant / splice region variant",0,0.0001000100010001,3.7e-24,-0.0001000100010001,1,1,MMEA9_E1
+"stop gained / start lost",0,0.0002000200020002,3.7e-24,-0.0002000200020002,1,1,MMEA9_E1
+"splice acceptor variant / coding sequence variant / intron variant",0,0.0007000700070007,3.7e-24,-0.0007000700070007,0.0007000700070007,0.00714071407140714,MMEA9_E1
+"missense variant / splice donor 5th base variant",0,0.0003000300030003,3.7e-24,-0.0003000300030003,0.0003000300030003,0.00582915434400583,MMEA9_E1
+"splice acceptor variant / non coding transcript exon variant",0,0.0004000400040004,3.7e-24,-0.0004000400040004,0.0004000400040004,0.00582915434400583,MMEA9_E1
+"splice region variant / stop retained variant",0,0.0002000200020002,3.7e-24,-0.0002000200020002,1,1,MMEA9_E1
+"start lost / 5 prime UTR variant",0,0.0003000300030003,3.7e-24,-0.0003000300030003,0.0003000300030003,0.00582915434400583,MMEA9_E1
+"frameshift variant / start lost",0,0.0002000200020002,3.7e-24,-0.0002000200020002,1,1,MMEA9_E1
+"splice donor variant / 5 prime UTR variant",0,0.0003000300030003,3.7e-24,-0.0003000300030003,0.0003000300030003,0.00582915434400583,MMEA9_E1
+"splice acceptor variant / 5 prime UTR variant",0,0.0001000100010001,3.7e-24,-0.0001000100010001,1,1,MMEA9_E1
+"stop lost / splice region variant / NMD transcript variant",0,0.0002000200020002,3.7e-24,-0.0002000200020002,1,1,MMEA9_E1
+"splice region variant / stop retained variant / NMD transcript variant",0,0.0001000100010001,3.7e-24,-0.0001000100010001,1,1,MMEA9_E1
+"stop gained / frameshift variant / splice region variant",0,0.0001000100010001,3.7e-24,-0.0001000100010001,1,1,MMEA9_E1
+"inframe insertion / NMD transcript variant",0,0.0001000100010001,3.7e-24,-0.0001000100010001,1,1,MMEA9_E1
+"stop gained / protein altering variant",0,0.0001000100010001,3.7e-24,-0.0001000100010001,1,1,MMEA9_E1
+"3 prime UTR variant",28,42.1925,3.7e-24,-0.558322600932709,0.0137,0.0319666666666667,MMEA9_E2
+"5 prime UTR variant",10,6.8381,3.7e-24,0.575080057142375,0.3345,0.488077777777778,MMEA9_E2
+"downstream gene variant",356,363.7635,9.77406991358169e-05,-0.0292163525218601,0.667,0.8671,MMEA9_E2
+"intergenic variant",1903,1746.3342,0.212325121445112,0.124158140991887,0,0,MMEA9_E2
+"intron variant",1912,2121.3573,0.149024882458386,-0.149616660001497,0,0,MMEA9_E2
+"intron variant / NMD transcript variant",60,46.0651,3.7e-24,0.389370777161795,0.0828,0.150596078431373,MMEA9_E2
+"intron variant / non coding transcript variant",589,521.2952,0.000649096029352853,0.177128558363898,0.0042,0.01092,MMEA9_E2
+"missense variant",32,41.2741,3.7e-24,-0.340802430577083,0.108,0.185433962264151,MMEA9_E2
+"missense variant / splice region variant",1,1.3092,3.7e-24,-0.0261077617938372,0.65,0.857246376811594,MMEA9_E2
+"non coding transcript exon variant",28,27.0257,3.7e-24,0.0750510403129483,0.9279,1,MMEA9_E2
+"regulatory region variant",305,261.7632,6.97985931865556e-06,0.222364347937735,0.0112,0.0275459459459459,MMEA9_E2
+"splice donor variant",2,1.0609,3.7e-24,0.714305765218278,0.6263,0.838136764705882,MMEA9_E2
+"splice polypyrimidine tract variant / intron variant",1,2.7252,3.7e-24,-0.73814196100103,0.3061,0.472120338983051,MMEA9_E2
+"splice region variant / intron variant",1,0.6797,3.7e-24,0.403345860025689,1,1,MMEA9_E2
+"splice region variant / non coding transcript exon variant",1,0.2493,3.7e-24,0.764730010933806,0.217,0.352625,MMEA9_E2
+"stop gained",4,2.5169,3.7e-24,0.670466676002078,0.5307,0.720801492537313,MMEA9_E2
+"synonymous variant",16,13.1989,3.7e-24,0.309947654567833,0.4867,0.68138,MMEA9_E2
+"upstream gene variant",308,349.1874,0.00018911370969152,-0.178560554901805,0.0182,0.041405,MMEA9_E2
+"3 prime UTR variant / NMD transcript variant",0,1.1924,3.7e-24,-0.953652686113509,0.3379,0.488077777777778,MMEA9_E2
+"TF binding site variant",0,0.7404,3.7e-24,-0.64119388195294,0.5166,0.712281818181818,MMEA9_E2
+"missense variant / NMD transcript variant",0,0.2552,3.7e-24,-0.241943172829104,0.2241,0.357773684210526,MMEA9_E2
+"splice acceptor variant",0,0.3958,3.7e-24,-0.36594877627632,0.3273,0.488077777777778,MMEA9_E2
+"splice donor 5th base variant / intron variant",0,0.292,3.7e-24,-0.275528273773582,0.2535,0.39773275862069,MMEA9_E2
+"splice donor region variant / intron variant",0,1.0603,3.7e-24,-0.867571874694933,0.3702,0.526378125,MMEA9_E2
+"splice donor region variant / intron variant / non coding transcript variant",0,0.1291,3.7e-24,-0.125936241254976,1,1,MMEA9_E2
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0227,3.7e-24,-0.0225754887502163,0.0224,0.0485333333333333,MMEA9_E2
+"splice region variant / splice polypyrimidine tract variant / intron variant",0,1.7836,3.7e-24,-1.30210091570117,0.1654,0.27872962962963,MMEA9_E2
+"splice region variant / intron variant / NMD transcript variant",0,0.0135,3.7e-24,-0.0134584962500721,0.0134,0.0319666666666667,MMEA9_E2
+"splice region variant / synonymous variant",0,0.4104,3.7e-24,-0.377177685958032,0.3344,0.488077777777778,MMEA9_E2
+"frameshift variant",0,0.0659,3.7e-24,-0.0649869175015865,0.0637,0.126015217391304,MMEA9_E2
+"splice acceptor variant / non coding transcript variant",0,0.0562,3.7e-24,-0.055494436251226,0.0545,0.110211111111111,MMEA9_E2
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0369,3.7e-24,-0.0366094737505048,1,1,MMEA9_E2
+"stop retained variant",0,0.0161,3.7e-24,-0.0160584962500721,1,1,MMEA9_E2
+"5 prime UTR variant / NMD transcript variant",0,0.0868,3.7e-24,-0.0858039100017308,0.0844,0.150596078431373,MMEA9_E2
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.2193,3.7e-24,-0.210552044071965,0.1989,0.329089090909091,MMEA9_E2
+"stop gained / splice region variant",0,0.0874,3.7e-24,-0.0854568425030289,0.0828,0.150596078431373,MMEA9_E2
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0195,3.7e-24,-0.0194169925001442,0.0193,0.0428365853658537,MMEA9_E2
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.36,3.7e-24,-0.335252083770407,1,1,MMEA9_E2
+"splice region variant / 5 prime UTR variant",0,0.1065,3.7e-24,-0.104217293753966,1,1,MMEA9_E2
+"splice region variant / intron variant / non coding transcript variant",0,0.0905,3.7e-24,-0.0890058650025962,0.0869,0.152075,MMEA9_E2
+"stop lost",0,0.0871,3.7e-24,-0.085547368752524,0.0834,0.150596078431373,MMEA9_E2
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0557,3.7e-24,-0.0551434587507933,0.0544,0.110211111111111,MMEA9_E2
+"splice donor variant / non coding transcript variant",0,0.1214,3.7e-24,-0.118758797503894,1,1,MMEA9_E2
+"start lost",0,0.1604,3.7e-24,-0.155151580008077,1,1,MMEA9_E2
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00182,MMEA9_E2
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0394,3.7e-24,-0.0390679700005769,0.0386,0.0816883720930233,MMEA9_E2
+"synonymous variant / NMD transcript variant",0,0.0834,3.7e-24,-0.0820133837522356,0.0801,0.150596078431373,MMEA9_E2
+"coding sequence variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.00439310344827586,MMEA9_E2
+"splice region variant / 3 prime UTR variant",0,0.0128,3.7e-24,-0.0127584962500721,1,1,MMEA9_E2
+"mature miRNA variant",0,0.0453,3.7e-24,-0.0448434587507933,1,1,MMEA9_E2
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0074,3.7e-24,-0.0074,0.0074,0.0187055555555556,MMEA9_E2
+"splice donor variant / NMD transcript variant",0,0.0213,3.7e-24,-0.0211339850002885,1,1,MMEA9_E2
+"inframe deletion",0,0.0121,3.7e-24,-0.0121,1,1,MMEA9_E2
+"stop gained / NMD transcript variant",0,0.0185,3.7e-24,-0.0183754887502163,1,1,MMEA9_E2
+"splice region variant / synonymous variant / NMD transcript variant",0,0.0039,3.7e-24,-0.0039,0.0039,0.0104382352941176,MMEA9_E2
+"stop lost / NMD transcript variant",0,0.0022,3.7e-24,-0.0022,0.0022,0.00625625,MMEA9_E2
+"start lost / splice region variant",0,0.0044,3.7e-24,-0.0044,1,1,MMEA9_E2
+"splice donor variant / coding sequence variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00182,MMEA9_E2
+"missense variant / splice region variant / NMD transcript variant",0,0.0066,3.7e-24,-0.0066,1,1,MMEA9_E2
+"splice donor variant / splice donor 5th base variant / intron variant",0,0.0018,3.7e-24,-0.0018,0.0018,0.00528387096774194,MMEA9_E2
+"stop gained / frameshift variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00182,MMEA9_E2
+"inframe deletion / splice region variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.0026962962962963,MMEA9_E2
+"stop lost / splice region variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00189583333333333,MMEA9_E2
+"splice acceptor variant / NMD transcript variant",0,0.0083,3.7e-24,-0.0083,1,1,MMEA9_E2
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,9e-04,3.7e-24,-9e-04,9e-04,0.002925,MMEA9_E2
+"start lost / NMD transcript variant",0,0.0035,3.7e-24,-0.0035,0.0035,0.00965151515151515,MMEA9_E2
+"splice donor region variant / non coding transcript exon variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.0021,MMEA9_E2
+"stop gained / splice region variant / NMD transcript variant",0,0.0011,3.7e-24,-0.0011,1,1,MMEA9_E2
+"splice acceptor variant / coding sequence variant",0,7e-04,3.7e-24,-7e-04,1,1,MMEA9_E2
+"frameshift variant / splice region variant",0,0.0029,3.7e-24,-0.0029,1,1,MMEA9_E2
+"stop retained variant / NMD transcript variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00189583333333333,MMEA9_E2
+"splice acceptor variant / coding sequence variant / intron variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.0021,MMEA9_E2
+"splice donor region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00182,MMEA9_E2
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.0015,3.7e-24,-0.0015,0.0015,0.00455,MMEA9_E2
+"stop gained / frameshift variant / splice region variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00182,MMEA9_E2
+"frameshift variant / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00182,MMEA9_E2
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00189583333333333,MMEA9_E2
+"stop lost / splice region variant / NMD transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00182,MMEA9_E2
+"non coding transcript variant",0,7e-04,3.7e-24,-7e-04,1,1,MMEA9_E2
+"splice region variant / stop retained variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00182,MMEA9_E2
+"frameshift variant / stop lost",0,2e-04,3.7e-24,-2e-04,2e-04,0.00182,MMEA9_E2
+"incomplete terminal codon variant / coding sequence variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00189583333333333,MMEA9_E2
+"inframe deletion / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00182,MMEA9_E2
+"splice region variant / stop retained variant / NMD transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00182,MMEA9_E2
+"splice donor variant / non coding transcript exon variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00182,MMEA9_E2
+"splice donor variant / 3 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00182,MMEA9_E2
+"splice donor variant / splice polypyrimidine tract variant / non coding transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00182,MMEA9_E2
+"splice donor 5th base variant / non coding transcript exon variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00182,MMEA9_E2
+"start lost / splice region variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00182,MMEA9_E2
+"splice acceptor variant / synonymous variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00182,MMEA9_E2
+"splice donor variant / splice donor 5th base variant / intron variant / non coding transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00182,MMEA9_E2
+"3 prime UTR variant",109,134.373634085213,1.38672053893018e-10,-0.294095943705736,0.0145363408521303,0.0625694671461262,MMEA9_E3
+"3 prime UTR variant / NMD transcript variant",3,3.44791979949875,3.7e-24,-0.011146553172943,1,1,MMEA9_E3
+"5 prime UTR variant",23,22.7246115288221,3.7e-24,0.0469531192821112,0.917694235588972,1,MMEA9_E3
+"TF binding site variant",2,2.35889724310777,3.7e-24,0.00325603939162257,0.734736842105263,1,MMEA9_E3
+"downstream gene variant",1052,1138.13543859649,0.0361908372697472,-0.112848404423683,0.00601503759398496,0.0313415116739217,MMEA9_E3
+"intergenic variant",5257,4728.34466165414,0.417365946664195,0.152981463969046,0,0,MMEA9_E3
+"intron variant",5872,6366.89954887218,0.422818363546892,-0.116649700313074,0,0,MMEA9_E3
+"intron variant / NMD transcript variant",179,169.546065162907,4.11277904431666e-08,0.0820725265182661,0.46796992481203,1,MMEA9_E3
+"intron variant / non coding transcript variant",1623,1592.12561403509,0.151985393707203,0.0281028987616088,0.425664160401003,1,MMEA9_E3
+"missense variant",97,134.663859649123,1.93521817096456e-10,-0.463924983469786,0.000300751879699248,0.00330827067669173,MMEA9_E3
+"missense variant / NMD transcript variant",2,1.09614035087719,3.7e-24,0.693482034572978,0.631578947368421,1,MMEA9_E3
+"missense variant / splice region variant",4,4.26857142857143,3.7e-24,0.0479877086187121,1,1,MMEA9_E3
+"non coding transcript exon variant",86,81.2915288220551,9.49564344969834e-15,0.0891472161892212,0.618546365914787,1,MMEA9_E3
+"regulatory region variant",915,838.254636591479,0.00490084222434881,0.127053963975471,0.010125313283208,0.0491729323308271,MMEA9_E3
+"splice acceptor variant",1,1.44992481203008,3.7e-24,-0.112983642949101,0.759598997493734,1,MMEA9_E3
+"splice donor 5th base variant / intron variant",1,1.011328320802,3.7e-24,0.165347837420471,0.632481203007519,1,MMEA9_E3
+"splice donor region variant / intron variant",2,3.35077694235589,3.7e-24,-0.394081155981396,0.270175438596491,0.786687306501548,MMEA9_E3
+"splice donor variant",5,3.55067669172932,3.7e-24,0.540364483191741,0.598095238095238,1,MMEA9_E3
+"splice polypyrimidine tract variant / intron variant",6,9.03568922305764,3.7e-24,-0.448994740532521,0.192080200501253,0.594248120300752,MMEA9_E3
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",1,1.11087719298246,3.7e-24,0.0993468597135263,0.632581453634085,1,MMEA9_E3
+"splice region variant / intron variant",1,2.20992481203008,3.7e-24,-0.51426057762136,0.423157894736842,1,MMEA9_E3
+"splice region variant / non coding transcript exon variant",2,0.782055137844612,3.7e-24,0.913716458396625,0.641203007518797,1,MMEA9_E3
+"splice region variant / splice polypyrimidine tract variant / intron variant",2,5.79398496240602,3.7e-24,-1.07562154875562,0.075187969924812,0.2566761731916,MMEA9_E3
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",1,0.745764411027569,3.7e-24,0.356207054594867,1,1,MMEA9_E3
+"splice region variant / synonymous variant",1,1.34375939849624,3.7e-24,-0.051334857101414,1,1,MMEA9_E3
+"splice region variant / synonymous variant / NMD transcript variant",1,0.0109273182957393,3.7e-24,0.989072681704261,0.0109273182957393,0.0491729323308271,MMEA9_E3
+"stop gained",12,7.87899749373434,3.7e-24,0.626431293754512,0.299448621553885,0.823483709273183,MMEA9_E3
+"synonymous variant",38,43.6044110275689,3.7e-24,-0.177592786898979,0.325012531328321,0.866070439256035,MMEA9_E3
+"upstream gene variant",1089,1082.94345864662,0.0627419576042094,0.00867958743799886,0.834486215538847,1,MMEA9_E3
+"5 prime UTR variant / NMD transcript variant",0,0.273082706766917,3.7e-24,-0.259527769443802,1,1,MMEA9_E3
+"splice donor variant / non coding transcript variant",0,0.400802005012531,3.7e-24,-0.370986391612428,0.332431077694236,0.866070439256035,MMEA9_E3
+"splice region variant / 3 prime UTR variant",0,0.0419047619047619,3.7e-24,-0.0416135075193031,1,1,MMEA9_E3
+"splice region variant / 5 prime UTR variant",0,0.348270676691729,3.7e-24,-0.323742818936871,0.291729323308271,0.823483709273183,MMEA9_E3
+"start lost",0,0.519598997493734,3.7e-24,-0.470905829286366,0.687017543859649,1,MMEA9_E3
+"stop lost",0,0.28952380952381,3.7e-24,-0.272483341496806,0.249824561403509,0.749473684210526,MMEA9_E3
+"synonymous variant / NMD transcript variant",0,0.348170426065163,3.7e-24,-0.323298411978748,1,1,MMEA9_E3
+"mature miRNA variant",0,0.123809523809524,3.7e-24,-0.120520550130157,0.11609022556391,0.383097744360902,MMEA9_E3
+"splice acceptor variant / non coding transcript variant",0,0.191378446115288,3.7e-24,-0.183134228081887,1,1,MMEA9_E3
+"splice region variant / intron variant / non coding transcript variant",0,0.289824561403509,3.7e-24,-0.2730583126741,1,1,MMEA9_E3
+"splice donor region variant / intron variant / non coding transcript variant",0,0.41062656641604,3.7e-24,-0.379361378164334,1,1,MMEA9_E3
+"splice region variant / intron variant / NMD transcript variant",0,0.0462155388471178,3.7e-24,-0.0458826766923077,0.0454135338345865,0.166516290726817,MMEA9_E3
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.108471177944862,3.7e-24,-0.105607779453249,1,1,MMEA9_E3
+"start lost / NMD transcript variant",0,0.0107268170426065,3.7e-24,-0.0107268170426065,0.0107268170426065,0.0491729323308271,MMEA9_E3
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.123308270676692,3.7e-24,-0.11997015163435,1,1,MMEA9_E3
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.17593984962406,3.7e-24,-0.169692967737631,0.16140350877193,0.515449915110357,MMEA9_E3
+"splice donor variant / NMD transcript variant",0,0.0730827067669173,3.7e-24,-0.0718836190493542,1,1,MMEA9_E3
+"missense variant / splice region variant / NMD transcript variant",0,0.0364912280701754,3.7e-24,-0.0361167581460141,0.0355889724310777,0.135511856564488,MMEA9_E3
+"stop gained / splice region variant",0,0.270275689223058,3.7e-24,-0.255007320190295,1,1,MMEA9_E3
+"start lost / splice region variant",0,0.0183458646616541,3.7e-24,-0.0183042568923029,1,1,MMEA9_E3
+"stop gained / NMD transcript variant",0,0.0654636591478697,3.7e-24,-0.064531253134278,0.0632581453634085,0.223662728249194,MMEA9_E3
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0646616541353384,3.7e-24,-0.063937286968503,1,1,MMEA9_E3
+"frameshift variant",0,0.117894736842105,3.7e-24,-0.115714097747976,1,1,MMEA9_E3
+"stop retained variant",0,0.0531328320802005,3.7e-24,-0.0526751466173366,1,1,MMEA9_E3
+"inframe deletion",0,0.0329824561403509,3.7e-24,-0.0328576328322971,1,1,MMEA9_E3
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0633583959899749,3.7e-24,-0.0625262406029497,1,1,MMEA9_E3
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.00551378446115288,3.7e-24,-0.00551378446115288,1,1,MMEA9_E3
+"splice acceptor variant / NMD transcript variant",0,0.0292731829573935,3.7e-24,-0.0292315751880422,0.0291729323308271,0.115524812030075,MMEA9_E3
+"frameshift variant / splice region variant",0,0.00350877192982456,3.7e-24,-0.00350877192982456,0.00350877192982456,0.0192982456140351,MMEA9_E3
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0179448621553885,3.7e-24,-0.0179032543860372,0.0178446115288221,0.073609022556391,MMEA9_E3
+"incomplete terminal codon variant / coding sequence variant",0,0.0019047619047619,3.7e-24,-0.0019047619047619,0.0019047619047619,0.0145054945054945,MMEA9_E3
+"inframe deletion / splice region variant",0,0.000902255639097744,3.7e-24,-0.000902255639097744,1,1,MMEA9_E3
+"frameshift variant / NMD transcript variant",0,0.0019047619047619,3.7e-24,-0.0019047619047619,0.0019047619047619,0.0145054945054945,MMEA9_E3
+"stop gained / frameshift variant",0,0.00220551378446115,3.7e-24,-0.00220551378446115,1,1,MMEA9_E3
+"splice donor variant / coding sequence variant",0,0.000802005012531328,3.7e-24,-0.000802005012531328,1,1,MMEA9_E3
+"stop lost / NMD transcript variant",0,0.00571428571428571,3.7e-24,-0.00567267794493445,1,1,MMEA9_E3
+"non coding transcript variant",0,0.00240601503759398,3.7e-24,-0.00240601503759398,0.00240601503759398,0.0158796992481203,MMEA9_E3
+"missense variant / splice donor region variant",0,0.000802005012531328,3.7e-24,-0.000802005012531328,1,1,MMEA9_E3
+"stop lost / splice region variant",0,0.00330827067669173,3.7e-24,-0.00330827067669173,0.00330827067669173,0.0192982456140351,MMEA9_E3
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,0.000601503759398496,3.7e-24,-0.000601503759398496,1,1,MMEA9_E3
+"start lost / splice region variant / NMD transcript variant",0,0.000902255639097744,3.7e-24,-0.000902255639097744,1,1,MMEA9_E3
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,0.000300751879699248,3.7e-24,-0.000300751879699248,0.000300751879699248,0.00330827067669173,MMEA9_E3
+"splice acceptor variant / coding sequence variant / intron variant",0,0.000200501253132832,3.7e-24,-0.000200501253132832,1,1,MMEA9_E3
+"splice donor 5th base variant / synonymous variant",0,0.000200501253132832,3.7e-24,-0.000200501253132832,1,1,MMEA9_E3
+"splice region variant / stop retained variant",0,0.000601503759398496,3.7e-24,-0.000601503759398496,1,1,MMEA9_E3
+"splice donor 5th base variant / non coding transcript exon variant",0,0.0019047619047619,3.7e-24,-0.0019047619047619,0.0019047619047619,0.0145054945054945,MMEA9_E3
+"stop gained / splice region variant / NMD transcript variant",0,0.00210526315789474,3.7e-24,-0.00210526315789474,0.00210526315789474,0.0148872180451128,MMEA9_E3
+"inframe deletion / NMD transcript variant",0,0.000601503759398496,3.7e-24,-0.000601503759398496,1,1,MMEA9_E3
+"coding sequence variant",0,0.00200501253132832,3.7e-24,-0.00200501253132832,1,1,MMEA9_E3
+"splice donor region variant / non coding transcript exon variant",0,0.00340852130325815,3.7e-24,-0.00340852130325815,0.00340852130325815,0.0192982456140351,MMEA9_E3
+"splice donor variant / splice donor 5th base variant / intron variant",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"coding sequence variant / NMD transcript variant",0,0.000401002506265664,3.7e-24,-0.000401002506265664,0.000401002506265664,0.00396992481203008,MMEA9_E3
+"splice donor variant / splice donor 5th base variant / coding sequence variant / intron variant",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"splice donor variant / splice donor region variant / non coding transcript exon variant / intron variant",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"coding sequence variant / 3 prime UTR variant",0,0.000200501253132832,3.7e-24,-0.000200501253132832,1,1,MMEA9_E3
+"missense variant / splice donor 5th base variant",0,0.000300751879699248,3.7e-24,-0.000300751879699248,0.000300751879699248,0.00330827067669173,MMEA9_E3
+"frameshift variant / stop lost",0,0.000200501253132832,3.7e-24,-0.000200501253132832,1,1,MMEA9_E3
+"stop gained / frameshift variant / splice region variant",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"splice donor variant / non coding transcript exon variant",0,0.000300751879699248,3.7e-24,-0.000300751879699248,0.000300751879699248,0.00330827067669173,MMEA9_E3
+"splice acceptor variant / non coding transcript exon variant / intron variant",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"start lost / inframe deletion",0,0.000300751879699248,3.7e-24,-0.000300751879699248,0.000300751879699248,0.00330827067669173,MMEA9_E3
+"frameshift variant / stop retained variant",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"splice donor variant / splice donor 5th base variant / non coding transcript exon variant / intron variant",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"splice acceptor variant / coding sequence variant",0,0.000300751879699248,3.7e-24,-0.000300751879699248,0.000300751879699248,0.00330827067669173,MMEA9_E3
+"stop retained variant / NMD transcript variant",0,0.000601503759398496,3.7e-24,-0.000601503759398496,1,1,MMEA9_E3
+"stop lost / splice region variant / NMD transcript variant",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"stop gained / inframe deletion",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"splice acceptor variant / non coding transcript exon variant",0,0.000300751879699248,3.7e-24,-0.000300751879699248,0.000300751879699248,0.00330827067669173,MMEA9_E3
+"splice donor region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"splice donor variant / missense variant",0,0.000100250626566416,3.7e-24,-0.000100250626566416,1,1,MMEA9_E3
+"3 prime UTR variant",4,3.293,3.7e-24,0.362463540618273,0.7759,1,MMEB9_C1
+"downstream gene variant",19,26.8301,3.7e-24,-0.453135729735598,0.0849,0.153414634146341,MMEB9_C1
+"intergenic variant",133,93.9672,4.17216797894285e-18,0.502468899961566,4e-04,0.00155789473684211,MMEB9_C1
+"intron variant",126,154.0609,2.74790855964896e-12,-0.285247265269636,0.0012,0.00328888888888889,MMEB9_C1
+"intron variant / NMD transcript variant",3,4.2067,3.7e-24,-0.255297118976522,0.4578,0.720791489361702,MMEB9_C1
+"intron variant / non coding transcript variant",38,34.1983,3.7e-24,0.166126290411393,0.5254,0.809991666666667,MMEB9_C1
+"missense variant",3,3.3984,3.7e-24,0.0050679680975038,0.7828,1,MMEB9_C1
+"non coding transcript exon variant",2,1.9892,3.7e-24,0.177518973957972,1,1,MMEB9_C1
+"regulatory region variant",25,20.2037,3.7e-24,0.325571218756183,0.3584,0.57655652173913,MMEB9_C1
+"upstream gene variant",18,25.5934,3.7e-24,-0.460337018696148,0.085,0.153414634146341,MMEB9_C1
+"5 prime UTR variant",0,0.5958,3.7e-24,-0.529103700916771,0.6762,1,MMEB9_C1
+"stop gained",0,0.2185,3.7e-24,-0.208957746264495,1,1,MMEB9_C1
+"synonymous variant",0,1.1564,3.7e-24,-0.93111611129065,0.3452,0.567662222222222,MMEB9_C1
+"frameshift variant",0,0.0794,3.7e-24,-0.0783039100017308,0.0768,0.145723076923077,MMEB9_C1
+"missense variant / splice region variant",0,0.1015,3.7e-24,-0.0995983462529567,0.097,0.16693023255814,MMEB9_C1
+"splice acceptor variant",0,0.0499,3.7e-24,-0.0491774437510817,0.0482,0.0964,MMEB9_C1
+"splice polypyrimidine tract variant / intron variant",0,0.2462,3.7e-24,-0.233695966886646,0.2171,0.365122727272727,MMEB9_C1
+"splice region variant / intron variant",0,0.0571,3.7e-24,-0.0565604512509375,1,1,MMEB9_C1
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0068,3.7e-24,-0.00675849625007212,0.0067,0.01549375,MMEB9_C1
+"splice region variant / splice polypyrimidine tract variant / intron variant",0,0.1897,3.7e-24,-0.182068873762043,1,1,MMEB9_C1
+"splice region variant / synonymous variant",0,0.0302,3.7e-24,-0.0300754887502163,1,1,MMEB9_C1
+"splice donor region variant / intron variant / non coding transcript variant",0,0.009,3.7e-24,-0.00891699250014423,1,1,MMEB9_C1
+"inframe deletion",0,0.0311,3.7e-24,-0.0308924812503606,1,1,MMEB9_C1
+"stop gained / splice region variant",0,0.0086,3.7e-24,-0.0086,0.0086,0.0192848484848485,MMEB9_C1
+"splice acceptor variant / non coding transcript variant",0,0.007,3.7e-24,-0.00695849625007212,1,1,MMEB9_C1
+"5 prime UTR variant / NMD transcript variant",0,0.0071,3.7e-24,-0.0071,1,1,MMEB9_C1
+"splice donor region variant / intron variant",0,0.0669,3.7e-24,-0.066194436251226,1,1,MMEB9_C1
+"TF binding site variant",0,0.0549,3.7e-24,-0.0541529325012981,0.0531,0.103405263157895,MMEB9_C1
+"3 prime UTR variant / NMD transcript variant",0,0.1014,3.7e-24,-0.0992493237533894,0.0963,0.16693023255814,MMEB9_C1
+"missense variant / NMD transcript variant",0,0.0278,3.7e-24,-0.0275924812503606,1,1,MMEB9_C1
+"splice region variant / 5 prime UTR variant",0,0.0073,3.7e-24,-0.0073,1,1,MMEB9_C1
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0188,3.7e-24,-0.0187584962500721,0.0187,0.0395371428571429,MMEB9_C1
+"splice donor variant",0,0.0451,3.7e-24,-0.0444849625007212,1,1,MMEB9_C1
+"splice donor 5th base variant / intron variant",0,0.0346,3.7e-24,-0.0343094737505048,1,1,MMEB9_C1
+"mature miRNA variant",0,0.0039,3.7e-24,-0.0039,0.0039,0.00962,MMEB9_C1
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0027,3.7e-24,-0.0027,1,1,MMEB9_C1
+"splice region variant / non coding transcript exon variant",0,0.0191,3.7e-24,-0.0188509775004327,0.0185,0.0395371428571429,MMEB9_C1
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0259,3.7e-24,-0.0257754887502163,0.0256,0.0526222222222222,MMEB9_C1
+"stop lost",0,0.0043,3.7e-24,-0.0043,1,1,MMEB9_C1
+"synonymous variant / NMD transcript variant",0,0.0103,3.7e-24,-0.0102169925001442,1,1,MMEB9_C1
+"missense variant / splice region variant / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00155789473684211,MMEB9_C1
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0048,3.7e-24,-0.00475849625007212,0.0047,0.0112193548387097,MMEB9_C1
+"splice donor variant / non coding transcript variant",0,0.0053,3.7e-24,-0.0053,1,1,MMEB9_C1
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.004,3.7e-24,-0.00395849625007212,1,1,MMEB9_C1
+"start lost",0,0.0069,3.7e-24,-0.0069,1,1,MMEB9_C1
+"frameshift variant / splice region variant",0,0.0015,3.7e-24,-0.0015,0.0015,0.00382758620689655,MMEB9_C1
+"splice donor variant / NMD transcript variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.00246666666666667,MMEB9_C1
+"splice region variant / intron variant / non coding transcript variant",0,0.0061,3.7e-24,-0.0061,1,1,MMEB9_C1
+"stop gained / NMD transcript variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.00246666666666667,MMEB9_C1
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00123333333333333,MMEB9_C1
+"frameshift variant / stop lost",0,3e-04,3.7e-24,-3e-04,3e-04,0.00155789473684211,MMEB9_C1
+"incomplete terminal codon variant / coding sequence variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00123333333333333,MMEB9_C1
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.0037,MMEB9_C1
+"frameshift variant / NMD transcript variant",0,9e-04,3.7e-24,-9e-04,9e-04,0.002664,MMEB9_C1
+"splice acceptor variant / NMD transcript variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00328888888888889,MMEB9_C1
+"splice region variant / 3 prime UTR variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.00201818181818182,MMEB9_C1
+"splice donor variant / coding sequence variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00176190476190476,MMEB9_C1
+"stop retained variant",0,0.0011,3.7e-24,-0.0011,1,1,MMEB9_C1
+"stop gained / frameshift variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00155789473684211,MMEB9_C1
+"splice region variant / intron variant / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00155789473684211,MMEB9_C1
+"inframe deletion / splice region variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00155789473684211,MMEB9_C1
+"inframe deletion / NMD transcript variant",0,7e-04,3.7e-24,-7e-04,1,1,MMEB9_C1
+"splice acceptor variant / coding sequence variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000925,MMEB9_C1
+"splice donor variant / splice donor region variant / intron variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00155789473684211,MMEB9_C1
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00176190476190476,MMEB9_C1
+"start lost / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000925,MMEB9_C1
+"splice donor region variant / non coding transcript exon variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00123333333333333,MMEB9_C1
+"splice donor variant / 3 prime UTR variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000925,MMEB9_C1
+"splice acceptor variant / non coding transcript exon variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000925,MMEB9_C1
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00123333333333333,MMEB9_C1
+"non coding transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000925,MMEB9_C1
+"splice acceptor variant / coding sequence variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000925,MMEB9_C1
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000925,MMEB9_C1
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000925,MMEB9_C1
+"3 prime UTR variant",3,4.2158,3.7e-24,-0.25791075317538,0.6357,0.855305454545455,MMEB9_C2
+"downstream gene variant",24,35.6498,3.7e-24,-0.533892326595706,0.0228,0.04218,MMEB9_C2
+"intergenic variant",196,154.531,2.89968659819411e-12,0.344297691919251,7e-04,0.00272631578947368,MMEB9_C2
+"intron variant",174,205.5981,4.71319658137785e-09,-0.237332063683738,0.0036,0.00986666666666667,MMEB9_C2
+"intron variant / NMD transcript variant",7,5.1454,3.7e-24,0.491148761529372,0.3992,0.55737358490566,MMEB9_C2
+"intron variant / non coding transcript variant",58,51.7603,5.21016595459482e-24,0.173607739747159,0.3887,0.55315,MMEB9_C2
+"missense variant",3,4.2993,3.7e-24,-0.281625629409877,0.3396,0.492752941176471,MMEB9_C2
+"missense variant / splice region variant",1,0.1299,3.7e-24,0.873222254995096,0.1225,0.192872340425532,MMEB9_C2
+"non coding transcript exon variant",2,2.5909,3.7e-24,-0.097824998898738,0.7905,1,MMEB9_C2
+"regulatory region variant",16,26.9971,3.7e-24,-0.695327623067773,0.0155,0.0301842105263158,MMEB9_C2
+"upstream gene variant",45,33.8784,3.7e-24,0.418750292713759,0.0877,0.144217777777778,MMEB9_C2
+"5 prime UTR variant",0,0.8642,3.7e-24,-0.731547805981171,0.4801,0.657914814814815,MMEB9_C2
+"frameshift variant",0,0.109,3.7e-24,-0.106832331253245,1,1,MMEB9_C2
+"stop gained",0,0.324,3.7e-24,-0.303880040958034,0.2769,0.409812,MMEB9_C2
+"synonymous variant",0,1.5519,3.7e-24,-1.17640458698013,0.2127,0.3279125,MMEB9_C2
+"splice polypyrimidine tract variant / intron variant",0,0.2976,3.7e-24,-0.279504088143929,0.2556,0.386008163265306,MMEB9_C2
+"splice region variant / synonymous variant",0,0.0459,3.7e-24,-0.0454679700005769,1,1,MMEB9_C2
+"splice region variant / 5 prime UTR variant",0,0.0147,3.7e-24,-0.0147,0.0147,0.0294,MMEB9_C2
+"synonymous variant / NMD transcript variant",0,0.0133,3.7e-24,-0.0133,0.0133,0.0273388888888889,MMEB9_C2
+"splice donor region variant / intron variant",0,0.0885,3.7e-24,-0.0872133837522356,0.0854,0.143627272727273,MMEB9_C2
+"splice donor variant",0,0.0754,3.7e-24,-0.0741133837522356,0.0723,0.124423255813953,MMEB9_C2
+"splice region variant / splice polypyrimidine tract variant / intron variant",0,0.214,3.7e-24,-0.205591755631093,1,1,MMEB9_C2
+"splice acceptor variant / non coding transcript variant",0,0.0093,3.7e-24,-0.0093,0.0093,0.0202411764705882,MMEB9_C2
+"TF binding site variant",0,0.0724,3.7e-24,-0.071320902501875,1,1,MMEB9_C2
+"splice region variant / non coding transcript exon variant",0,0.0273,3.7e-24,-0.0271169925001442,0.0269,0.0485512195121951,MMEB9_C2
+"splice region variant / intron variant",0,0.0706,3.7e-24,-0.0694793987519471,1,1,MMEB9_C2
+"splice donor 5th base variant / intron variant",0,0.042,3.7e-24,-0.0418339850002885,1,1,MMEB9_C2
+"3 prime UTR variant / NMD transcript variant",0,0.101,3.7e-24,-0.0991813537528125,0.0967,0.155560869565217,MMEB9_C2
+"missense variant / NMD transcript variant",0,0.0338,3.7e-24,-0.0334679700005769,1,1,MMEB9_C2
+"5 prime UTR variant / NMD transcript variant",0,0.011,3.7e-24,-0.011,1,1,MMEB9_C2
+"stop gained / splice region variant",0,0.0114,3.7e-24,-0.0114,1,1,MMEB9_C2
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0366,3.7e-24,-0.0363509775004327,1,1,MMEB9_C2
+"splice acceptor variant",0,0.0588,3.7e-24,-0.0578869175015865,0.0566,0.0997238095238095,MMEB9_C2
+"frameshift variant / splice region variant",0,0.0027,3.7e-24,-0.0027,1,1,MMEB9_C2
+"splice donor variant / non coding transcript variant",0,0.0093,3.7e-24,-0.0093,0.0093,0.0202411764705882,MMEB9_C2
+"frameshift variant / NMD transcript variant",0,8e-04,3.7e-24,-8e-04,8e-04,0.00296,MMEB9_C2
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0235,3.7e-24,-0.0235,1,1,MMEB9_C2
+"inframe deletion",0,0.0166,3.7e-24,-0.0165169925001442,0.0164,0.0311179487179487,MMEB9_C2
+"splice donor region variant / intron variant / non coding transcript variant",0,0.0105,3.7e-24,-0.0104584962500721,1,1,MMEB9_C2
+"splice region variant / 3 prime UTR variant",0,9e-04,3.7e-24,-9e-04,9e-04,0.00302727272727273,MMEB9_C2
+"stop retained variant",0,0.0028,3.7e-24,-0.0028,0.0028,0.00796923076923077,MMEB9_C2
+"frameshift variant / stop lost",0,5e-04,3.7e-24,-5e-04,5e-04,0.00217647058823529,MMEB9_C2
+"stop lost",0,0.0062,3.7e-24,-0.0062,0.0062,0.0148,MMEB9_C2
+"splice acceptor variant / NMD transcript variant",0,0.001,3.7e-24,-0.001,1,1,MMEB9_C2
+"start lost",0,0.0087,3.7e-24,-0.0087,0.0087,0.02011875,MMEB9_C2
+"splice region variant / intron variant / non coding transcript variant",0,0.0124,3.7e-24,-0.0124,0.0124,0.0262171428571429,MMEB9_C2
+"mature miRNA variant",0,0.0039,3.7e-24,-0.0039,0.0039,0.00995172413793103,MMEB9_C2
+"splice donor variant / NMD transcript variant",0,0.0019,3.7e-24,-0.0019,0.0019,0.00585833333333333,MMEB9_C2
+"splice region variant / intron variant / NMD transcript variant",0,0.0016,3.7e-24,-0.0016,0.0016,0.00514782608695652,MMEB9_C2
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0052,3.7e-24,-0.0052,0.0052,0.0128266666666667,MMEB9_C2
+"missense variant / splice region variant / NMD transcript variant",0,7e-04,3.7e-24,-7e-04,1,1,MMEB9_C2
+"splice acceptor variant / 5 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105714285714286,MMEB9_C2
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0039,3.7e-24,-0.0039,0.0039,0.00995172413793103,MMEB9_C2
+"non coding transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00197333333333333,MMEB9_C2
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.006,3.7e-24,-0.00591699250014423,1,1,MMEB9_C2
+"stop gained / frameshift variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00197333333333333,MMEB9_C2
+"splice donor region variant / non coding transcript exon variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00148,MMEB9_C2
+"stop gained / NMD transcript variant",0,0.0027,3.7e-24,-0.0027,1,1,MMEB9_C2
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,9e-04,3.7e-24,-9e-04,9e-04,0.00302727272727273,MMEB9_C2
+"stop gained / frameshift variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105714285714286,MMEB9_C2
+"incomplete terminal codon variant / coding sequence variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00197333333333333,MMEB9_C2
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0023,3.7e-24,-0.0023,0.0023,0.006808,MMEB9_C2
+"splice donor variant / coding sequence variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00197333333333333,MMEB9_C2
+"inframe deletion / splice region variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.00217647058823529,MMEB9_C2
+"stop lost / 3 prime UTR variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00148,MMEB9_C2
+"splice region variant / synonymous variant / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00197333333333333,MMEB9_C2
+"splice acceptor variant / coding sequence variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.00246666666666667,MMEB9_C2
+"splice donor 5th base variant / non coding transcript exon variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105714285714286,MMEB9_C2
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0013,3.7e-24,-0.0013,1,1,MMEB9_C2
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105714285714286,MMEB9_C2
+"splice donor variant / 5 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105714285714286,MMEB9_C2
+"stop lost / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105714285714286,MMEB9_C2
+"start lost / splice region variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.00105714285714286,MMEB9_C2
+"splice donor variant / splice donor region variant / intron variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00148,MMEB9_C2
+"3 prime UTR variant",1,3.2587,3.7e-24,-0.949042116001159,0.163,0.2771,MMEB9_C3
+"5 prime UTR variant",1,0.7699,3.7e-24,0.338046032535525,1,1,MMEB9_C3
+"downstream gene variant",15,27.5729,3.7e-24,-0.81387005834598,0.0048,0.0125538461538462,MMEB9_C3
+"intergenic variant",139,99.5196,2.46196073891289e-15,0.483115772307315,3e-04,0.00156923076923077,MMEB9_C3
+"intron variant",121,149.2664,4.15556598358686e-12,-0.297778523793507,0.0011,0.00388571428571429,MMEB9_C3
+"intron variant / NMD transcript variant",6,3.8953,3.7e-24,0.646253247657454,0.4457,0.704827906976744,MMEB9_C3
+"intron variant / non coding transcript variant",45,34.7262,3.7e-24,0.383228727544286,0.1136,0.203284210526316,MMEB9_C3
+"missense variant",4,3.6691,3.7e-24,0.237125049426237,0.8091,1,MMEB9_C3
+"non coding transcript exon variant",3,2.0755,3.7e-24,0.548752858995529,0.538,0.812977777777778,MMEB9_C3
+"regulatory region variant",19,21.5651,3.7e-24,-0.14446056389741,0.5007,0.773809090909091,MMEB9_C3
+"upstream gene variant",21,25.9761,3.7e-24,-0.269053228593119,0.2808,0.465717073170732,MMEB9_C3
+"splice region variant / splice polypyrimidine tract variant / intron variant",0,0.1699,3.7e-24,-0.163861216568647,0.1557,0.271476923076923,MMEB9_C3
+"stop gained",0,0.2652,3.7e-24,-0.252088448137006,1,1,MMEB9_C3
+"3 prime UTR variant / NMD transcript variant",0,0.0931,3.7e-24,-0.091647368752524,1,1,MMEB9_C3
+"synonymous variant",0,1.229,3.7e-24,-0.980642806856251,0.3237,0.524085714285714,MMEB9_C3
+"splice region variant / 5 prime UTR variant",0,0.0104,3.7e-24,-0.0104,1,1,MMEB9_C3
+"missense variant / NMD transcript variant",0,0.0352,3.7e-24,-0.0347434587507933,0.0341,0.0626702702702703,MMEB9_C3
+"splice donor region variant / intron variant",0,0.0641,3.7e-24,-0.0633114287513702,1,1,MMEB9_C3
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0177,3.7e-24,-0.0176169925001442,0.0175,0.0360606060606061,MMEB9_C3
+"missense variant / splice region variant",0,0.108,3.7e-24,-0.105617293753966,1,1,MMEB9_C3
+"splice acceptor variant",0,0.0491,3.7e-24,-0.0487679700005769,1,1,MMEB9_C3
+"splice polypyrimidine tract variant / intron variant",0,0.2405,3.7e-24,-0.228295641266514,1,1,MMEB9_C3
+"frameshift variant",0,0.0431,3.7e-24,-0.0429339850002885,1,1,MMEB9_C3
+"TF binding site variant",0,0.0621,3.7e-24,-0.0614359400011538,1,1,MMEB9_C3
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0037,3.7e-24,-0.0037,1,1,MMEB9_C3
+"splice donor variant",0,0.0495,3.7e-24,-0.049126466250649,1,1,MMEB9_C3
+"splice donor 5th base variant / intron variant",0,0.0344,3.7e-24,-0.0341509775004327,0.0338,0.0626702702702703,MMEB9_C3
+"mature miRNA variant",0,0.0025,3.7e-24,-0.0025,0.0025,0.0068,MMEB9_C3
+"stop lost",0,0.0043,3.7e-24,-0.0043,1,1,MMEB9_C3
+"splice region variant / intron variant",0,0.0558,3.7e-24,-0.0551774437510817,1,1,MMEB9_C3
+"splice region variant / non coding transcript exon variant",0,0.0228,3.7e-24,-0.0226754887502163,1,1,MMEB9_C3
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.005,3.7e-24,-0.005,1,1,MMEB9_C3
+"splice region variant / synonymous variant",0,0.0325,3.7e-24,-0.0323339850002885,0.0321,0.0623657142857143,MMEB9_C3
+"splice region variant / intron variant / non coding transcript variant",0,0.0075,3.7e-24,-0.0075,0.0075,0.0182142857142857,MMEB9_C3
+"splice donor region variant / intron variant / non coding transcript variant",0,0.0097,3.7e-24,-0.0097,0.0097,0.0206125,MMEB9_C3
+"splice region variant / synonymous variant / NMD transcript variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.0024,MMEB9_C3
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.0237,3.7e-24,-0.0236169925001442,0.0235,0.047,MMEB9_C3
+"stop gained / splice region variant",0,0.008,3.7e-24,-0.00795849625007212,1,1,MMEB9_C3
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0045,3.7e-24,-0.0045,1,1,MMEB9_C3
+"5 prime UTR variant / NMD transcript variant",0,0.0097,3.7e-24,-0.0097,0.0097,0.0206125,MMEB9_C3
+"synonymous variant / NMD transcript variant",0,0.0099,3.7e-24,-0.00977548875021635,0.0096,0.0206125,MMEB9_C3
+"splice donor variant / NMD transcript variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00388571428571429,MMEB9_C3
+"splice donor variant / non coding transcript variant",0,0.0054,3.7e-24,-0.0054,1,1,MMEB9_C3
+"stop gained / NMD transcript variant",0,0.0023,3.7e-24,-0.0023,0.0023,0.00651666666666667,MMEB9_C3
+"stop retained variant",0,0.0015,3.7e-24,-0.0015,0.0015,0.00443478260869565,MMEB9_C3
+"missense variant / splice region variant / NMD transcript variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00388571428571429,MMEB9_C3
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00388571428571429,MMEB9_C3
+"start lost",0,0.0078,3.7e-24,-0.0078,0.0078,0.0182896551724138,MMEB9_C3
+"splice region variant / 3 prime UTR variant",0,0.001,3.7e-24,-0.001,1,1,MMEB9_C3
+"splice donor variant / splice donor region variant / non coding transcript exon variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"splice acceptor variant / non coding transcript variant",0,0.0055,3.7e-24,-0.00545849625007212,0.0054,0.0136,MMEB9_C3
+"frameshift variant / splice region variant",0,0.001,3.7e-24,-0.001,1,1,MMEB9_C3
+"splice region variant / intron variant / NMD transcript variant",0,7e-04,3.7e-24,-7e-04,1,1,MMEB9_C3
+"splice acceptor variant / NMD transcript variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.0024,MMEB9_C3
+"stop gained / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.00432727272727273,MMEB9_C3
+"frameshift variant / start lost",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"stop gained / frameshift variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"start lost / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00181333333333333,MMEB9_C3
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"splice acceptor variant / coding sequence variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"start lost / splice region variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00181333333333333,MMEB9_C3
+"stop lost / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00113333333333333,MMEB9_C3
+"frameshift variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"splice acceptor variant / non coding transcript exon variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"stop gained / splice donor region variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"splice acceptor variant / coding sequence variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000618181818181818,MMEB9_C3
+"3 prime UTR variant",98,139.863139965935,6.93938738905197e-10,-0.503743264206796,0.000100190361687206,0.0010575649289205,MMEB9_E1
+"5 prime UTR variant",12,22.5380222422603,3.7e-24,-0.826239697476521,0.0121230337641519,0.0348996426543767,MMEB9_E1
+"TF binding site variant",9,2.49213505660755,3.7e-24,1.6815666683618,0.0846608556256888,0.191494792486677,MMEB9_E1
+"downstream gene variant",1217,1208.453461577,0.0935371729912747,0.0107134225265701,0.803927462178138,1,MMEB9_E1
+"frameshift variant",1,0.361587015329125,3.7e-24,0.663874968048465,0.302875463380423,0.575463380422803,MMEB9_E1
+"intergenic variant",5944,5490.34154894299,0.548901980031033,0.11460960933823,0,0,MMEB9_E1
+"intron variant",6434,6964.16110610159,0.0995972770425545,-0.114152614801986,0,0,MMEB9_E1
+"intron variant / NMD transcript variant",168,176.875964332231,2.54959136932636e-07,-0.0698263523523285,0.466786895100691,0.811113843575521,MMEB9_E1
+"intron variant / non coding transcript variant",1934,1817.18374912333,0.00232559547752588,0.0901882080328167,0.00460875663761146,0.0150976510542444,MMEB9_E1
+"missense variant",106,137.605650736399,9.38910736346529e-13,-0.368280541829581,0.00280533012724176,0.010250244695691,MMEB9_E1
+"missense variant / splice region variant",2,4.29926861035968,3.7e-24,-0.694813243360308,0.23234144875263,0.49049861403333,MMEB9_E1
+"non coding transcript exon variant",86,88.7264803125939,1.13405525764225e-15,-0.0367530488409993,0.786895100691314,1,MMEB9_E1
+"regulatory region variant",958,891.802925558561,0.0276057978341798,0.103964262319714,0.0300571085061617,0.0793173696690378,MMEB9_E1
+"splice acceptor variant",1,1.35387235747921,3.7e-24,-0.0548959864829591,0.648932972648031,1,MMEB9_E1
+"splice donor 5th base variant / intron variant",1,0.916641619076245,3.7e-24,0.228488620050963,1,1,MMEB9_E1
+"splice donor region variant / intron variant",2,3.48011221320509,3.7e-24,-0.433973247599007,0.469592225227933,0.811113843575521,MMEB9_E1
+"splice donor region variant / intron variant / non coding transcript variant",2,0.438132451658151,3.7e-24,1.18194851194274,0.0712353471596033,0.169183949504058,MMEB9_E1
+"splice donor variant",2,3.68690511972748,3.7e-24,-0.509403459174473,0.370403767157599,0.663931280754188,MMEB9_E1
+"splice polypyrimidine tract variant / intron variant",5,9.0453862338443,3.7e-24,-0.674471354465412,0.132151087065424,0.291961703981751,MMEB9_E1
+"splice region variant / intron variant",2,2.24306181745316,3.7e-24,0.059359526904001,0.727382025849113,1,MMEB9_E1
+"splice region variant / non coding transcript exon variant",1,0.841999799619277,3.7e-24,0.285388388391148,1,1,MMEB9_E1
+"splice region variant / splice polypyrimidine tract variant / intron variant",5,5.83959523093878,3.7e-24,-0.0872186701273993,0.84079751527903,1,MMEB9_E1
+"splice region variant / synonymous variant",1,1.3492636008416,3.7e-24,-0.0544437396272867,1,1,MMEB9_E1
+"stop gained",10,8.17092475703837,3.7e-24,0.337040362951027,0.601843502655045,1,MMEB9_E1
+"stop retained variant",1,0.0621180242460675,3.7e-24,0.938422551597097,0.0608155495441339,0.148140441197249,MMEB9_E1
+"synonymous variant",27,43.2930568079351,3.7e-24,-0.645546078721162,0.00260494940386735,0.00989880773469592,MMEB9_E1
+"upstream gene variant",1140,1132.45686804929,0.0495593082646623,0.0101580684029894,0.809437932070935,1,MMEB9_E1
+"3 prime UTR variant / NMD transcript variant",0,3.72848411982767,3.7e-24,-2.10480209495097,0.0242460675283038,0.0658107547196817,MMEB9_E1
+"missense variant / NMD transcript variant",0,1.08405971345557,3.7e-24,-0.885578147834618,0.360384730988879,0.658395181614298,MMEB9_E1
+"splice donor variant / non coding transcript variant",0,0.466686704739004,3.7e-24,-0.426228159147315,0.0804528604348262,0.186415164422158,MMEB9_E1
+"splice region variant / 5 prime UTR variant",0,0.33453561767358,3.7e-24,-0.315569987373473,1,1,MMEB9_E1
+"5 prime UTR variant / NMD transcript variant",0,0.293958521190262,3.7e-24,-0.277075807486055,0.254784089770564,0.514989117621353,MMEB9_E1
+"coding sequence variant",0,0.00160304578699529,3.7e-24,-0.00160304578699529,1,1,MMEB9_E1
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,1.2216210800521,3.7e-24,-0.974171244685355,0.330327622482717,0.61531615952663,MMEB9_E1
+"splice region variant / intron variant / non coding transcript variant",0,0.316401162208196,3.7e-24,-0.296444776971257,0.270413786193768,0.535193951841833,MMEB9_E1
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.779581204288147,3.7e-24,-0.668750912110954,0.506161707243763,0.858667181931384,MMEB9_E1
+"start lost",0,0.561066025448352,3.7e-24,-0.504201233289161,0.676084560665264,1,MMEB9_E1
+"stop gained / splice region variant",0,0.275623685001503,3.7e-24,-0.261209232562349,0.242059913836289,0.499906343792336,MMEB9_E1
+"synonymous variant / NMD transcript variant",0,0.357078449053201,3.7e-24,-0.331353209250159,0.297865945296063,0.575463380422803,MMEB9_E1
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.121230337641519,3.7e-24,-0.118718347364175,1,1,MMEB9_E1
+"stop gained / frameshift variant",0,0.00430818555254984,3.7e-24,-0.00430818555254984,0.00430818555254984,0.0146170581247227,MMEB9_E1
+"stop lost",0,0.306883077847911,3.7e-24,-0.288259650215419,1,1,MMEB9_E1
+"splice acceptor variant / non coding transcript variant",0,0.19076244865244,3.7e-24,-0.183640346669634,0.173930467888989,0.375531692033045,MMEB9_E1
+"splice donor variant / NMD transcript variant",0,0.0751427712654043,3.7e-24,-0.0738952885504092,1,1,MMEB9_E1
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.190662258290752,3.7e-24,-0.182965530770074,1,1,MMEB9_E1
+"start lost / NMD transcript variant",0,0.00911732291353572,3.7e-24,-0.00911732291353572,1,1,MMEB9_E1
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.126640617172628,3.7e-24,-0.123578559267223,1,1,MMEB9_E1
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0715359182446649,3.7e-24,-0.0704793244681481,1,1,MMEB9_E1
+"missense variant / splice region variant / NMD transcript variant",0,0.0398757639515079,3.7e-24,-0.0395431018941759,0.0390742410580102,0.100325754067864,MMEB9_E1
+"splice region variant / 3 prime UTR variant",0,0.0507965133754133,3.7e-24,-0.0501311892607493,0.049193467588418,0.122983668971045,MMEB9_E1
+"frameshift variant / splice region variant",0,0.0130247470193367,3.7e-24,-0.0129831642621702,1,1,MMEB9_E1
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0693317302875463,3.7e-24,-0.0682733409085853,1,1,MMEB9_E1
+"mature miRNA variant",0,0.130447850916742,3.7e-24,-0.127070155801359,1,1,MMEB9_E1
+"splice region variant / intron variant / NMD transcript variant",0,0.0450856627592426,3.7e-24,-0.0447114179447441,1,1,MMEB9_E1
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0177336940186354,3.7e-24,-0.0176089457471359,1,1,MMEB9_E1
+"start lost / splice region variant",0,0.0151287446147681,3.7e-24,-0.0150871618576016,0.0150285542530809,0.0419915486483141,MMEB9_E1
+"splice acceptor variant / NMD transcript variant",0,0.0272517783789199,3.7e-24,-0.0270854473502539,1,1,MMEB9_E1
+"stop gained / NMD transcript variant",0,0.0650235447349965,3.7e-24,-0.0639499261111256,1,1,MMEB9_E1
+"non coding transcript variant",0,0.00480913736098587,3.7e-24,-0.00480913736098587,0.00480913736098587,0.0152289349764553,MMEB9_E1
+"splice acceptor variant / coding sequence variant",0,0.00140266506362088,3.7e-24,-0.00140266506362088,1,1,MMEB9_E1
+"frameshift variant / start lost",0,0.00070133253181044,3.7e-24,-0.00070133253181044,1,1,MMEB9_E1
+"splice region variant / synonymous variant / NMD transcript variant",0,0.011221320508967,3.7e-24,-0.011221320508967,1,1,MMEB9_E1
+"incomplete terminal codon variant / coding sequence variant",0,0.00260494940386735,3.7e-24,-0.00260494940386735,0.00260494940386735,0.00989880773469592,MMEB9_E1
+"start lost / splice region variant / NMD transcript variant",0,0.000801522893497645,3.7e-24,-0.000801522893497645,1,1,MMEB9_E1
+"splice donor region variant / non coding transcript exon variant",0,0.00430818555254984,3.7e-24,-0.00430818555254984,0.00430818555254984,0.0146170581247227,MMEB9_E1
+"stop lost / splice region variant",0,0.00230437831880573,3.7e-24,-0.00230437831880573,0.00230437831880573,0.00989880773469592,MMEB9_E1
+"frameshift variant / NMD transcript variant",0,0.00240456868049294,3.7e-24,-0.00240456868049294,0.00240456868049294,0.00989880773469592,MMEB9_E1
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.00661256387135558,3.7e-24,-0.00657098111418907,0.00651237350966837,0.019333608856828,MMEB9_E1
+"stop lost / NMD transcript variant",0,0.00571085061617072,3.7e-24,-0.00566926785900422,0.00561066025448352,0.017193958844385,MMEB9_E1
+"stop retained variant / NMD transcript variant",0,0.000901713255184851,3.7e-24,-0.000901713255184851,1,1,MMEB9_E1
+"stop gained / splice region variant / NMD transcript variant",0,0.00250475904218014,3.7e-24,-0.00250475904218014,0.00250475904218014,0.00989880773469592,MMEB9_E1
+"coding sequence variant / NMD transcript variant",0,0.000300571085061617,3.7e-24,-0.000300571085061617,0.000300571085061617,0.00219648100621951,MMEB9_E1
+"splice donor variant / splice donor region variant / non coding transcript exon variant / intron variant",0,0.000300571085061617,3.7e-24,-0.000300571085061617,0.000300571085061617,0.00219648100621951,MMEB9_E1
+"splice donor 5th base variant / non coding transcript exon variant",0,0.00110209397855926,3.7e-24,-0.00110209397855926,0.00110209397855926,0.00551046989279631,MMEB9_E1
+"splice donor variant / coding sequence variant",0,0.000801522893497646,3.7e-24,-0.000801522893497646,1,1,MMEB9_E1
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,0.0017032361486825,3.7e-24,-0.0017032361486825,1,1,MMEB9_E1
+"missense variant / splice donor region variant",0,0.000400761446748823,3.7e-24,-0.000400761446748823,0.000400761446748823,0.00253815582940921,MMEB9_E1
+"splice donor variant / splice donor 5th base variant / intron variant",0,0.00110209397855926,3.7e-24,-0.00110209397855926,0.00110209397855926,0.00551046989279631,MMEB9_E1
+"splice donor variant / splice donor region variant / intron variant",0,0.000200380723374411,3.7e-24,-0.000200380723374411,1,1,MMEB9_E1
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,0.00210399759543132,3.7e-24,-0.00210399759543132,0.00210399759543132,0.00989880773469592,MMEB9_E1
+"frameshift variant / stop lost",0,0.000500951808436028,3.7e-24,-0.000500951808436028,1,1,MMEB9_E1
+"splice donor 5th base variant / synonymous variant",0,0.000601142170123234,3.7e-24,-0.000601142170123234,0.000601142170123234,0.00335932389186513,MMEB9_E1
+"splice region variant / stop retained variant",0,0.000601142170123234,3.7e-24,-0.000601142170123234,0.000601142170123234,0.00335932389186513,MMEB9_E1
+"stop lost / splice region variant / NMD transcript variant",0,0.000400761446748823,3.7e-24,-0.000400761446748823,0.000400761446748823,0.00253815582940921,MMEB9_E1
+"stop lost / 3 prime UTR variant",0,0.000300571085061617,3.7e-24,-0.000300571085061617,0.000300571085061617,0.00219648100621951,MMEB9_E1
+"splice donor variant / non coding transcript exon variant",0,0.000200380723374411,3.7e-24,-0.000200380723374411,1,1,MMEB9_E1
+"splice donor variant / 5 prime UTR variant",0,0.000100190361687206,3.7e-24,-0.000100190361687206,0.000100190361687206,0.0010575649289205,MMEB9_E1
+"frameshift variant / splice region variant / NMD transcript variant",0,0.000100190361687206,3.7e-24,-0.000100190361687206,0.000100190361687206,0.0010575649289205,MMEB9_E1
+"splice acceptor variant / 3 prime UTR variant / NMD transcript variant",0,0.000100190361687206,3.7e-24,-0.000100190361687206,0.000100190361687206,0.0010575649289205,MMEB9_E1
+"frameshift variant / stop retained variant",0,0.000200380723374411,3.7e-24,-0.000200380723374411,1,1,MMEB9_E1
+"splice acceptor variant / coding sequence variant / intron variant",0,0.000200380723374411,3.7e-24,-0.000200380723374411,1,1,MMEB9_E1
+"splice donor region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.000100190361687206,3.7e-24,-0.000100190361687206,0.000100190361687206,0.0010575649289205,MMEB9_E1
+"splice region variant / non coding transcript variant",0,0.000100190361687206,3.7e-24,-0.000100190361687206,0.000100190361687206,0.0010575649289205,MMEB9_E1
+"splice donor variant / splice donor 5th base variant / intron variant / non coding transcript variant",0,0.000300571085061617,3.7e-24,-0.000300571085061617,0.000300571085061617,0.00219648100621951,MMEB9_E1
+"splice acceptor variant / non coding transcript exon variant",0,0.000100190361687206,3.7e-24,-0.000100190361687206,0.000100190361687206,0.0010575649289205,MMEB9_E1
+"3 prime UTR variant",52,60.4652,1.67878386814435e-20,-0.202190159228489,0.2512,0.451134693877551,MMEB9_E2
+"5 prime UTR variant",8,10.0637,3.7e-24,-0.233497960310971,0.5438,0.87008,MMEB9_E2
+"TF binding site variant",1,1.1242,3.7e-24,0.0861754894781298,1,1,MMEB9_E2
+"downstream gene variant",514,520.3429,0.0142112424613775,-0.0163704367778395,0.7821,1,MMEB9_E2
+"intergenic variant",2750,2470.5546,0.186752423335184,0.154745952611135,0,0,MMEB9_E2
+"intron variant",2849,3125.2922,0.226849708019868,-0.133347389282298,0,0,MMEB9_E2
+"intron variant / NMD transcript variant",93,86.7601,5.2157570597223e-14,0.107142406602905,0.4811,0.798807547169811,MMEB9_E2
+"intron variant / non coding transcript variant",908,866.5943,0.0419964680141834,0.0679987619641748,0.1484,0.2968,MMEB9_E2
+"missense variant",41,59.3029,1.6707049410905e-19,-0.510390894964113,0.0082,0.0232774193548387,MMEB9_E2
+"non coding transcript exon variant",29,37.454,3.7e-24,-0.339661261422166,0.1046,0.236020512820513,MMEB9_E2
+"regulatory region variant",394,387.4337,0.00223005320287223,0.0259480440879343,0.7128,1,MMEB9_E2
+"splice donor variant",2,1.5287,3.7e-24,0.425652578499073,1,1,MMEB9_E2
+"splice donor variant / non coding transcript variant",1,0.1993,3.7e-24,0.808748118738101,0.1804,0.345113043478261,MMEB9_E2
+"splice polypyrimidine tract variant / intron variant",1,3.9289,3.7e-24,-1.17497650483244,0.095,0.22,MMEB9_E2
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",3,0.5422,3.7e-24,1.51459315311913,0.0209,0.0540941176470588,MMEB9_E2
+"splice region variant / non coding transcript exon variant",1,0.3783,3.7e-24,0.64849302872743,0.3167,0.546462745098039,MMEB9_E2
+"splice region variant / splice polypyrimidine tract variant / intron variant",2,2.539,3.7e-24,-0.0758125027794285,0.5357,0.87008,MMEB9_E2
+"splice region variant / synonymous variant",1,0.5934,3.7e-24,0.471151023775327,0.6707,1,MMEB9_E2
+"stop gained",2,3.4397,3.7e-24,-0.425054677880333,0.469,0.793692307692308,MMEB9_E2
+"synonymous variant",21,18.9762,3.7e-24,0.174433897963256,0.7258,1,MMEB9_E2
+"synonymous variant / NMD transcript variant",2,0.1749,3.7e-24,1.41634099571164,0.014,0.0373333333333333,MMEB9_E2
+"upstream gene variant",487,494.6797,0.000546712844192539,-0.0211479014979995,0.7119,1,MMEB9_E2
+"3 prime UTR variant / NMD transcript variant",0,1.6274,3.7e-24,-1.21590749386266,0.2006,0.375591489361702,MMEB9_E2
+"missense variant / NMD transcript variant",0,0.5067,3.7e-24,-0.456889878747035,0.7,1,MMEB9_E2
+"missense variant / splice region variant",0,1.8726,3.7e-24,-1.34659245158134,0.1544,0.301937777777778,MMEB9_E2
+"splice donor 5th base variant / intron variant",0,0.4108,3.7e-24,-0.379603175348287,1,1,MMEB9_E2
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.054,3.7e-24,-0.0532774437510817,1,1,MMEB9_E2
+"splice region variant / 5 prime UTR variant",0,0.1561,3.7e-24,-0.151134587507933,0.1443,0.295311627906977,MMEB9_E2
+"splice region variant / intron variant",0,0.9735,3.7e-24,-0.807129095128383,0.0779,0.187178378378378,MMEB9_E2
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.3434,3.7e-24,-0.320197033458178,0.2902,0.510752,MMEB9_E2
+"stop gained / splice region variant",0,0.1239,3.7e-24,-0.120919248754832,0.1168,0.255619047619048,MMEB9_E2
+"stop lost",0,0.13,3.7e-24,-0.126611730005192,0.122,0.255619047619048,MMEB9_E2
+"frameshift variant",0,0.0664,3.7e-24,-0.065694436251226,1,1,MMEB9_E2
+"splice donor region variant / intron variant",0,1.5016,3.7e-24,-1.14201445941293,0.2304,0.4224,MMEB9_E2
+"5 prime UTR variant / NMD transcript variant",0,0.1127,3.7e-24,-0.110334286254111,1,1,MMEB9_E2
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0565,3.7e-24,-0.0558604512509375,1,1,MMEB9_E2
+"start lost",0,0.2282,3.7e-24,-0.217329626266803,1,1,MMEB9_E2
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.031,3.7e-24,-0.0309584962500721,1,1,MMEB9_E2
+"missense variant / splice region variant / NMD transcript variant",0,0.0198,3.7e-24,-0.0195924812503606,1,1,MMEB9_E2
+"splice donor region variant / intron variant / non coding transcript variant",0,0.188,3.7e-24,-0.180899111570667,1,1,MMEB9_E2
+"splice donor variant / NMD transcript variant",0,0.0351,3.7e-24,-0.0348509775004327,1,1,MMEB9_E2
+"splice region variant / intron variant / non coding transcript variant",0,0.1436,3.7e-24,-0.138981655006635,1,1,MMEB9_E2
+"inframe deletion",0,0.0287,3.7e-24,-0.0285754887502163,1,1,MMEB9_E2
+"splice acceptor variant",0,0.5961,3.7e-24,-0.530353375936679,0.1191,0.255619047619048,MMEB9_E2
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0844,3.7e-24,-0.0827643612526683,1,1,MMEB9_E2
+"mature miRNA variant",0,0.0572,3.7e-24,-0.0565359400011538,1,1,MMEB9_E2
+"splice acceptor variant / non coding transcript variant",0,0.0817,3.7e-24,-0.0804548875021635,0.0787,0.187178378378378,MMEB9_E2
+"start lost / splice region variant",0,0.0074,3.7e-24,-0.00735849625007212,0.0073,0.022151724137931,MMEB9_E2
+"frameshift variant / NMD transcript variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.002,MMEB9_E2
+"stop retained variant",0,0.0232,3.7e-24,-0.0230339850002885,0.0228,0.0573257142857143,MMEB9_E2
+"incomplete terminal codon variant / coding sequence variant",0,0.0011,3.7e-24,-0.0011,1,1,MMEB9_E2
+"stop gained / NMD transcript variant",0,0.0349,3.7e-24,-0.0347754887502163,1,1,MMEB9_E2
+"splice region variant / 3 prime UTR variant",0,0.0165,3.7e-24,-0.0164169925001442,1,1,MMEB9_E2
+"splice region variant / synonymous variant / NMD transcript variant",0,0.0071,3.7e-24,-0.0071,1,1,MMEB9_E2
+"splice region variant / intron variant / NMD transcript variant",0,0.0205,3.7e-24,-0.0204169925001442,1,1,MMEB9_E2
+"frameshift variant / splice region variant",0,0.0021,3.7e-24,-0.0021,1,1,MMEB9_E2
+"splice acceptor variant / NMD transcript variant",0,0.0132,3.7e-24,-0.0132,0.0132,0.0363,MMEB9_E2
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0313,3.7e-24,-0.0310924812503606,1,1,MMEB9_E2
+"non coding transcript variant",0,0.001,3.7e-24,-0.001,1,1,MMEB9_E2
+"stop lost / NMD transcript variant",0,0.0019,3.7e-24,-0.0019,0.0019,0.00619259259259259,MMEB9_E2
+"start lost / NMD transcript variant",0,0.0037,3.7e-24,-0.0037,1,1,MMEB9_E2
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0082,3.7e-24,-0.0082,0.0082,0.0232774193548387,MMEB9_E2
+"stop gained / splice region variant / NMD transcript variant",0,0.0011,3.7e-24,-0.0011,1,1,MMEB9_E2
+"stop retained variant / NMD transcript variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.002112,MMEB9_E2
+"splice acceptor variant / coding sequence variant / intron variant",0,1e-04,3.7e-24,-1e-04,1e-04,8e-04,MMEB9_E2
+"frameshift variant / start lost",0,1e-04,3.7e-24,-1e-04,1e-04,8e-04,MMEB9_E2
+"splice donor variant / non coding transcript exon variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.00155294117647059,MMEB9_E2
+"stop lost / splice region variant",0,0.0019,3.7e-24,-0.0019,0.0019,0.00619259259259259,MMEB9_E2
+"stop gained / start lost",0,1e-04,3.7e-24,-1e-04,1e-04,8e-04,MMEB9_E2
+"splice donor 5th base variant / non coding transcript exon variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00176,MMEB9_E2
+"splice donor region variant / non coding transcript exon variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.002112,MMEB9_E2
+"inframe deletion / splice region variant",0,5e-04,3.7e-24,-5e-04,5e-04,0.002,MMEB9_E2
+"splice donor variant / splice donor 5th base variant / intron variant",0,7e-04,3.7e-24,-7e-04,1,1,MMEB9_E2
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.0022,3.7e-24,-0.0022,0.0022,0.00691428571428571,MMEB9_E2
+"splice acceptor variant / 5 prime UTR variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.0011,MMEB9_E2
+"coding sequence variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.002112,MMEB9_E2
+"splice region variant / stop retained variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.0011,MMEB9_E2
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,8e-04,MMEB9_E2
+"splice acceptor variant / splice polypyrimidine tract variant / intron variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00176,MMEB9_E2
+"stop lost / splice region variant / NMD transcript variant",0,4e-04,3.7e-24,-4e-04,4e-04,0.00176,MMEB9_E2
+"stop gained / frameshift variant",0,1e-04,3.7e-24,-1e-04,1e-04,8e-04,MMEB9_E2
+"stop gained / splice donor 5th base variant",0,1e-04,3.7e-24,-1e-04,1e-04,8e-04,MMEB9_E2
+"coding sequence variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.0011,MMEB9_E2
+"inframe deletion / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,8e-04,MMEB9_E2
+"start lost / 5 prime UTR variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.0011,MMEB9_E2
+"splice donor variant / coding sequence variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.0011,MMEB9_E2
+"splice region variant / non coding transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,8e-04,MMEB9_E2
+"missense variant / splice donor 5th base variant",0,1e-04,3.7e-24,-1e-04,1e-04,8e-04,MMEB9_E2
+"3 prime UTR variant",63,73.3801,3.4175400852407e-19,-0.207408689392629,0.1986,0.3516875,MMEB9_E3
+"5 prime UTR variant",16,11.9965,3.7e-24,0.442680746065146,0.2592,0.422481481481482,MMEB9_E3
+"downstream gene variant",657,654.6222,0.0034920184140656,0.00624644505242206,0.931,1,MMEB9_E3
+"intergenic variant",3335,3065.8916,0.0195343427733401,0.121503513010902,0,0,MMEB9_E3
+"intron variant",3546,3918.2934,0.256230393236042,-0.14388340879011,0,0,MMEB9_E3
+"intron variant / NMD transcript variant",82,98.8745,1.32281264312405e-14,-0.259912966255543,0.0552,0.123473684210526,MMEB9_E3
+"intron variant / non coding transcript variant",1010,985.8056,0.0287326173757264,0.0356034145079405,0.4264,0.635859649122807,MMEB9_E3
+"missense variant",66,75.5156,1.08798244952018e-15,-0.182234097349417,0.249,0.422481481481482,MMEB9_E3
+"missense variant / splice region variant",2,2.3898,3.7e-24,-0.0104690980490229,1,1,MMEB9_E3
+"non coding transcript exon variant",52,46.6359,3.7e-24,0.168826468211894,0.417,0.632946428571428,MMEB9_E3
+"regulatory region variant",556,471.9666,0.00291543792285106,0.237370994655885,4e-04,0.00188888888888889,MMEB9_E3
+"splice acceptor variant",1,0.8225,3.7e-24,0.299805508206146,0.6451,0.90291935483871,MMEB9_E3
+"splice donor 5th base variant / intron variant",1,0.5014,3.7e-24,0.546125484372376,1,1,MMEB9_E3
+"splice donor region variant / intron variant",1,1.8992,3.7e-24,-0.361883185130252,0.5582,0.804186440677966,MMEB9_E3
+"splice donor variant",1,1.9119,3.7e-24,-0.369054440136859,0.2684,0.422481481481482,MMEB9_E3
+"splice polypyrimidine tract variant / intron variant",4,5.0806,3.7e-24,-0.168204039114076,0.6717,0.906261904761905,MMEB9_E3
+"splice region variant / 5 prime UTR variant",1,0.193,3.7e-24,0.814416088738678,0.1755,0.3315,MMEB9_E3
+"splice region variant / splice polypyrimidine tract variant / intron variant",3,3.2306,3.7e-24,0.0681703497235959,1,1,MMEB9_E3
+"splice region variant / synonymous variant",1,0.7437,3.7e-24,0.356556133159983,1,1,MMEB9_E3
+"stop gained",3,4.3991,3.7e-24,-0.310738957929668,0.3389,0.523754545454545,MMEB9_E3
+"synonymous variant",21,24.4154,3.7e-24,-0.179633580223638,0.4917,0.720594827586207,MMEB9_E3
+"synonymous variant / NMD transcript variant",2,0.191,3.7e-24,1.40006550696142,0.014,0.0371875,MMEB9_E3
+"upstream gene variant",646,612.416,0.0128109129214998,0.0779738560304419,0.1733,0.3315,MMEB9_E3
+"3 prime UTR variant / NMD transcript variant",0,1.6962,3.7e-24,-1.25340875050692,0.1845,0.340923913043478,MMEB9_E3
+"TF binding site variant",0,1.348,3.7e-24,-1.05416920748378,0.2672,0.422481481481482,MMEB9_E3
+"splice donor 5th base variant / intron variant / non coding transcript variant",0,0.0656,3.7e-24,-0.064420902501875,0.0628,0.13345,MMEB9_E3
+"splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.6436,3.7e-24,-0.568802372789859,0.6562,0.90291935483871,MMEB9_E3
+"start lost",0,0.3013,3.7e-24,-0.2831137247045,0.2589,0.422481481481482,MMEB9_E3
+"frameshift variant",0,0.2178,3.7e-24,-0.208935214381886,0.1971,0.3516875,MMEB9_E3
+"missense variant / NMD transcript variant",0,0.6182,3.7e-24,-0.549177747462628,0.6586,0.90291935483871,MMEB9_E3
+"splice donor variant / non coding transcript variant",0,0.2189,3.7e-24,-0.209421806263341,1,1,MMEB9_E3
+"splice region variant / non coding transcript exon variant",0,0.4726,3.7e-24,-0.431422585633107,0.7012,0.93128125,MMEB9_E3
+"splice region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,0.4129,3.7e-24,-0.380994702824485,1,1,MMEB9_E3
+"stop lost",0,0.1623,3.7e-24,-0.157166780317421,0.1502,0.296906976744186,MMEB9_E3
+"stop retained variant",0,0.0294,3.7e-24,-0.0292754887502163,1,1,MMEB9_E3
+"frameshift variant / splice region variant",0,0.0052,3.7e-24,-0.0052,0.0052,0.0152413793103448,MMEB9_E3
+"splice donor region variant / intron variant / non coding transcript variant",0,0.2364,3.7e-24,-0.223954463136718,0.2074,0.359775510204082,MMEB9_E3
+"splice region variant / intron variant",0,1.2488,3.7e-24,-0.988757806324472,0.0082,0.0224838709677419,MMEB9_E3
+"splice region variant / intron variant / non coding transcript variant",0,0.1698,3.7e-24,-0.163689475010096,1,1,MMEB9_E3
+"stop gained / NMD transcript variant",0,0.0365,3.7e-24,-0.0362094737505048,0.0358,0.0845277777777778,MMEB9_E3
+"splice acceptor variant / non coding transcript variant",0,0.1083,3.7e-24,-0.105509775004327,0.1017,0.205821428571429,MMEB9_E3
+"stop gained / splice region variant",0,0.1601,3.7e-24,-0.155264825316556,1,1,MMEB9_E3
+"5 prime UTR variant / NMD transcript variant",0,0.1408,3.7e-24,-0.135949625007212,1,1,MMEB9_E3
+"start lost / splice region variant",0,0.013,3.7e-24,-0.0129584962500721,1,1,MMEB9_E3
+"splice donor variant / NMD transcript variant",0,0.0413,3.7e-24,-0.040926466250649,0.0404,0.0928108108108108,MMEB9_E3
+"missense variant / splice region variant / NMD transcript variant",0,0.0242,3.7e-24,-0.0241169925001442,1,1,MMEB9_E3
+"splice region variant / splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0631,3.7e-24,-0.0621869175015865,0.0609,0.132730769230769,MMEB9_E3
+"splice region variant / 3 prime UTR variant / NMD transcript variant",0,0.0313,3.7e-24,-0.0311339850002885,1,1,MMEB9_E3
+"splice polypyrimidine tract variant / intron variant / NMD transcript variant",0,0.0972,3.7e-24,-0.0954398500028846,1,1,MMEB9_E3
+"mature miRNA variant",0,0.0757,3.7e-24,-0.0743548875021635,0.0725,0.15030487804878,MMEB9_E3
+"splice region variant / intron variant / NMD transcript variant",0,0.0258,3.7e-24,-0.0256169925001442,0.0254,0.0654242424242424,MMEB9_E3
+"splice region variant / 3 prime UTR variant",0,0.0296,3.7e-24,-0.0295169925001442,0.0294,0.0735,MMEB9_E3
+"start lost / NMD transcript variant",0,0.005,3.7e-24,-0.005,1,1,MMEB9_E3
+"splice region variant / 5 prime UTR variant / NMD transcript variant",0,0.0022,3.7e-24,-0.0022,0.0022,0.00692592592592593,MMEB9_E3
+"splice donor region variant / intron variant / NMD transcript variant",0,0.0362,3.7e-24,-0.0359094737505048,0.0355,0.0845277777777778,MMEB9_E3
+"splice donor 5th base variant / intron variant / NMD transcript variant",0,0.0112,3.7e-24,-0.0112,1,1,MMEB9_E3
+"splice region variant / synonymous variant / NMD transcript variant",0,0.0078,3.7e-24,-0.0078,0.0078,0.0221,MMEB9_E3
+"splice acceptor variant / NMD transcript variant",0,0.0176,3.7e-24,-0.0175584962500721,1,1,MMEB9_E3
+"splice donor variant / splice donor 5th base variant / intron variant",0,0.0011,3.7e-24,-0.0011,1,1,MMEB9_E3
+"splice donor region variant / non coding transcript exon variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00463636363636364,MMEB9_E3
+"frameshift variant / NMD transcript variant",0,0.0023,3.7e-24,-0.0023,0.0023,0.00698214285714286,MMEB9_E3
+"stop lost / splice region variant",0,0.0015,3.7e-24,-0.0015,0.0015,0.0053125,MMEB9_E3
+"splice donor variant / splice donor region variant / coding sequence variant / intron variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.0015,MMEB9_E3
+"stop lost / NMD transcript variant",0,0.0022,3.7e-24,-0.0022,0.0022,0.00692592592592593,MMEB9_E3
+"stop gained / splice region variant / NMD transcript variant",0,0.0014,3.7e-24,-0.0014,0.0014,0.00517391304347826,MMEB9_E3
+"splice region variant / stop retained variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.00255,MMEB9_E3
+"non coding transcript variant",0,0.0019,3.7e-24,-0.0019,0.0019,0.00646,MMEB9_E3
+"coding sequence variant",0,0.0013,3.7e-24,-0.0013,1,1,MMEB9_E3
+"start lost / splice region variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00121428571428571,MMEB9_E3
+"incomplete terminal codon variant / coding sequence variant",0,0.0011,3.7e-24,-0.0011,1,1,MMEB9_E3
+"splice region variant / non coding transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000944444444444444,MMEB9_E3
+"stop gained / frameshift variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000944444444444444,MMEB9_E3
+"stop gained / frameshift variant",0,0.0012,3.7e-24,-0.0012,0.0012,0.00463636363636364,MMEB9_E3
+"splice donor 5th base variant / non coding transcript exon variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00121428571428571,MMEB9_E3
+"splice donor variant / coding sequence variant",0,6e-04,3.7e-24,-6e-04,6e-04,0.00255,MMEB9_E3
+"splice region variant / stop retained variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00121428571428571,MMEB9_E3
+"stop gained / frameshift variant / splice region variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00121428571428571,MMEB9_E3
+"frameshift variant / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000944444444444444,MMEB9_E3
+"missense variant / splice donor region variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.0015,MMEB9_E3
+"start lost / 5 prime UTR variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000944444444444444,MMEB9_E3
+"splice donor variant / splice donor 5th base variant / intron variant / non coding transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000944444444444444,MMEB9_E3
+"splice donor region variant / splice polypyrimidine tract variant / intron variant / non coding transcript variant",0,3e-04,3.7e-24,-3e-04,3e-04,0.0015,MMEB9_E3
+"stop retained variant / NMD transcript variant",0,2e-04,3.7e-24,-2e-04,2e-04,0.00121428571428571,MMEB9_E3
+"stop lost / splice region variant / NMD transcript variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000944444444444444,MMEB9_E3
+"stop gained / splice donor 5th base variant",0,1e-04,3.7e-24,-1e-04,1e-04,0.000944444444444444,MMEB9_E3

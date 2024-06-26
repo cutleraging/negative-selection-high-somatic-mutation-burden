@@ -1,0 +1,639 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="date" content="2024-01-26" />
+  <title>BatchQC Report</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="/Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/library/rmarkdown/rmarkdown/templates/html_vignette/resources/vignette.css" type="text/css" />
+  <style type="text/css">body{max-width: 100%;}</style>
+  <script src="libs/header-attrs-2.25/header-attrs.js"></script>
+
+<link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="libs/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+<link href="libs/bootstrap/css/user.css" rel="stylesheet" media="screen">
+</head>
+<body data-spy="scroll" data-target=".sidebar" data-offset="50">
+	<div id="wrap">
+		<header class="subhead" id="topheader">
+			<div class="container">
+				<h1>BatchQC Report</h1>
+				<p class="lead">
+					Tests for checking Batch Effects
+				</p>
+			</div>
+		</header>
+
+		<div class="container">
+			<div class="row">
+
+				<div class="span3 sidebar">
+
+					<div class="affixdiv" data-spy="affix" data-offset-top="400" data-clampedwidth=".sidebar">
+						<div class="well" style="padding: 8px 0;">
+							<ul class="nav nav-list usermenu">
+								<li class="nav-header">Contents</li>
+								<li class="active"><a href="#topheader"><i class="icon-bullhorn  icon-white"></i> BatchQC Report </a></li>
+<ul>
+<li><a href="#summary" id="toc-summary">Summary</a>
+<ul>
+<li><a href="#confounding" id="toc-confounding">Confounding</a></li>
+<li><a href="#variation-analysis" id="toc-variation-analysis">Variation
+Analysis</a></li>
+<li><a href="#p-value-analysis" id="toc-p-value-analysis">P-value
+Analysis</a></li>
+</ul></li>
+<li><a href="#differential-expression"
+id="toc-differential-expression">Differential Expression</a>
+<ul>
+<li><a href="#expression-plot" id="toc-expression-plot">Expression
+Plot</a></li>
+<li><a href="#limma" id="toc-limma">LIMMA</a></li>
+</ul></li>
+<li><a href="#median-correlations" id="toc-median-correlations">Median
+Correlations</a></li>
+<li><a href="#heatmaps" id="toc-heatmaps">Heatmaps</a>
+<ul>
+<li><a href="#heatmap" id="toc-heatmap">Heatmap</a></li>
+<li><a href="#sample-correlations" id="toc-sample-correlations">Sample
+Correlations</a></li>
+</ul></li>
+<li><a href="#circular-dendrogram" id="toc-circular-dendrogram">Circular
+Dendrogram</a></li>
+<li><a href="#pca-principal-component-analysis"
+id="toc-pca-principal-component-analysis">PCA: Principal Component
+Analysis</a>
+<ul>
+<li><a href="#pca" id="toc-pca">PCA</a></li>
+<li><a href="#explained-variation"
+id="toc-explained-variation">Explained Variation</a></li>
+</ul></li>
+<li><a href="#shape" id="toc-shape">Shape</a></li>
+<li><a href="#combat-plots" id="toc-combat-plots">Combat Plots</a></li>
+<li><a href="#sva" id="toc-sva">SVA</a>
+<ul>
+<li><a href="#summary-1" id="toc-summary-1">Summary</a></li>
+</ul></li>
+</ul>
+							</ul>
+						</div>
+					</div>
+
+				</div>
+<div id="header">
+<h1 class="title">BatchQC Report</h1>
+<h3 class="date">2024-01-26</h3>
+</div>
+<!--
+<div id="TOC">
+<ul>
+<li><a href="#summary" id="toc-summary">Summary</a>
+<ul>
+<li><a href="#confounding" id="toc-confounding">Confounding</a></li>
+<li><a href="#variation-analysis" id="toc-variation-analysis">Variation
+Analysis</a></li>
+<li><a href="#p-value-analysis" id="toc-p-value-analysis">P-value
+Analysis</a></li>
+</ul></li>
+<li><a href="#differential-expression"
+id="toc-differential-expression">Differential Expression</a>
+<ul>
+<li><a href="#expression-plot" id="toc-expression-plot">Expression
+Plot</a></li>
+<li><a href="#limma" id="toc-limma">LIMMA</a></li>
+</ul></li>
+<li><a href="#median-correlations" id="toc-median-correlations">Median
+Correlations</a></li>
+<li><a href="#heatmaps" id="toc-heatmaps">Heatmaps</a>
+<ul>
+<li><a href="#heatmap" id="toc-heatmap">Heatmap</a></li>
+<li><a href="#sample-correlations" id="toc-sample-correlations">Sample
+Correlations</a></li>
+</ul></li>
+<li><a href="#circular-dendrogram" id="toc-circular-dendrogram">Circular
+Dendrogram</a></li>
+<li><a href="#pca-principal-component-analysis"
+id="toc-pca-principal-component-analysis">PCA: Principal Component
+Analysis</a>
+<ul>
+<li><a href="#pca" id="toc-pca">PCA</a></li>
+<li><a href="#explained-variation"
+id="toc-explained-variation">Explained Variation</a></li>
+</ul></li>
+<li><a href="#shape" id="toc-shape">Shape</a></li>
+<li><a href="#combat-plots" id="toc-combat-plots">Combat Plots</a></li>
+<li><a href="#sva" id="toc-sva">SVA</a>
+<ul>
+<li><a href="#summary-1" id="toc-summary-1">Summary</a></li>
+</ul></li>
+</ul>
+</div>
+-->
+<div class="span9 content">
+<div id="summary" class="section level1">
+<h1>Summary</h1>
+<div id="confounding" class="section level2">
+<h2>Confounding</h2>
+<div id="number-of-samples-in-each-batch-and-condition"
+class="section level3">
+<h3>Number of samples in each Batch and Condition</h3>
+<table style="width:75%;">
+<colgroup>
+<col width="33%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">Batch a</th>
+<th align="center">Batch b</th>
+<th align="center">Batch c</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Condition control</strong></td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Condition enu</strong></td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="measures-of-confounding-between-batch-and-condition"
+class="section level3">
+<h3>Measures of confounding between Batch and Condition</h3>
+<table style="width:99%;">
+<colgroup>
+<col width="44%" />
+<col width="36%" />
+<col width="18%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">Standardized Pearson Correlation Coefficient</th>
+<th align="center">Cramer’s V</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Confounding Coefficients (0=no confounding,
+1=complete confounding)</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="variation-analysis" class="section level2">
+<h2>Variation Analysis</h2>
+<div id="variation-explained-by-batch-and-condition"
+class="section level3">
+<h3>Variation explained by Batch and Condition</h3>
+<p><img
+src="corrected_files/figure-html/unnamed-chunk-4-1.png" /><!-- --></p>
+<table style="width:87%;">
+<colgroup>
+<col width="19%" />
+<col width="34%" />
+<col width="16%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">Full (Condition+Batch)</th>
+<th align="center">Condition</th>
+<th align="center">Batch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Min.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>1st Qu.</strong></td>
+<td align="center">13.23</td>
+<td align="center">13.2</td>
+<td align="center">0.003</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Median</strong></td>
+<td align="center">42.71</td>
+<td align="center">42.64</td>
+<td align="center">0.01</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Mean</strong></td>
+<td align="center">44.02</td>
+<td align="center">43.98</td>
+<td align="center">0.04077</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>3rd Qu.</strong></td>
+<td align="center">72.53</td>
+<td align="center">72.48</td>
+<td align="center">0.029</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Max.</strong></td>
+<td align="center">100</td>
+<td align="center">99.98</td>
+<td align="center">7.079</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="p-value-analysis" class="section level2">
+<h2>P-value Analysis</h2>
+<div
+id="distribution-of-batch-and-condition-effect-p-values-across-genes"
+class="section level3">
+<h3>Distribution of Batch and Condition Effect p-values Across
+Genes</h3>
+<table>
+<colgroup>
+<col width="26%" />
+<col width="12%" />
+<col width="10%" />
+<col width="9%" />
+<col width="9%" />
+<col width="10%" />
+<col width="7%" />
+<col width="12%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">Min.</th>
+<th align="center">1st Qu.</th>
+<th align="center">Median</th>
+<th align="center">Mean</th>
+<th align="center">3rd Qu.</th>
+<th align="center">Max.</th>
+<th align="center">Ps&lt;0.05</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Batch P-values</strong></td>
+<td align="center">1.104e-06</td>
+<td align="center">0.9993</td>
+<td align="center">0.9998</td>
+<td align="center">0.9979</td>
+<td align="center">0.9999</td>
+<td align="center">1</td>
+<td align="center">0.0002718</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Condition P-values</strong></td>
+<td align="center">9.322e-11</td>
+<td align="center">0.1484</td>
+<td align="center">0.3467</td>
+<td align="center">0.4032</td>
+<td align="center">0.6367</td>
+<td align="center">1</td>
+<td align="center">0.09195</td>
+</tr>
+</tbody>
+</table>
+<p><img
+src="corrected_files/figure-html/unnamed-chunk-7-1.png" /><!-- --></p>
+<p><img
+src="corrected_files/figure-html/unnamed-chunk-8-1.png" /><!-- --></p>
+</div>
+</div>
+</div>
+<div id="differential-expression" class="section level1">
+<h1>Differential Expression</h1>
+<div id="expression-plot" class="section level2">
+<h2>Expression Plot</h2>
+<p>Boxplots for all values for each of the samples and are colored by
+batch membership.</p>
+<p><img
+src="corrected_files/figure-html/unnamed-chunk-10-1.png" /><!-- --></p>
+</div>
+<div id="limma" class="section level2">
+<h2>LIMMA</h2>
+<table>
+<colgroup>
+<col width="22%" />
+<col width="25%" />
+<col width="10%" />
+<col width="9%" />
+<col width="12%" />
+<col width="12%" />
+<col width="9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">Condition: enu (logFC)</th>
+<th align="center">AveExpr</th>
+<th align="center">t</th>
+<th align="center">P.Value</th>
+<th align="center">adj.P.Val</th>
+<th align="center">B</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>ENSG00000065308</strong></td>
+<td align="center">623.5</td>
+<td align="center">7224</td>
+<td align="center">46.75</td>
+<td align="center">4.232e-05</td>
+<td align="center">0.2863</td>
+<td align="center">-4.23</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>ENSG00000072840</strong></td>
+<td align="center">153.8</td>
+<td align="center">3932</td>
+<td align="center">35.22</td>
+<td align="center">9.272e-05</td>
+<td align="center">0.2863</td>
+<td align="center">-4.23</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>ENSG00000248905</strong></td>
+<td align="center">180.6</td>
+<td align="center">459</td>
+<td align="center">34.35</td>
+<td align="center">9.934e-05</td>
+<td align="center">0.2863</td>
+<td align="center">-4.23</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>ENSG00000100842</strong></td>
+<td align="center">-126.8</td>
+<td align="center">583.1</td>
+<td align="center">-31.91</td>
+<td align="center">0.0001218</td>
+<td align="center">0.2863</td>
+<td align="center">-4.231</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>ENSG00000071564</strong></td>
+<td align="center">-115.9</td>
+<td align="center">1664</td>
+<td align="center">-26.78</td>
+<td align="center">0.0001977</td>
+<td align="center">0.2863</td>
+<td align="center">-4.231</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>ENSG00000116489</strong></td>
+<td align="center">-139.2</td>
+<td align="center">2518</td>
+<td align="center">-26.37</td>
+<td align="center">0.0002063</td>
+<td align="center">0.2863</td>
+<td align="center">-4.231</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>ENSG00000138443</strong></td>
+<td align="center">-103.3</td>
+<td align="center">1154</td>
+<td align="center">-25.98</td>
+<td align="center">0.000215</td>
+<td align="center">0.2863</td>
+<td align="center">-4.231</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>ENSG00000141985</strong></td>
+<td align="center">-303.4</td>
+<td align="center">2683</td>
+<td align="center">-25.44</td>
+<td align="center">0.000228</td>
+<td align="center">0.2863</td>
+<td align="center">-4.231</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>ENSG00000071242</strong></td>
+<td align="center">-220.1</td>
+<td align="center">3578</td>
+<td align="center">-24.69</td>
+<td align="center">0.0002475</td>
+<td align="center">0.2863</td>
+<td align="center">-4.232</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>ENSG00000113719</strong></td>
+<td align="center">222.5</td>
+<td align="center">5266</td>
+<td align="center">23.25</td>
+<td align="center">0.0002924</td>
+<td align="center">0.2863</td>
+<td align="center">-4.232</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="median-correlations" class="section level1">
+<h1>Median Correlations</h1>
+<p>This plot helps identify outlying samples. <img
+src="corrected_files/figure-html/unnamed-chunk-13-1.png" /><!-- --></p>
+</div>
+<div id="heatmaps" class="section level1">
+<h1>Heatmaps</h1>
+<div id="heatmap" class="section level2">
+<h2>Heatmap</h2>
+<p>This is a heatmap of the given data matrix showing the batch effects
+and variations with different conditions. <img
+src="corrected_files/figure-html/unnamed-chunk-15-1.png" /><!-- --></p>
+</div>
+<div id="sample-correlations" class="section level2">
+<h2>Sample Correlations</h2>
+<p>This is a heatmap of the correlation between samples. <img
+src="corrected_files/figure-html/unnamed-chunk-16-1.png" /><!-- --></p>
+</div>
+</div>
+<div id="circular-dendrogram" class="section level1">
+<h1>Circular Dendrogram</h1>
+<p>This is a Circular Dendrogram of the given data matrix colored by
+batch to show the batch effects. <img
+src="corrected_files/figure-html/unnamed-chunk-18-1.png" /><!-- --></p>
+</div>
+<div id="pca-principal-component-analysis" class="section level1">
+<h1>PCA: Principal Component Analysis</h1>
+<div id="pca" class="section level2">
+<h2>PCA</h2>
+<p>This is a plot of the top two principal components colored by batch
+to show the batch effects. <img
+src="corrected_files/figure-html/unnamed-chunk-20-1.png" /><!-- --></p>
+</div>
+<div id="explained-variation" class="section level2">
+<h2>Explained Variation</h2>
+<table style="width:100%;">
+<colgroup>
+<col width="4%" />
+<col width="13%" />
+<col width="12%" />
+<col width="14%" />
+<col width="14%" />
+<col width="11%" />
+<col width="14%" />
+<col width="14%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">Proportion of Variance (%)</th>
+<th align="center">Cumulative Proportion of Variance (%)</th>
+<th align="center">Percent Variation Explained by Either Condition or
+Batch</th>
+<th align="center">Percent Variation Explained by Condition</th>
+<th align="center">Condition Significance (p-value)</th>
+<th align="center">Percent Variation Explained by Batch</th>
+<th align="center">Batch Significance (p-value)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>PC1</strong></td>
+<td align="center">44.75</td>
+<td align="center">44.75</td>
+<td align="center">95.7</td>
+<td align="center">95.7</td>
+<td align="center">0.02193</td>
+<td align="center">0</td>
+<td align="center">0.9997</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>PC2</strong></td>
+<td align="center">29.88</td>
+<td align="center">74.63</td>
+<td align="center">1.6</td>
+<td align="center">1.6</td>
+<td align="center">0.8741</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>PC3</strong></td>
+<td align="center">25.33</td>
+<td align="center">99.96</td>
+<td align="center">2.8</td>
+<td align="center">2.8</td>
+<td align="center">0.8341</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>PC4</strong></td>
+<td align="center">0.03057</td>
+<td align="center">99.99</td>
+<td align="center">100</td>
+<td align="center">0</td>
+<td align="center">0.6197</td>
+<td align="center">100</td>
+<td align="center">3e-05</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>PC5</strong></td>
+<td align="center">0.008804</td>
+<td align="center">100</td>
+<td align="center">100</td>
+<td align="center">0</td>
+<td align="center">0.8512</td>
+<td align="center">100</td>
+<td align="center">1e-05</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>PC6</strong></td>
+<td align="center">6.853e-28</td>
+<td align="center">100</td>
+<td align="center">64</td>
+<td align="center">32.7</td>
+<td align="center">0.3097</td>
+<td align="center">31.3</td>
+<td align="center">0.5344</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="shape" class="section level1">
+<h1>Shape</h1>
+<p>This is a heatmap plot showing the variation of gene expression mean,
+variance, skewness and kurtosis between samples grouped by batch to see
+the batch effects variation <img
+src="corrected_files/figure-html/unnamed-chunk-23-1.png" /><!-- --></p>
+<pre><code>## Note: Sample-wise p-value is calculated for the variation across samples on the measure across genes. Gene-wise p-value is calculated for the variation of each gene between batches on the measure across each batch. If the data is quantum normalized, then the Sample-wise measure across genes is same for all samples and Gene-wise p-value is a good measure.</code></pre>
+</div>
+<div id="combat-plots" class="section level1">
+<h1>Combat Plots</h1>
+<p>This is a plot showing whether parametric or non-parameteric prior is
+appropriate for this data. It also shows the Kolmogorov-Smirnov test
+comparing the parametric and non-parameteric prior distribution.</p>
+<pre><code>## Found 3 batches
+## Adjusting for 1 covariate(s) or covariate level(s)
+## Standardizing Data across genes
+## Fitting L/S model and finding priors</code></pre>
+<p><img
+src="corrected_files/figure-html/unnamed-chunk-25-1.png" /><!-- --><img
+src="corrected_files/figure-html/unnamed-chunk-25-2.png" /><!-- --><img
+src="corrected_files/figure-html/unnamed-chunk-25-3.png" /><!-- --></p>
+<pre><code>## Warning in ks.test.default(gamma.hat[1, ], &quot;pnorm&quot;, gamma.bar[1], sqrt(t2[1])): ties should not be present for the Kolmogorov-Smirnov test</code></pre>
+<p><img
+src="corrected_files/figure-html/unnamed-chunk-25-4.png" /><!-- --></p>
+<pre><code>## Warning in ks.test.default(gamma.hat[1, ], &quot;pnorm&quot;, gamma.bar[1], sqrt(shinyInput$t2[1])): ties should not be present for the Kolmogorov-Smirnov test</code></pre>
+<pre><code>## Warning in ks.test.default(delta.hat[1, ], invgam): p-value will be approximate in the presence of ties</code></pre>
+<pre><code>## Batch mean distribution across genes: Normal vs Empirical distribution
+## Two-sided Kolmogorov-Smirnov test
+## Selected Batch: 1
+## Statistic D = 0.4894
+## p-value = 0
+## 
+## 
+## Batch Variance distribution across genes: Inverse Gamma vs Empirical distribution
+## Two-sided Kolmogorov-Smirnov test
+## Selected Batch: 1
+## Statistic D = 0.2528
+## p-value = 0Note: The non-parametric version of ComBat takes much longer time to run and we recommend it only when the shape of the non-parametric curve widely differs such as a bimodal or highly skewed distribution. Otherwise, the difference in batch adjustment is very negligible and parametric version is recommended even if p-value of KS test above is significant.</code></pre>
+</div>
+<div id="sva" class="section level1">
+<h1>SVA</h1>
+<div id="summary-1" class="section level2">
+<h2>Summary</h2>
+<pre><code>## Number of Surrogate Variables found in the given data: 1</code></pre>
+</div>
+</div>
+</div>
+     </div>
+   </div>
+  </div>
+   <!-- FOOTER  -->
+   <div id="footer">
+		<div class="container">
+			<p class="muted credit">Questions? Kindly contact <code>Solaiappan Manimaran</code> <a href="mailto:mani2012@bu.edu?subject=BatchQC question"><code>mani2012 [at] bu.edu</code></a> using the subject heading <code>BatchQC question</code>. </p>
+		</div>
+	</div>
+
+	<script src="libs/bootstrap/javascript/jquery-1.10.1.min.js"></script>
+	<script src="libs/bootstrap/javascript/bootstrap.min.js"></script>
+	<script src="libs/bootstrap/javascript/user.js"></script>
+  <script>
+  $( "ul" ).addClass( "nav nav-list usermenu" );
+  </script>
+
+</body>
+</html>
