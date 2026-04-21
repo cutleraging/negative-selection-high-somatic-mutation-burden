@@ -1,0 +1,1467 @@
+---
+title: "dN/dS ratio analysis"
+output: html_document
+date: "2023-09-19"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Following this tutorial: http://htmlpreview.github.io/?http://github.com/im3sanger/dndscv/blob/master/vignettes/dNdScv.html
+
+# Preparation
+
+## Load libraries
+```{r}
+library(dndscv)
+library(MutationalPatterns)
+library(BSgenome.Hsapiens.UCSC.hg19)
+library(ggplot2)
+library(zFPKM)
+library(biomaRt)
+library(dplyr)
+library(ggpubr)
+library(stringr)
+library(tidyr)
+library(viridis)
+```
+
+## Functions
+```{r}
+compare_control_enu <- function(data) {
+  # Ensure the 'data' argument is a dataframe
+  if (!is.data.frame(data)) {
+    stop("Input must be a dataframe.")
+  }
+
+  # Check if necessary columns exist
+  required_columns <- c("name", "mle", "cilow", "cihigh", "list_name")
+  if (!all(required_columns %in% names(data))) {
+    stop("Dataframe must contain the following columns: ", paste(required_columns, collapse=", "))
+  }
+
+  # Function to calculate standard error from confidence intervals
+  calc_se <- function(cilow, cihigh) {
+    (cihigh - cilow) / (2 * 1.96)
+  }
+
+  # Adding standard errors to the data frame
+  data$se <- mapply(calc_se, data$cilow, data$cihigh)
+
+  # Function to calculate Z score and raw p-value
+  compare_groups <- function(group1, group2) {
+    difference_in_means <- group1$mle - group2$mle
+    se_combined <- sqrt(group1$se^2 + group2$se^2)
+    z_score <- difference_in_means / se_combined
+    p_value <- 2 * (1 - pnorm(abs(z_score)))
+    return(p_value)
+  }
+
+  # Compare control vs enu for each name and store results
+  comparison_results <- data.frame(name = character(), p_value = numeric())
+  for (name in unique(data$name)) {
+    control_group <- data[data$name == name & data$list_name == "control", ]
+    enu_group <- data[data$name == name & data$list_name == "enu", ]
+    if (nrow(control_group) == 1 && nrow(enu_group) == 1) {
+      p_value <- compare_groups(control_group, enu_group)
+      comparison_results <- rbind(comparison_results, data.frame(name = name, p_value = p_value))
+    }
+  }
+
+  # Adjusting p-values for multiple comparisons
+  comparison_results$adjusted_p_value <- p.adjust(comparison_results$p_value, method = "bonferroni")
+
+  # Return the results
+  return(comparison_results)
+}
+
+compare_condition_cycles <- function(data) {
+  # Ensure the 'data' argument is a dataframe
+  if (!is.data.frame(data)) {
+    stop("Input must be a dataframe.")
+  }
+
+  # Check if necessary columns exist
+  required_columns <- c("name", "mle", "cilow", "cihigh", "condition_cycle")
+  if (!all(required_columns %in% names(data))) {
+    stop("Dataframe must contain the following columns: ", paste(required_columns, collapse=", "))
+  }
+
+  # Function to calculate standard error from confidence intervals
+  calc_se <- function(cilow, cihigh) {
+    (cihigh - cilow) / (2 * 1.96)
+  }
+
+  # Adding standard errors to the data frame
+  data$se <- mapply(calc_se, data$cilow, data$cihigh)
+
+  # Function to calculate Z score and raw p-value
+  compare_groups <- function(group1, group2) {
+    difference_in_means <- group1$mle - group2$mle
+    se_combined <- sqrt(group1$se^2 + group2$se^2)
+    z_score <- difference_in_means / se_combined
+    p_value <- 2 * (1 - pnorm(abs(z_score)))
+    return(p_value)
+  }
+
+  # Compare all pairs of condition_cycles for each name and store results
+  comparison_results <- data.frame(name = character(), 
+                                   condition_cycle1 = character(), 
+                                   condition_cycle2 = character(), 
+                                   p_value = numeric())
+  unique_names <- unique(data$name)
+  unique_condition_cycles <- unique(data$condition_cycle)
+
+  for (name in unique_names) {
+    for (i in 1:(length(unique_condition_cycles) - 1)) {
+      for (j in (i + 1):length(unique_condition_cycles)) {
+        group1 <- data[data$name == name & data$condition_cycle == unique_condition_cycles[i], ]
+        group2 <- data[data$name == name & data$condition_cycle == unique_condition_cycles[j], ]
+        if (nrow(group1) == 1 && nrow(group2) == 1) {
+          p_value <- compare_groups(group1, group2)
+          comparison_results <- rbind(comparison_results, 
+                                      data.frame(name = name, 
+                                                 condition_cycle1 = unique_condition_cycles[i], 
+                                                 condition_cycle2 = unique_condition_cycles[j], 
+                                                 p_value = p_value))
+        }
+      }
+    }
+  }
+
+  # Adjusting p-values for multiple comparisons
+  comparison_results$adjusted_p_value <- p.adjust(comparison_results$p_value, method = "bonferroni")
+
+  # Return the results
+  return(comparison_results)
+}
+
+theme_Publication <- function(base_size=16, base_family="helvetica") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family = "")
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               #legend.key.size= unit(0.2, "cm"),
+               legend.margin = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+          ))
+      
+}
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+# grlist_to_dataframe_parallel <- function(gr_list) {
+#   numCores <- detectCores() - 1
+#   registerDoParallel(cores=numCores)
+# 
+#   df_list <- foreach(i = seq_along(gr_list), .packages = c("GenomicRanges")) %dopar% {
+#     gr <- gr_list[[i]]
+# 
+#     # Use safer methods to extract data from GRanges objects
+#       sampleID = names(gr_list)[i],
+#       chr = as.character(seqnames(gr)),
+#       pos = ranges(gr)@start,
+#       ref = sapply(gr$REF, as.character),
+#       mut = sapply(gr$ALT, as.character)
+# 
+#     # Create the data frame
+#     data.frame(sampleID, chr, pos, ref, mut, stringsAsFactors = FALSE)
+#   }
+# 
+#   combined_df <- do.call(rbind, df_list)
+#   stopImplicitCluster()
+#   return(combined_df)
+# }
+
+grlist_to_dataframe <- function(gr_list) {
+  # Use lapply to iterate over GRangesList and perform operations
+  df_list <- lapply(seq_along(gr_list), function(i) {
+    gr <- gr_list[[i]]
+    data.frame(
+      sampleID = names(gr_list)[i],
+      chr = as.character(seqnames(gr)),
+      pos = start(ranges(gr)),
+      ref = as.character(gr$REF),
+      mut = as.character(gr$ALT)
+    )
+  })
+  
+  # Combine all the data frames into a single data frame using do.call and rbind
+  combined_df <- do.call(rbind, df_list)
+
+  return(combined_df)
+}
+
+# function to convert to dataframe in correct format
+grlist_to_dataframe_old <- function(gr_list) {
+  # Initialize an empty list to store the data frames
+  df_list <- list()
+  
+  # Loop over each GRanges object in the GRangesList
+  for (i in seq_along(gr_list)) {
+    # Extract the ith GRanges object
+    gr <- gr_list[[i]]
+    
+    # Convert the GRanges object to a data frame
+    df <- data.frame(
+      chr = as.character(seqnames(gr)),
+      pos = ranges(gr)@start,
+      ref = sapply(gr$REF, as.character),
+      mut = sapply(gr$ALT, as.character)
+    )
+    
+    # Add sampleID column
+    df$sampleID <- names(gr_list)[i]
+    
+    # Append to the list
+    df_list[[i]] <- df
+  }
+  
+  # Combine all the data frames into a single data frame
+  combined_df <- do.call(rbind, df_list)
+  combined_df <- combined_df[,c(5,1,2,3,4)] # make sampleID first column
+  return(combined_df)
+}
+
+
+test_mean_significance <- function(mean, lower_limit, upper_limit, sample_size) {
+  # Calculate the standard error from the confidence interval
+  standard_error <- (upper_limit - lower_limit) / (2 * 1.96)
+  
+  # Calculate the t statistic
+  t_statistic <- mean / standard_error
+  
+  # Calculate degrees of freedom
+  df <- sample_size - 1
+  
+  # Calculate the p-value
+  p_value <- 2 * pt(-abs(t_statistic), df)
+  
+  # Return a list containing the t statistic, the p-value, and whether the mean is significantly different from 0
+  significantly_different <- p_value < 0.05
+  return(list(t_statistic = t_statistic, p_value = p_value, significantly_different = significantly_different))
+}
+
+wrap_labels <- function(labels, width = 5) {
+  wrapped_labels <- str_wrap(labels, width)
+  names(wrapped_labels) <- names(labels)
+  return(wrapped_labels)
+}
+```
+
+## Load data
+```{r}
+sample_table <- read.table("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/1-data/sample_table_filtered.txt", header = TRUE, sep = "\t")
+```
+
+## Load mutations
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/5-mutation-distribution/1-calculate-ratio")
+
+# observed mutations
+obs_snv <- readRDS("obs_snv.RDS")
+seqlevelsStyle(obs_snv) <- "NCBI"
+obs_snv <- grlist_to_dataframe_old(obs_snv)
+
+obs_indel <- readRDS("obs_indel.RDS")
+seqlevelsStyle(obs_indel) <- "NCBI"
+obs_indel <- grlist_to_dataframe_old(obs_indel)
+
+obs_all <- rbind(obs_snv, obs_indel)
+
+# save
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed")
+saveRDS(obs_all, "obs_all.RDS")
+obs_all <- readRDS("obs_all.RDS")
+```
+
+## Load expressed genes
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/annotation/rna")
+
+# rna expression table
+rna <- read.table("ENCFF245ZOB-IMR90-total-RNA-seq-hg19.tsv", header = TRUE)
+
+# remove version from ensemble gene id
+rna$gene_id <- gsub("\\..*", "", rna$gene_id)
+
+# plot TPM distribution
+nrow(rna)
+hist(log2(rna$TPM))
+
+# zFPKM calculation
+zfpkm <- zFPKM(rna[,"TPM", drop = FALSE])
+zFPKMPlot(rna[,"TPM", drop = FALSE])
+
+# plot zfpkm  distribution
+hist(zfpkm$TPM)
+
+# keep genes with > -3 zfpkm
+rna.filter <- rna[zfpkm$TPM > -3,]
+
+# plot filtered TPM distribution
+nrow(rna.filter)
+hist(log2(rna.filter$TPM))
+
+# get entrz id
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+gene_names <- getBM(attributes = c('ensembl_gene_id', 'external_gene_name', 'entrezgene_id'),
+                filters = 'ensembl_gene_id',
+                values = rna$gene_id, 
+                mart = ensembl)
+
+rna.filter <- merge(rna.filter, gene_names, by.x = "gene_id", by.y = "ensembl_gene_id")
+sum(duplicated(rna.filter$entrezgene_id))
+rna.filter <- rna.filter[!duplicated(rna.filter$entrezgene_id),] # remove duplicates
+
+# get overlap with dnds ref object
+data("refcds_hg19", package = "dndscv")
+expressed.genes <- intersect(unlist(lapply(RefCDS, function(x) x$gene_name)), rna.filter$external_gene_name)
+
+# save
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed")
+saveRDS(expressed.genes, "expressed.genes.RDS")
+expressed.genes <- readRDS("expressed.genes.RDS")
+```
+
+## Load essential genes
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/annotation/gene-sets")
+
+essential <- read.csv("AchillesCommonEssentialControls.csv", header = TRUE)
+essential$Gene <- sub(" \\(.*", "", essential$Gene)
+
+nonessential <- read.csv("AchillesNonessentialControls.csv", header = TRUE)
+nonessential$Gene <- sub(" \\(.*", "", nonessential$Gene)
+
+# subset essential and non essential genes which are expressed
+essential.expressed <- subset(essential, Gene %in% expressed.genes)
+nonessential.expressed <- subset(nonessential, Gene %in% expressed.genes)
+
+# save
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed")
+saveRDS(essential.expressed$Gene, "essential.expressed.genes.RDS")
+saveRDS(nonessential.expressed$Gene, "nonessential.expressed.genes.RDS")
+```
+
+## Load cancer genes
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/annotation/gene-sets")
+
+# load
+df <- read.csv("Census_allMon Mar 24 23_07_21 2025.csv", header = TRUE)
+cancer.genes <- df$Gene.Symbol
+
+# filter for expressed
+cancer.genes.expressed <- cancer.genes[cancer.genes %in% expressed.genes]
+
+# save
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed")
+saveRDS(cancer.genes.expressed, "cancer.genes.expressed.RDS")
+```
+
+# All genes
+
+## By Cycle
+
+#### Run dndscv
+- Needing to group control 1 and control 9 due to low number of mutations
+- not filtering out cancer genes from indel background model
+- using all mutations per gene instead of limiting to 3
+- using all coding mutations per sample instead of limiting to 3000
+```{r}
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed/all")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed/all")
+
+# split into groups
+control <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "control")$sample,]
+enu_3 <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "enu" & cycle == 3)$sample,]
+enu_6 <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "enu" & cycle == 6)$sample,]
+enu_9 <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "enu" & cycle == 9)$sample,]
+
+mutations_list <- list(control = control,
+                       enu_3 = enu_3,
+                       enu_6 = enu_6,
+                       enu_9 = enu_9)
+
+observed.res.list <- lapply(mutations_list, function(x) 
+              dndscv(mutations = x,
+                     gene_list = NULL,
+                     max_muts_per_gene_per_sample = Inf,
+                     max_coding_muts_per_sample = Inf,
+                     refdb = "hg19",
+                     kc = ""))
+
+saveRDS(observed.res.list, "observed_global_dndscv.RDS")
+observed.res.list <- readRDS("observed_global_dndscv.RDS")
+```
+
+#### Global dN/dS
+- wmis = missense
+- wnon = nonsense
+- wspl = essential splice site mutations
+- wtru = truncating substitutions
+- wall = all non-synonymous substitutions
+
+- Global dN/dS ratios in somatic evolution of cancer, and seemingly of healthy somatic tissues, appear to show a near-universal pattern of dN/dS~1, with exome-wide dN/dS ratios typically slightly higher than 1
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed/all")
+
+# merge conditions
+globaldnds_list <- lapply(observed.res.list, function(x) x$globaldnds)
+names(globaldnds_list)[1] <- "control_1"
+
+globaldnds_merged <- do.call(rbind, lapply(names(globaldnds_list), function(df_name) {
+  tmp_df <- globaldnds_list[[df_name]]
+  tmp_df$list_name <- df_name
+  return(tmp_df)}))
+
+# remove Inf
+globaldnds_merged <- data.frame(lapply(globaldnds_merged, function(x) replace(x, is.infinite(x), NA)))
+
+# add group info
+globaldnds_merged <- separate(globaldnds_merged, col = list_name, into = c("condition", "cycle"), sep = "_", fill = "right")
+
+
+
+pdf("global_dnds_condition_bar.pdf",
+    width = 6,
+    height = 4)
+ ggplot(globaldnds_merged, aes(x = condition, y = mle, fill = condition)) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(aes(ymin = cilow, ymax = cihigh),
+                    width = 0.5, position = position_dodge(0.9)) +
+       geom_hline(yintercept = 1, linetype = "dashed") +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Observed\nGlobal dN/dS Ratio", fill = "Condition") + 
+    scale_fill_Publication(labels = c("Control", "ENU")) +
+    theme_Publication(base_size = 16) +
+   scale_y_continuous(trans=scales::pseudo_log_trans(base = 10),
+                   breaks = c(0, 1, 10, 100),
+                   limits = c(0, 100)) +
+    facet_wrap(.~name, ncol = 5, labeller = labeller(name = wrap_labels(new_labels, 12))) +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+
+new_labels <- c(
+  wmis = "Missense",
+  wnon = "Nonsense",
+  wspl = "Essential\nsplice site",
+  wtru = "Truncating",
+  wall = "All mutations"
+)
+
+# plot
+pdf("global.dnds.pdf",
+    width = 8,
+    height = 4)
+ggplot(globaldnds_merged, aes(x = condition, y = mle, color = cycle)) + 
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    geom_pointrange(aes(ymin=cilow, ymax=cihigh),
+                    position=position_dodge(width = 0.7),
+                    fatten = 5) +
+    guides(fill = guide_legend(override.aes = list(shape = 16)), 
+           color = guide_legend(override.aes = list(shape = 16))) +
+    scale_color_viridis(discrete = TRUE, end = 0.8) +
+    labs(x = "", 
+         y = "Global dN/dS", 
+         fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    theme_Publication() +
+    theme(legend.position = "top",  # Place legend on the right side
+        legend.box = "horizontal",  # Stack legend items vertically
+        legend.text = element_text(size = 10),  # Adjust legend text size
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)) +  # Adjust legend title size
+    scale_x_discrete(labels = c("Control", "ENU")) +
+    facet_wrap(.~name,
+               scale = "fixed",
+               nrow = 1,
+               labeller = labeller(name = new_labels))
+dev.off()
+```
+
+#### Gene level dN/dS
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed/all")
+
+
+# merge conditions
+genednds_list <- lapply(observed.res.list, function(x) x$sel_cv)
+
+genednds_merged <- do.call(rbind, lapply(names(genednds_list), function(df_name) {
+  tmp_df <- genednds_list[[df_name]]
+  tmp_df$list_name <- df_name
+  return(tmp_df)}))
+
+
+
+# make long for plotting
+genednds_merged_long <- pivot_longer(genednds_merged, 
+                                     cols = c("wmis_cv", "wnon_cv", "wspl_cv"),
+                                     names_to = "variable", 
+                                     values_to = "value")
+
+# plot by group
+genednds_merged_long$list_name <- factor(genednds_merged_long$list_name, levels = unique(genednds_merged$list_name))
+
+new_labels <- c(
+  wmis_cv = "missense",
+  wnon_cv = "nonsense",
+  wspl_cv = "splice"
+)
+
+pdf("gene_dNdScv_condition_violin.pdf",
+    width = 6,
+    height = 5)
+ ggplot(genednds_merged_long, aes(x = list_name, y = value, fill = list_name)) +
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    geom_violin() +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Gene dN/dS ratio", fill = "Condition") + 
+    scale_fill_Publication() +
+    theme_Publication(base_size = 16) +
+    facet_wrap(.~variable, labeller = labeller(variable = wrap_labels(new_labels, 12))) +
+   scale_y_log10() +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+
+# subset significant
+genednds_merged_sig <- genednds_merged %>%
+  filter(pallsubs_cv < 0.1)
+
+# make long for plotting
+genednds_merged_long <- pivot_longer(genednds_merged_sig, 
+                                     cols = c("wmis_cv", "wnon_cv"),
+                                     names_to = "variable", 
+                                     values_to = "value")
+
+# plot by group
+genednds_merged_long$list_name <- factor(genednds_merged_long$list_name, levels = c("control", "enu"))
+
+new_labels <- c(
+  wmis_cv = "missense",
+  wnon_cv = "nonsense"
+)
+
+pdf("gene_dNdScv_sig_condition_bar.pdf",
+    width = 4,
+    height = 4)
+ ggplot(genednds_merged_long, aes(x = list_name, y = value, fill = list_name)) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +
+    stat_summary(fun.data=mean_sdl, fun.args = list(mult=1), geom="errorbar", color="black", width=0.5, position = position_dodge(0.9)) +
+    stat_compare_means(comparisons = list(c("control", "enu")), method = "wilcox.test", tip.length = 0, label = "p.signif", vjust = 0.5, hide.ns = TRUE)+
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Gene dN/dS ratio", fill = "Condition") + 
+    scale_fill_Publication() +
+    theme_Publication(base_size = 16) +
+    facet_wrap(.~variable, labeller = labeller(variable = wrap_labels(new_labels, 12))) +
+    scale_y_log10() +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+```
+
+###### Overlap with cancer driver genes
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed/all")
+
+# filter for genes with hits in cancer driver that have significant dnds
+genednds_merged_hits_cancer_driver <- genednds_merged %>% 
+  filter(n_syn > 0 | n_mis > 0 | n_non > 0 | n_spl > 0) %>%
+  filter(gene_name %in% cancer.genes)
+
+genednds_merged_hits_cancer_driver_long <- pivot_longer(genednds_merged_hits_cancer_driver, 
+                                                       cols = c("wmis_cv", "wnon_cv", "wspl_cv"),
+                                                       names_to = "variable", 
+                                                       values_to = "value")
+
+pdf("cancer_driver_gene_dNdScv_condition_violin.pdf",
+    width = 6,
+    height = 5)
+ ggplot(genednds_merged_hits_cancer_driver_long, aes(x = list_name, y = value, fill = list_name)) +
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    geom_violin() +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Gene dN/dS ratio", fill = "Condition") + 
+    scale_fill_Publication() +
+    theme_Publication(base_size = 16) +
+    facet_wrap(.~variable, labeller = labeller(variable = wrap_labels(new_labels, 12))) +
+   scale_y_log10() +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+
+write.csv(genednds_merged_hits_cancer_driver,
+          "cancer_driver_dnds.csv",
+          row.names = FALSE)
+
+
+```
+
+
+## Expressed genes 
+
+### By condition
+
+#### Run dndscv
+- not filtering out cancer genes from indel background model
+- using all mutations per gene instead of limiting to 3
+- using all coding mutations per sample instead of limiting to 3000
+```{r}
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed/expressed")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed/expressed")
+
+# split into groups
+control <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "control")$sample,]
+enu <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "enu")$sample,]
+mutations_list <- list(control = control, enu = enu)
+
+observed.res.list <- lapply(mutations_list, function(x) 
+              dndscv(mutations = x,
+                     gene_list = expressed.genes,
+                     max_muts_per_gene_per_sample = Inf,
+                     max_coding_muts_per_sample = Inf,
+                     refdb = "hg19",
+                     kc = ""))
+
+saveRDS(observed.res.list, "observed_global_dndscv.RDS")
+```
+
+#### Global dN/dS estimates
+- wmis = missense
+- wnon = nonsense
+- wspl = essential splice site mutations
+- wtru = truncating substitutions
+- wall = all non-synonymous substitutions
+
+- Global dN/dS ratios in somatic evolution of cancer, and seemingly of healthy somatic tissues, appear to show a near-universal pattern of dN/dS~1, with exome-wide dN/dS ratios typically slightly higher than 1
+```{r}
+# merge conditions
+globaldnds_list <- lapply(observed.res.list, function(x) x$globaldnds)
+
+globaldnds_merged <- do.call(rbind, lapply(names(globaldnds_list), function(df_name) {
+  tmp_df <- globaldnds_list[[df_name]]
+  tmp_df$list_name <- df_name
+  return(tmp_df)}))
+
+# remove Inf
+globaldnds_merged <- data.frame(lapply(globaldnds_merged, function(x) replace(x, is.infinite(x), NA)))
+
+# stats
+# Adding standard errors to the data frame
+group_comparisons <- compare_control_enu(globaldnds_merged)
+write.csv(group_comparisons, "group_comparison_stats.csv")
+
+# plot by group
+globaldnds_merged$condition <- factor(globaldnds_merged$list_name, levels = c("control", "enu"))
+
+new_labels <- c(
+  wmis = "Missense",
+  wnon = "Nonsense",
+  wspl = "Essential splice site",
+  wtru = "Truncating",
+  wall = "All mutations"
+)
+
+pdf("global_dnds_condition_bar.pdf",
+    width = 6,
+    height = 4)
+ ggplot(globaldnds_merged, aes(x = condition, y = mle, fill = condition)) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(aes(ymin = cilow, ymax = cihigh),
+                    width = 0.5, position = position_dodge(0.9)) +
+       geom_hline(yintercept = 1, linetype = "dashed") +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Observed\nGlobal dN/dS Ratio", fill = "Condition") + 
+    scale_fill_Publication(labels = c("Control", "ENU")) +
+    theme_Publication(base_size = 16) +
+   scale_y_continuous(trans=scales::pseudo_log_trans(base = 10),
+                   breaks = c(0, 1, 10, 100),
+                   limits = c(0, 100)) +
+    facet_wrap(.~name, ncol = 5, labeller = labeller(name = wrap_labels(new_labels, 12))) +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+```
+
+##### Missense only
+```{r}
+pdf("global_dnds_condition_missense_bar.pdf",
+    width = 3,
+    height = 4)
+ ggplot(subset(globaldnds_merged, name == "wmis"), aes(x = condition, y = mle, fill = condition)) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(aes(ymin = cilow, ymax = cihigh),
+                    width = 0.5, position = position_dodge(0.9)) +
+       geom_hline(yintercept = 1, linetype = "dashed") +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Observed\nGlobal dN/dS Ratio", fill = "Condition") + 
+    scale_fill_Publication(labels = c("Control", "ENU")) +
+    scale_x_discrete(labels=c("Control", "ENU")) +
+   scale_y_continuous(breaks = c(1:6))
+    theme_Publication(base_size = 16) +
+    facet_wrap(.~name, ncol = 5, labeller = labeller(name = wrap_labels(new_labels, 12))) +
+    theme(axis.title.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "none")
+dev.off()
+```
+
+
+#### Gene-wise dN/dS estimates
+
+##### Using dNdScv
+- Plotting distribution of dn/ds values for all genes
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed/expressed")
+
+# merge conditions
+genednds_list <- lapply(observed.res.list, function(x) x$sel_cv)
+
+genednds_merged <- do.call(rbind, lapply(names(genednds_list), function(df_name) {
+  tmp_df <- genednds_list[[df_name]]
+  tmp_df$list_name <- df_name
+  return(tmp_df)}))
+
+
+
+# stats
+# Adding standard errors to the data frame
+#group_comparisons <- compare_control_enu(globaldnds_merged)
+#write.csv(group_comparisons, "group_comparison_stats.csv")
+
+# make long for plotting
+genednds_merged_long <- pivot_longer(genednds_merged, 
+                                     cols = c("wmis_cv", "wnon_cv", "wspl_cv"),
+                                     names_to = "variable", 
+                                     values_to = "value")
+
+# plot by group
+genednds_merged_long$list_name <- factor(genednds_merged_long$list_name, levels = c("control", "enu"))
+
+new_labels <- c(
+  wmis_cv = "missense",
+  wnon_cv = "nonsense",
+  wspl_cv = "splice"
+)
+
+pdf("gene_dNdScv_condition_violin.pdf",
+    width = 6,
+    height = 5)
+ ggplot(genednds_merged_long, aes(x = list_name, y = value, fill = list_name)) +
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    geom_violin() +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Gene dN/dS ratio", fill = "Condition") + 
+    scale_fill_Publication() +
+    theme_Publication(base_size = 16) +
+    facet_wrap(.~variable, labeller = labeller(variable = wrap_labels(new_labels, 12))) +
+   scale_y_log10() +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+
+# subset significant
+genednds_merged_sig <- genednds_merged %>%
+  filter(pallsubs_cv < 0.1)
+
+# make long for plotting
+genednds_merged_long <- pivot_longer(genednds_merged_sig, 
+                                     cols = c("wmis_cv", "wnon_cv"),
+                                     names_to = "variable", 
+                                     values_to = "value")
+
+# plot by group
+genednds_merged_long$list_name <- factor(genednds_merged_long$list_name, levels = c("control", "enu"))
+
+new_labels <- c(
+  wmis_cv = "missense",
+  wnon_cv = "nonsense"
+)
+
+pdf("gene_dNdScv_sig_condition_bar.pdf",
+    width = 4,
+    height = 4)
+ ggplot(genednds_merged_long, aes(x = list_name, y = value, fill = list_name)) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +
+    stat_summary(fun.data=mean_sdl, fun.args = list(mult=1), geom="errorbar", color="black", width=0.5, position = position_dodge(0.9)) +
+    stat_compare_means(comparisons = list(c("control", "enu")), method = "wilcox.test", tip.length = 0, label = "p.signif", vjust = 0.5, hide.ns = TRUE)+
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Gene dN/dS ratio", fill = "Condition") + 
+    scale_fill_Publication() +
+    theme_Publication(base_size = 16) +
+    facet_wrap(.~variable, labeller = labeller(variable = wrap_labels(new_labels, 12))) +
+    scale_y_log10() +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+```
+
+###### Overlap with cancer driver genes
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/11-cancer-mutations")
+
+cancer.genes <- read.csv("Census_allMon Mar 24 23_07_21 2025.csv",
+                         header = TRUE)
+
+# filter for genes with hits in cancer driver that have significant dnds
+genednds_merged_hits_cancer_driver <- genednds_merged %>% 
+  filter(n_syn > 0 | n_mis > 0 | n_non > 0 | n_spl > 0) %>%
+  filter(gene_name %in% cancer.genes$Gene.Symbol)
+
+genednds_merged_hits_cancer_driver_long <- pivot_longer(genednds_merged_hits_cancer_driver, 
+                                                       cols = c("wmis_cv", "wnon_cv", "wspl_cv"),
+                                                       names_to = "variable", 
+                                                       values_to = "value")
+
+pdf("cancer_driver_gene_dNdScv_condition_violin.pdf",
+    width = 6,
+    height = 5)
+ ggplot(genednds_merged_hits_cancer_driver_long, aes(x = list_name, y = value, fill = list_name)) +
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    geom_violin() +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Gene dN/dS ratio", fill = "Condition") + 
+    scale_fill_Publication() +
+    theme_Publication(base_size = 16) +
+    facet_wrap(.~variable, labeller = labeller(variable = wrap_labels(new_labels, 12))) +
+   scale_y_log10() +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+
+write.csv(genednds_merged_hits_cancer_driver,
+          "cancer_driver_dnds.csv",
+          row.names = FALSE)
+```
+
+
+##### Using dNdSloc
+- Plotting distribution of dn/ds values for all genes
+```{r}
+# merge conditions
+genednds_list <- lapply(observed.res.list, function(x) x$sel_loc)
+
+genednds_merged <- do.call(rbind, lapply(names(genednds_list), function(df_name) {
+  tmp_df <- genednds_list[[df_name]]
+  tmp_df$list_name <- df_name
+  return(tmp_df)}))
+
+# stats
+# Adding standard errors to the data frame
+#group_comparisons <- compare_control_enu(globaldnds_merged)
+#write.csv(group_comparisons, "group_comparison_stats.csv")
+
+# make long for plotting
+genednds_merged_long <- pivot_longer(genednds_merged, 
+                                     cols = c("wnon_loc", "wspl_loc"),
+                                     names_to = "variable", 
+                                     values_to = "value")
+
+# plot by group
+genednds_merged_long$list_name <- factor(genednds_merged_long$list_name, levels = c("control", "enu"))
+
+new_labels <- c(
+  wnon_loc = "missense",
+  wspl_loc = "nonsense"
+)
+
+pdf("gene_dNdSloc_group_violin.pdf",
+    width = 6,
+    height = 5)
+ ggplot(genednds_merged_long, aes(x = list_name, y = value, fill = list_name)) +
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    geom_violin() +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Group", y = "dN/dS rati0", fill = "Condition") + 
+    scale_fill_Publication() +
+    theme_Publication(base_size = 16) +
+    facet_wrap(.~variable, labeller = labeller(variable = wrap_labels(new_labels, 12))) +
+   scale_y_log10() +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+```
+
+#### Manually calculate global dN/dS estimates
+- Note that this does not account for things like the substitution model
+```{r}
+observed.res.manual <- dndscv(mutations = obs_all,
+             max_muts_per_gene_per_sample = Inf,
+             max_coding_muts_per_sample = Inf,
+             refdb = "hg19",
+             kc = "")
+
+# get ratio of SNV dN/dS per cell
+# this is simply the number of non-synonymous (Essential_Splice, Missense, Synonymous, Nonsense)
+# Comapred to those annotated as synonymous
+impacts <- observed.res.manual$annotmuts %>%
+  filter(impact != "no-SNV") %>%
+  mutate(grouped_impact = ifelse(impact == "Synonymous", "Synonymous", "Non-synonymous")) %>%
+  group_by(sampleID, grouped_impact) %>%
+  dplyr::count() %>%
+  spread(key = grouped_impact, value = n) %>%
+  replace(is.na(.), 1) %>% # replace NA with 0
+  mutate(ratio = (`Non-synonymous` + 1) / (Synonymous + 1))
+
+# add meta data
+impacts <- merge(impacts, sample_table, by.x = "sampleID", by.y = "sample", all = TRUE)
+impacts$condition <- factor(impacts$condition, levels = c("control", "enu"))
+impacts$cycle <- factor(impacts$cycle, levels = c(1,3,6,9))
+
+# by group per cell
+stats_summary <- impacts %>%
+  group_by(condition) %>%
+  summarise(mean = mean(ratio, na.rm = TRUE),
+            sd = sd(ratio, na.rm = TRUE))
+
+pdf("global_dnds_manual_group.pdf",
+    width = 4,
+    height = 5)
+ggplot(impacts, aes(x = condition, y = ratio, fill = condition)) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(data = stats_summary, aes(x = condition, y = mean, ymin = mean - sd, ymax = mean + sd),
+                    width = 0.5, position = position_dodge(0.9)) +
+    geom_point(data = impacts, aes(x = condition, y = ratio), position = position_jitterdodge(jitter.width = 0.2), size = 2, alpha = 0.5) +
+    stat_compare_means(method = "t.test", label = "p.signif", label.y.npc = "top", label.x.npc = "center", size = 8, color = "black", vjust = 0.5, hjust = 0.5, hide.ns = TRUE) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Group", y = "dN/dS ratio", title = "All mutations") + 
+    scale_fill_Publication() +
+    theme_Publication(base_size = 16)
+dev.off()
+```
+
+#### Expected vs observed
+```{r}
+gene_list <- lapply(observed.res.list, function(x) x$genemuts)
+
+gene_list_merged <- do.call(rbind, lapply(names(gene_list), function(df_name) {
+  tmp_df <- gene_list[[df_name]]
+  tmp_df$list_name <- df_name
+  return(tmp_df)}))
+
+# stats
+# Adding standard errors to the data frame
+#group_comparisons <- compare_control_enu(globaldnds_merged)
+#write.csv(group_comparisons, "group_comparison_stats.csv")
+
+# calculate observed vs expected ratio
+gene_list_merged <- gene_list_merged %>%
+  mutate(synonymous.oe = log2((n_syn + 1) / (exp_syn + 1)),
+         missense.oe = log2((n_mis + 1) / (exp_mis + 1)),
+         nonsynonymous.oe = log2((n_non + 1) / (exp_non + 1)),
+         splicesite.oe = log2((n_spl + 1) / (exp_spl + 1)))
+
+# summary
+gene_list_merged %>%
+  group_by(list_name) %>%
+  summarize(synonymous.oe = log2((sum(n_syn) + 1) / (sum(exp_syn) + 1)),
+         missense.oe = log2((sum(n_mis) + 1) / (sum(exp_mis) + 1)),
+         nonsynonymous.oe = log2((sum(n_non) + 1) / (sum(exp_non) + 1)),
+         splicesite.oe = log2((sum(n_spl) + 1) / (sum(exp_spl) + 1)))
+
+# make long for plotting
+gene_list_merged_long <- pivot_longer(gene_list_merged, 
+                                     cols = c("synonymous.oe", "missense.oe", "nonsynonymous.oe", "splicesite.oe"),
+                                     names_to = "variable", 
+                                     values_to = "value")
+
+# plot by group
+gene_list_merged_long$list_name <- factor(gene_list_merged_long$list_name, levels = c("control", "enu"))
+
+new_labels <- c(
+  synonymous.oe = "synonymous",
+  missense.oe = "nonsense",
+  nonsynonymous.oe = "nonsynonymous",
+  splicesite.oe = "splicesite"
+)
+
+pdf("gene_expected_observed_group_jitter.pdf",
+    width = 6,
+    height = 5) 
+ ggplot(gene_list_merged_long, aes(x = list_name, y = value, fill = list_name)) +
+    geom_violin() +
+    geom_jitter(alpha = 0.5) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Group", y = "Log2(Observed / Expected)", fill = "Condition") + 
+    scale_fill_Publication() +
+    theme_Publication(base_size = 16) +
+    facet_wrap(.~variable, scale = "free_y", labeller = labeller(variable = wrap_labels(new_labels, 12))) +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+
+pdf("gene_expected_observed_group_bar.pdf",
+    width = 6,
+    height = 5) 
+ ggplot(gene_list_merged_long, aes(x = list_name, y = value, fill = list_name)) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    stat_summary(fun.data=mean_sdl, fun.args = list(mult=1), 
+        geom="errorbar", color="black", width=0.5, position = position_dodge(0.9)) +
+    # geom_errorbar(aes(ymin = cilow, ymax = cihigh),
+    #                 width = 0.5, position = position_dodge(0.9)) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Group", y = "Log2(Observed / Expected)", fill = "Condition") + 
+    scale_fill_Publication() +
+    theme_Publication(base_size = 16) +
+    facet_wrap(.~variable, scale = "free_y", labeller = labeller(variable = wrap_labels(new_labels, 12))) +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+```
+
+
+#### Specific genes under positive or negative selection
+- none for either group
+```{r}
+observed.res.list.sig.genes <- lapply(observed.res.list, function(x) x$sel_cv[x$sel_cv$qglobal_cv<0.1, c("gene_name","qallsubs_cv")])
+```
+
+## By cycle
+- Can only run on ENU and not control because too few mutations
+
+### Run dndscv
+```{r}
+# split into groups
+control_1 <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "control" & cycle == 1)$sample,]
+enu_3 <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "enu" & cycle == 3)$sample,]
+enu_6 <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "enu" & cycle == 6)$sample,]
+control_9 <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "control" & cycle == 9)$sample,]
+enu_9 <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "enu" & cycle == 9)$sample,]
+
+mutations_list <- list(enu_3 = enu_3,
+                       enu_6 = enu_6,
+                       enu_9 = enu_9)
+
+res.cycle.list <- lapply(mutations_list, function(x) 
+              dndscv(mutations = x,
+                     gene_list = expressed.genes,
+                     max_muts_per_gene_per_sample = Inf,
+                     max_coding_muts_per_sample = Inf,
+                     refdb = "hg19"))
+```
+
+### Table of significant genes for positive selection
+- none for either group
+```{r}
+res.cycle.list.sig.genes <- lapply(res.cycle.list, function(x) x$sel_cv[x$sel_cv$qglobal_cv<0.1, c("gene_name","qallsubs_cv")])
+```
+
+### Global dN/dS estimates
+- wmis = missense
+- wnon = nonsense
+- wspl = essential splice site mutations
+- wtru = truncating substitutions
+- wall = all non-synonymous substitutions
+
+- Global dN/dS ratios in somatic evolution of cancer, and seemingly of healthy somatic tissues, appear to show a near-universal pattern of dN/dS~1, with exome-wide dN/dS ratios typically slightly higher than 1
+```{r}
+# merge conditions
+globaldnds_list <- lapply(res.cycle.list, function(x) x$globaldnds)
+
+globaldnds_merged <- do.call(rbind, lapply(names(globaldnds_list), function(df_name) {
+  tmp_df <- globaldnds_list[[df_name]]
+  tmp_df$list_name <- df_name
+  return(tmp_df)}))
+
+data_split <- strsplit(as.character(globaldnds_merged$list_name), "_")
+globaldnds_merged$cycle <- factor(sapply(data_split, function(x) x[2]), levels = c(3,6,9))
+
+# stats
+# cycle_comparisons <- compare_condition_cycles(globaldnds_merged)
+# write.csv(cycle_comparisons, "cycle_comparisons_stats.csv")
+
+# plot
+new_labels <- c(
+  wmis = "missense",
+  wnon = "nonsense",
+  wspl = "essential splice site",
+  wtru = "truncating",
+  wall = "all mutations"
+)
+
+pdf("global_dnds_cycle_enu_bar.pdf",
+    width = 6,
+    height = 4)
+ ggplot(globaldnds_merged, aes(x = cycle, y = mle, fill = cycle)) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(aes(ymin = cilow, ymax = cihigh),
+                    width = 0.5, position = position_dodge(0.9)) +
+       geom_hline(yintercept = 1, linetype = "dashed") +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Global dN/dS ratio", x = "Cycle", title = "ENU condition") + 
+    theme_Publication(base_size = 16) +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    facet_wrap(.~name, ncol = 5, labeller = labeller(name = wrap_labels(new_labels, 12))) +
+    theme(strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "none")
+dev.off()
+```
+
+## Essential genes 
+
+### By condition
+- Can only run on ENU and not control because too few mutations
+
+#### Run dndscv
+- not filtering out cancer genes from indel background model
+- using all mutations per gene instead of limiting to 3
+- using all coding mutations per sample instead of limiting to 3000
+```{r}
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed/essential")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/1-observed/essential")
+
+# split into groups
+control <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "control")$sample,]
+enu <- obs_all[obs_all$sampleID %in% subset(sample_table, condition == "enu")$sample,]
+mutations_list <- list(enu = enu)
+
+observed.res.list <- lapply(mutations_list, function(x) 
+              dndscv(mutations = x,
+                     gene_list = essential.expressed$Gene,
+                     max_muts_per_gene_per_sample = Inf,
+                     max_coding_muts_per_sample = Inf,
+                     refdb = "hg19",
+                     kc = ""))
+
+saveRDS(observed.res.list, "observed_global_dndscv.RDS")
+```
+
+#### Global dN/dS estimates
+- wmis = missense
+- wnon = nonsense
+- wspl = essential splice site mutations
+- wtru = truncating substitutions
+- wall = all non-synonymous substitutions
+
+- Global dN/dS ratios in somatic evolution of cancer, and seemingly of healthy somatic tissues, appear to show a near-universal pattern of dN/dS~1, with exome-wide dN/dS ratios typically slightly higher than 1
+```{r}
+# merge conditions
+globaldnds_list <- lapply(observed.res.list, function(x) x$globaldnds)
+
+globaldnds_merged <- do.call(rbind, lapply(names(globaldnds_list), function(df_name) {
+  tmp_df <- globaldnds_list[[df_name]]
+  tmp_df$list_name <- df_name
+  return(tmp_df)}))
+
+# stats
+# Adding standard errors to the data frame
+# group_comparisons <- compare_control_enu(globaldnds_merged)
+# write.csv(group_comparisons, "group_comparison_stats.csv")
+
+new_labels <- c(
+  wmis = "missense",
+  wnon = "nonsense",
+  wspl = "essential splice site",
+  wtru = "truncating",
+  wall = "all mutations"
+)
+
+pdf("global_dnds_condition_bar.pdf",
+    width = 6,
+    height = 4)
+ ggplot(globaldnds_merged, aes(x = list_name, y = mle)) +
+    geom_bar(stat = "summary", fun.y = "mean", position = "dodge") +  # Average bar plot
+    geom_errorbar(aes(ymin = cilow, ymax = cihigh),
+                    width = 0.5, position = position_dodge(0.9)) +
+       geom_hline(yintercept = 1, linetype = "dashed") +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(y = "Global dN/dS ratio", title = "ENU condition") + 
+    #scale_fill_Publication(labels = c("Control", "ENU")) +
+    theme_Publication(base_size = 16) +
+   # scale_y_continuous(trans=scales::pseudo_log_trans(base = 10),
+   #                 breaks = c(0, 1, 10, 100),
+   #                 limits = c(0, 100)) +
+    facet_wrap(.~name, ncol = 5, labeller = labeller(name = wrap_labels(new_labels, 12))) +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          strip.text = element_text(size = 12),
+          legend.justification = c("center","top"),
+          legend.position = "top")
+dev.off()
+```
+
+# Compare calculation of expected to results from SigProfilerSimulation
+
+## Run dndscv
+- not filtering out cancer genes from indel background model
+- using all mutations per gene instead of limiting to 3
+- using all coding mutations per sample instead of limiting to 3000
+```{r}
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/4-compare-vep/")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/10-dnds-ratio/4-compare-vep/")
+
+# split into cells
+cell_list <- split(obs_all, obs_all$sampleID)
+
+# subset just for ENU
+cell_list_subset <- cell_list[sample_table$condition == "enu"]
+
+cell_list_subset_dnds <- lapply(cell_list_subset, function(x) 
+              dndscv(mutations = x,
+                     gene_list = expressed.genes,
+                     max_muts_per_gene_per_sample = Inf,
+                     max_coding_muts_per_sample = Inf,
+                     refdb = "hg19",
+                     kc = ""))
+
+# saveRDS(cell_list_subset_dnds, "global_cell_dndscv.RDS")
+```
+
+## synonymous
+
+### Get expected number per gene and sum per cell
+```{r}
+cell_list_subset_dnds_expected <- lapply(cell_list_subset_dnds, function(x) x$genemuts)
+
+saveRDS(cell_list_subset_dnds_expected, "cell_list_subset_dnds_expected.RDS")
+
+# sum for each cell
+cell_list_subset_dnds_expected_sum <- unlist(lapply(cell_list_subset_dnds_expected, function(x) sum(x$exp_syn, na.rm = TRUE)))
+
+cell_list_subset_dnds_observed_sum <- unlist(lapply(cell_list_subset_dnds_expected, function(x) sum(x$n_syn, na.rm = TRUE)))
+
+# make df
+df_compare <- data.frame(dnds_expected = cell_list_subset_dnds_expected_sum,
+                         dnds_observed = cell_list_subset_dnds_observed_sum,
+                         dnds_delta = cell_list_subset_dnds_expected_sum - cell_list_subset_dnds_observed_sum,
+                         row.names = names(cell_list_subset_dnds_expected_sum))
+```
+
+### Get expected from SigProfilerSimulation for variant effect prediction
+- This gives the average from the 1000 simulations per cell
+```{r}
+vep_sim <- read.csv("/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/5-variant-effect-prediction/1-calculate-ratio/observed_consequence_main_ratio_mean.csv", header = TRUE)
+
+vep_sim_subset <- subset(vep_sim, variant_type == "synonymous variant" & condition == "enu")
+
+vep_sim_subset$vep_delta <- vep_sim_subset$sim.mut - vep_sim_subset$obs.mut
+
+rownames(vep_sim_subset) <- vep_sim_subset$sample
+```
+
+### Compare dndscv and variant effect prediction
+```{r}
+df_compare <- merge(df_compare, vep_sim_subset, by = "row.names")
+rownames(df_compare) <- df_compare$Row.names
+
+pdf("compare_synonymous_expected.pdf",
+    width = 5,
+    height = 5)
+ggplot(df_compare, aes(x = dnds_expected, y = sim.mut)) +
+    geom_point(aes(color = as.factor(cycle)), size = 2) +  # Apply fill only to points
+    geom_smooth(method = lm) +  # Fitted line without fill
+    stat_cor() + # Correlation coefficient
+    labs(x = "dndscv Expected\nVariants Per Cell",
+         y = "Average Simulated\nVariants Per Cell", 
+         color = "Cycle") + 
+    theme_Publication(base_size = 16) +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+  scale_color_viridis(discrete = TRUE, begin = 0.4, end = 0.8)
+dev.off()
+
+pdf("compare_synonymous_observed.pdf",
+    width = 5,
+    height = 5)
+ggplot(df_compare, aes(x = dnds_observed, y = obs.mut)) +
+    geom_point(aes(color = as.factor(cycle)), size = 2) +  # Apply fill only to points
+    geom_smooth(method = lm) +  # Fitted line without fill
+    stat_cor() + # Correlation coefficient
+    labs(x = "dndscv Observed\nVariants Per Cell",
+         y = "Observed\nVariants Per Cell", 
+         color = "Cycle") + 
+    theme_Publication(base_size = 16) +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+  scale_color_viridis(discrete = TRUE, begin = 0.4, end = 0.8)
+dev.off()
+
+pdf("compare_synonymous_delta.pdf",
+    width = 5,
+    height = 5)
+ggplot(df_compare, aes(x = dnds_delta, y = vep_delta)) +
+    geom_point(aes(color = as.factor(cycle)), size = 2) +  # Apply fill only to points
+    geom_smooth(method = lm) +  # Fitted line without fill
+    stat_cor() + # Correlation coefficient
+    labs(x = "dndscv Expected - Observed\nVariants Per Cell",
+         y = "Observed - Average Simulated\nVariants Per Cell", 
+         color = "Cycle") + 
+    theme_Publication(base_size = 16) +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+  scale_color_viridis(discrete = TRUE, begin = 0.4, end = 0.8)
+dev.off()
+```
+
+## Missense
+
+### Get expected number per gene and sum per cell
+```{r}
+cell_list_subset_dnds_expected <- lapply(cell_list_subset_dnds, function(x) x$genemuts)
+
+saveRDS(cell_list_subset_dnds_expected, "cell_list_subset_dnds_expected.RDS")
+
+# sum for each cell
+cell_list_subset_dnds_expected_sum <- unlist(lapply(cell_list_subset_dnds_expected, function(x) sum(x$exp_mis, na.rm = TRUE)))
+
+cell_list_subset_dnds_observed_sum <- unlist(lapply(cell_list_subset_dnds_expected, function(x) sum(x$n_mis, na.rm = TRUE)))
+
+# make df
+df_compare <- data.frame(dnds_expected = cell_list_subset_dnds_expected_sum,
+                         dnds_observed = cell_list_subset_dnds_observed_sum,
+                         dnds_delta = cell_list_subset_dnds_expected_sum - cell_list_subset_dnds_observed_sum,
+                         row.names = names(cell_list_subset_dnds_expected_sum))
+```
+
+### Get expected from SigProfilerSimulation for variant effect prediction
+- This gives the average from the 1000 simulations per cell
+```{r}
+vep_sim <- read.csv("/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/5-variant-effect-prediction/1-calculate-ratio/observed_consequence_main_ratio_mean.csv", header = TRUE)
+
+vep_sim_subset <- subset(vep_sim, variant_type == "missense variant" & condition == "enu")
+
+vep_sim_subset$vep_delta <- vep_sim_subset$sim.mut - vep_sim_subset$obs.mut
+
+rownames(vep_sim_subset) <- vep_sim_subset$sample
+```
+
+### Compare dndscv and variant effect prediction
+```{r}
+df_compare <- merge(df_compare, vep_sim_subset, by = "row.names")
+rownames(df_compare) <- df_compare$Row.names
+
+pdf("compare_missense_expected.pdf",
+    width = 5,
+    height = 5)
+ggplot(df_compare, aes(x = dnds_expected, y = sim.mut)) +
+    geom_point(aes(color = as.factor(cycle)), size = 2) +  # Apply fill only to points
+    geom_smooth(method = lm) +  # Fitted line without fill
+    stat_cor() + # Correlation coefficient
+    labs(x = "dndscv Expected\nVariants Per Cell",
+         y = "Average Simulated\nVariants Per Cell", 
+         color = "Cycle") + 
+    theme_Publication(base_size = 16) +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+  scale_color_viridis(discrete = TRUE, begin = 0.4, end = 0.8)
+dev.off()
+
+pdf("compare_missense_observed.pdf",
+    width = 5,
+    height = 5)
+ggplot(df_compare, aes(x = dnds_observed, y = obs.mut)) +
+    geom_point(aes(color = as.factor(cycle)), size = 2) +  # Apply fill only to points
+    geom_smooth(method = lm) +  # Fitted line without fill
+    stat_cor() + # Correlation coefficient
+    labs(x = "dndscv Observed\nVariants Per Cell",
+         y = "Observed\nVariants Per Cell", 
+         color = "Cycle") + 
+    theme_Publication(base_size = 16) +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+  scale_color_viridis(discrete = TRUE, begin = 0.4, end = 0.8)
+dev.off()
+
+pdf("compare_missense_delta.pdf",
+    width = 5,
+    height = 5)
+ggplot(df_compare, aes(x = dnds_delta, y = vep_delta)) +
+    geom_point(aes(color = as.factor(cycle)), size = 2) +  # Apply fill only to points
+    geom_smooth(method = lm) +  # Fitted line without fill
+    stat_cor() + # Correlation coefficient
+    labs(x = "dndscv Expected - Observed\nVariants Per Cell",
+         y = "Observed - Average Simulated\nVariants Per Cell", 
+         color = "Cycle") + 
+    theme_Publication(base_size = 16) +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top") +
+  scale_color_viridis(discrete = TRUE, begin = 0.4, end = 0.8)
+dev.off()
+```

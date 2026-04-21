@@ -1,0 +1,11 @@
+"","condition","cycle","region","p_value","p_adjusted","significant_p_adjusted"
+"1","control",1,"essential",0.664740193524807,0.664740193524807,NA
+"2","control",1,"nonessential",0.287319881690148,0.574639763380295,NA
+"3","control",9,"essential",0.000146203270020319,0.000292406540040638,"***"
+"4","control",9,"nonessential",1,1,NA
+"5","enu",3,"essential",0.310692508015474,0.621385016030947,NA
+"6","enu",3,"nonessential",0.89970246021176,0.89970246021176,NA
+"7","enu",6,"essential",0.34567379983346,0.691347599666919,NA
+"8","enu",6,"nonessential",0.997996688190579,0.997996688190579,NA
+"9","enu",9,"essential",0.000245154381696847,0.000490308763393694,"***"
+"10","enu",9,"nonessential",0.067931477784709,0.067931477784709,NA

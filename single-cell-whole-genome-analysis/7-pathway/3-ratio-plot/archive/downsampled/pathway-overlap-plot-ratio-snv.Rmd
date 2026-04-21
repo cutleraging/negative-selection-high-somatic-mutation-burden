@@ -1,0 +1,1235 @@
+---
+title: "pathway-overlap - ratio-plot - SNV -downsample"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preparation
+
+## Load libraries
+```{r}
+library(ggplot2)
+library(stringr)
+library(dplyr)
+library(ggpubr)
+library(purrr)
+library(rstatix)
+library(EnhancedVolcano)
+library(clusterProfiler)
+library(enrichplot)
+library(UpSetR)
+library(viridis)
+
+hg19_size <- 3036303846
+```
+
+## Functions
+```{r}
+# combine the permutation pvalues from each sample
+# to assess if group of samples is significantly different from expected
+combine_pvalues_fisher <- function(p_values) {
+    chi_sq_stat = -2 * sum(log(p_values))
+    degrees_of_freedom = 2 * length(p_values)
+    p_combined = pchisq(chi_sq_stat, degrees_of_freedom, lower.tail = FALSE)
+    return(p_combined)
+}
+
+# function to calculate significance with results coming from
+# observed and downsampled
+ratio_significance <- function(combined_regions, group_vars, region_levels, by.region = TRUE) {
+  
+  if(by.region){
+  res <- combined_regions %>%
+    group_by_at(vars(one_of(c("region", group_vars)))) %>%
+    summarise(pvalue = combine_pvalues_fisher(pvalue.adj)) %>%
+    mutate(pvalue_symbol = case_when(
+      pvalue <= 0.0001 ~ '****',
+      pvalue <= 0.001 ~ '***',
+      pvalue <= 0.01 ~ '**',
+      pvalue <= 0.05 ~ '*',
+      TRUE ~ NA
+    ))
+  res$region <- factor(res$region, levels = region_levels)
+  } else{
+    res <- combined_regions %>%
+    group_by_at(vars(one_of(c(group_vars)))) %>%
+    summarise(pvalue = combine_pvalues_fisher(pvalue.adj)) %>%
+    mutate(pvalue_symbol = case_when(
+      pvalue <= 0.0001 ~ '****',
+      pvalue <= 0.001 ~ '***',
+      pvalue <= 0.01 ~ '**',
+      pvalue <= 0.05 ~ '*',
+      TRUE ~ NA
+    ))
+  }
+  return(res)
+}
+
+# Using pvalue here instead of pvalue.adj because many pathways were tested
+ratio_significance_pathway <- function(combined_regions, group_vars, region_levels, by.region = TRUE) {
+  
+  if(by.region){
+  res <- combined_regions %>%
+    group_by_at(vars(one_of(c("region", group_vars)))) %>%
+    summarise(pvalue = combine_pvalues_fisher(pvalue)) %>%
+    mutate(pvalue_symbol = case_when(
+      pvalue <= 0.0001 ~ '****',
+      pvalue <= 0.001 ~ '***',
+      pvalue <= 0.01 ~ '**',
+      pvalue <= 0.05 ~ '*',
+      TRUE ~ NA
+    ))
+  res$region <- factor(res$region, levels = region_levels)
+  } else{
+    res <- combined_regions %>%
+    group_by_at(vars(one_of(c(group_vars)))) %>%
+    summarise(pvalue = combine_pvalues_fisher(pvalue)) %>%
+    mutate(pvalue_symbol = case_when(
+      pvalue <= 0.0001 ~ '****',
+      pvalue <= 0.001 ~ '***',
+      pvalue <= 0.01 ~ '**',
+      pvalue <= 0.05 ~ '*',
+      TRUE ~ NA
+    ))
+  }
+  return(res)
+}
+
+# function to calculate significance between condition groups
+group_significance <- function(combined_regions, group_vars, condition, region_levels){
+  formula <- as.formula(paste("log2fc ~", condition))
+  
+  results <- combined_regions %>%
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(
+      p_value = wilcox.test(formula = formula, 
+                            data = cur_data(),
+                            exact = FALSE)$p.value
+    ) %>%
+    ungroup() %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"),
+           significant_p_adjusted = case_when(
+                            p_adjusted <= 0.0001 ~ '****',
+                            p_adjusted <= 0.001 ~ '***',
+                            p_adjusted <= 0.01 ~ '**',
+                            p_adjusted <= 0.05 ~ '*',
+                            TRUE ~ NA_character_)
+    )
+
+  # Order by region
+  results$region <- factor(results$region, levels = region_levels)
+  
+  return(results)
+}
+
+
+# function to calculate significance between condition groups
+# also reports significance if seen in both downsampled and observed groups
+# adjusted p-values by bejamini-hochberg
+# combined_regions <- go.expressed_regions_combined
+# group_vars <- c("group", "region")
+# condition <- "condition"
+# region_levels <- go.expressed_regions_levels
+
+group_significance_go <- function(combined_regions, group_vars, condition, region_levels){
+  formula <- as.formula(paste("log2fc ~", condition))
+  
+  results <- combined_regions %>%
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(
+      p_value = t.test(formula = formula, data = cur_data())$p.value
+    ) %>%
+    ungroup() %>%
+    mutate(
+           significant_p_adjusted = case_when(
+                            p_value <= 0.0001 ~ '****',
+                            p_value <= 0.001 ~ '***',
+                            p_value <= 0.01 ~ '**',
+                            p_value <= 0.05 ~ '*',
+                            TRUE ~ NA_character_)
+    )
+  
+  # Identify regions with p_adjusted < 0.05 in both groups
+  regions_significant_in_both_groups <- as.data.frame(results) %>%
+    filter(p_value < 0.05) %>%
+    dplyr::count(region) %>%
+    filter(n == 2) %>%
+    pull(region)
+  
+  # Create new column based on the condition
+  results <- results %>%
+    mutate(significant_p_adjusted_both_groups = ifelse(region %in% regions_significant_in_both_groups, significant_p_adjusted, NA_character_))
+
+  # Order by region
+  results$region <- factor(results$region, levels = region_levels)
+  
+  return(results)
+}
+
+calculate_stat_summary <- function(observed, group_vars, mut_var){
+  results <- observed %>%
+    group_by_at(vars(one_of(group_vars))) %>%
+    summarise(mean = mean(!!sym(mut_var), na.rm = TRUE),
+              sd = sd(!!sym(mut_var), na.rm = TRUE))
+}
+
+theme_Publication <- function(base_size=16, base_family="helvetica") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family = "")
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               #legend.key.size= unit(0.2, "cm"),
+               legend.margin = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+          ))
+      
+}
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_fill_Publication_2 <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#7fc97f","#ef3b2c","#386cb0","#fdb462","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+wrap_labels <- function(labels, width = 5) {
+  wrapped_labels <- str_wrap(labels, width)
+  names(wrapped_labels) <- names(labels)
+  return(wrapped_labels)
+}
+```
+
+## Load sample table
+```{r}
+sample_table <- read.table("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/1-data/sample_table_filtered.txt", header = TRUE, sep = "\t")
+```
+
+## Load genomic distribution results
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/2-calculate-ratio/snv")
+# expressed_nonexpressed
+  # observed
+  expressed_nonexpressed <- read.csv("expressed_nonexpressed_regions_res_downsample_snv.csv", header = TRUE, row.names = NULL)
+
+# essential
+  # observed
+  essential_nonessential <- read.csv("essential_genes_regions_res_downsample_snv.csv", header = TRUE, row.names = NULL)
+  
+# go
+  go_ids <- read.csv("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/1-load-data/expressed_genes_gene_ontology.csv", header = TRUE)
+  
+  # observed
+  go_expressed <- read.csv("go.expressed_regions_res_downsample_snv.csv", header = TRUE, row.names = NULL)
+
+# go shuffle
+  # observed
+  go_expressed_shuffled<- read.csv("go.expressed.shuffled_regions_res_downsample_snv.csv", header = TRUE, row.names = NULL)
+  
+# kegg
+  # observed
+  kegg_expressed <- read.csv("kegg.expressed_regions_res_downsample_snv.csv", header = TRUE, row.names = NULL)
+
+# kegg shuffle
+  # observed
+  kegg_expressed_shuffled <- read.csv("kegg.expressed.shuffled_regions_res_downsample_snv.csv", header = TRUE, row.names = NULL)
+```
+
+# Analysis
+
+## Expressed and Nonexpressed genes
+
+### By condition
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/expressed_nonexpressed")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/expressed_nonexpressed")
+
+expressed_nonexpressed_levels <- unique(expressed_nonexpressed$region)
+
+expressed_nonexpressed_regions <- merge(expressed_nonexpressed, sample_table, by = "sample")
+expressed_nonexpressed_regions$region <- factor(expressed_nonexpressed_regions$region, expressed_nonexpressed_levels)
+
+
+expressed_nonexpressed_regions_ratio_significance <- ratio_significance(expressed_nonexpressed_regions,
+                                                   "condition",
+                                                   expressed_nonexpressed_levels)
+
+expressed_nonexpressed_regions_group_significance <- group_significance(expressed_nonexpressed_regions,
+                                                         c("region"), 
+                                                         "condition",
+                                                         expressed_nonexpressed_levels)
+# observed
+pdf("SNV_expressed_nonexpressed_condition_observed_downsampled.pdf",
+    width = 5,
+    height = 5)
+ggplot(expressed_nonexpressed_regions, aes(x = region, y = log2fc, fill = condition)) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 1, alpha = 0.6) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    geom_text(data = expressed_nonexpressed_regions_ratio_significance, 
+              aes(x = region, y = Inf, label = pvalue_symbol), # pvalue of observed/expected
+              vjust = 0.8, hjust = 1, position=position_dodge(width = 0.75), size = 7, angle = 90) +
+    geom_text(data = expressed_nonexpressed_regions_group_significance,
+              aes(x = region, y = Inf, fill = NA, label = significant_p_adjusted), # pvalue of control vs enu
+              vjust = 15, hjust = 0.5, size = 8, color = "firebrick") +
+    labs(x = "Region", y = "Log2(observed/expected)\nSNVs Per Cell") +
+    scale_fill_Publication(name = "Condition", labels = c("Control", "ENU")) +
+    theme_Publication() +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top",
+          axis.text.x = element_text(size = 12)) +
+    ylim(NA, max(expressed_nonexpressed_regions$log2fc + 0.1))
+dev.off()
+```
+
+### By cycle
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/expressed_nonexpressed")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/expressed_nonexpressed")
+
+expressed_nonexpressed_levels <- unique(expressed_nonexpressed$region)
+
+expressed_nonexpressed_regions <- merge(expressed_nonexpressed, sample_table, by = "sample")
+expressed_nonexpressed_regions$region <- factor(expressed_nonexpressed_regions$region, expressed_nonexpressed_levels)
+
+expressed_nonexpressed_regions_ratio_significance <- ratio_significance(expressed_nonexpressed_regions,
+                                                   c("cycle", "condition"),
+                                                   expressed_nonexpressed_levels)
+
+# observed
+pdf("SNV_expressed_nonexpressed_cycle_observed_downsampled.pdf",
+    width = 6,
+    height = 5)
+ggplot(expressed_nonexpressed_regions, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 1, alpha = 0.7) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Cycle", y = "Log2(observed/expected)\nSNVs Per Cell", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    scale_x_discrete(labels = c("Control", "ENU")) + 
+    theme_Publication() +
+    geom_text(data = expressed_nonexpressed_regions_ratio_significance,
+              aes(x = condition, y = Inf, label = pvalue_symbol), # pvalue of observed/expected
+              vjust = 0.8, hjust = 1, position=position_dodge(width = 0.75), size = 6, angle = 90) +
+    facet_grid(.~region) +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top",
+          axis.text.x = element_text(size = 12)) +
+    ylim(NA, max(expressed_nonexpressed_regions$log2fc) + 0.1)
+dev.off()
+```
+
+## Essential and Nonessential genes
+
+### By condition
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/essential_nonessential")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/essential_nonessential")
+
+essential_nonessential_levels <- unique(essential_nonessential$region)
+
+essential_nonessential_regions <- merge(essential_nonessential, sample_table, by = "sample")
+essential_nonessential_regions$region <- factor(essential_nonessential_regions$region, essential_nonessential_levels)
+
+
+essential_nonessential_regions_ratio_significance <- ratio_significance(essential_nonessential_regions,
+                                                   "condition",
+                                                   essential_nonessential_levels)
+
+essential_nonessential_regions_group_significance <- group_significance(essential_nonessential_regions,
+                                                         c("region"), 
+                                                         "condition",
+                                                         essential_nonessential_levels)
+# observed
+pdf("SNV_essential_nonessential_condition_observed_downsampled.pdf",
+    width = 5,
+    height = 5)
+ggplot(essential_nonessential_regions, aes(x = region, y = log2fc, fill = condition)) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 1, alpha = 0.6) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    geom_text(data = essential_nonessential_regions_ratio_significance, 
+              aes(x = region, y = Inf, label = pvalue_symbol), # pvalue of observed/expected
+              vjust = 0.8, hjust = 1, position=position_dodge(width = 0.75), size = 7, angle = 90) +
+    geom_text(data = essential_nonessential_regions_group_significance,
+              aes(x = region, y = Inf, fill = NA, label = significant_p_adjusted), # pvalue of control vs enu
+              vjust = 15, hjust = 0.5, size = 8, color = "firebrick") +
+    labs(x = "Region", y = "Log2(observed/expected)\nSNVs Per Cell") +
+    scale_fill_Publication(name = "Condition", labels = c("Control", "ENU")) +
+    theme_Publication() +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top",
+          axis.text.x = element_text(size = 12)) +
+    ylim(NA, max(essential_nonessential_regions$log2fc + 0.1))
+dev.off()
+```
+
+### By cycle
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/essential_nonessential")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/essential_nonessential")
+
+essential_nonessential_levels <- unique(essential_nonessential$region)
+
+essential_nonessential_regions <- merge(essential_nonessential, sample_table, by = "sample")
+essential_nonessential_regions$region <- factor(essential_nonessential_regions$region, essential_nonessential_levels)
+
+essential_nonessential_regions_ratio_significance <- ratio_significance(essential_nonessential_regions,
+                                                   c("cycle", "condition"),
+                                                   essential_nonessential_levels)
+
+# observed
+pdf("SNV_essential_nonessential_cycle_observed_downsampled.pdf",
+    width = 6,
+    height = 5)
+ggplot(essential_nonessential_regions, aes(x = condition, y = log2fc, fill = as.factor(cycle))) + 
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 1, alpha = 0.7) +
+    guides(fill = guide_legend(override.aes = list(shape = NA))) +
+    labs(x = "Cycle", y = "Log2(observed/expected)\nSNVs Per Cell", fill = "Cycle") +
+    scale_fill_viridis(discrete = TRUE, end = 0.8) +
+    scale_x_discrete(labels = c("Control", "ENU")) + 
+    theme_Publication() +
+    geom_text(data = essential_nonessential_regions_ratio_significance,
+              aes(x = condition, y = Inf, label = pvalue_symbol), # pvalue of observed/expected
+              vjust = 0.8, hjust = 1, position=position_dodge(width = 0.75), size = 6, angle = 90) +
+    facet_grid(.~region) +
+    theme(legend.justification = c("center","top"),
+          legend.position = "top",
+          axis.text.x = element_text(size = 12)) +
+    ylim(NA, max(essential_nonessential_regions$log2fc) + 0.1)
+dev.off()
+```
+
+
+
+## Gene ontology
+- Improvement: Incorporate average expression of each pathway
+
+### Compare ratios wihtin conditions
+
+#### ENU
+
+##### Observed
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+
+go_expressed_regions_levels <- unique(go_expressed$region)
+
+go_expressed_regions <- merge(go_expressed, sample_table, by = "sample")
+
+go_expressed_regions$region <- factor(go_expressed_regions$region, go_expressed_regions_levels)
+
+go_expressed_regions <- subset(go_expressed_regions, condition == "enu")
+
+go_expressed_regions_ratio_significance <- ratio_significance_pathway(go_expressed_regions,
+                                                   "condition",
+                                                   go_expressed_regions_levels)
+
+
+# summarize by getting average log2fc for each group and then compare groups
+go_expressed_regions_summary <- subset(go_expressed_regions) %>%
+  group_by(region, condition) %>%
+  summarise(median_log2fc = median(log2fc, na.rm = TRUE),
+            median.obs.mut = median(obs.mut, na.rm = TRUE))
+
+# add significance values
+go_expressed_regions_summary <- merge(go_expressed_regions_summary, 
+                                      go_expressed_regions_ratio_significance, 
+                                      by = "region")
+# add GO IDs
+go_expressed_regions_summary$GO.ID <- go_ids$ID[match(go_expressed_regions_summary$region, go_ids$Description)]
+
+# add size of gene set
+go_expressed_regions_summary$genes <- go_ids$geneID[match(go_expressed_regions_summary$region, go_ids$Description)]
+go_expressed_regions_summary$gene_length <- unlist(lapply(strsplit(go_expressed_regions_summary$genes, "/"), length))
+
+# add p-value correction
+go_expressed_regions_summary$pvalue.adjust <- p.adjust(go_expressed_regions_summary$pvalue, method = "BH")
+
+# filter out genes with 0 median obs mutations
+go_expressed_regions_summary <- go_expressed_regions_summary %>%
+  filter(median.obs.mut >= 1)
+
+# get significant hits
+go_expressed_regions_summary_sig <- go_expressed_regions_summary %>%
+  filter(pvalue.adjust <= 0.05)
+
+# enu vs control
+write.csv(go_expressed_regions_summary, "enu_ratio_results.csv", row.names = FALSE)
+
+# volcano
+pdf("enu_ratio_volcano.pdf",
+    width = 6,
+    height = 6)
+EnhancedVolcano(go_expressed_regions_summary,
+                lab = go_expressed_regions_summary$region,
+                title = "ENU-treated cells",
+                subtitle = "Log2(Expected vs Observed SNV ratios)",
+                caption = NULL,
+                x = 'median_log2fc',
+                y = 'pvalue',
+                pCutoffCol = "pvalue.adjust",
+                pointSize = 4.0,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 0.5,
+                pCutoff = 0.05,
+                labSize = 4,
+                labCol = 'black',
+                #labFace = 'bold',
+                #boxedLabels = TRUE,
+                drawConnectors = TRUE,
+                #widthConnectors = 1.0,
+                #colConnectors = 'black',
+                #maxoverlapsConnectors = Inf,
+                #selectLab = KO_vs_WT$volcano.label,
+                #ylim = c(0,7),
+                # xlim = c(-3, 1.5),
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE)
+dev.off()
+```
+
+###### Relationships
+```{r}
+pdf("enu_ratio_sig_pvalue_vs_gene_length.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_regions_summary$pvalue,
+     go_expressed_regions_summary$gene_length)
+dev.off()
+
+pdf("enu_ratio_sig_log2fc_vs_gene_length.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_regions_summary$median_log2fc,
+     go_expressed_regions_summary$gene_length)
+dev.off()
+
+pdf("enu_ratio_sig_pvalue_vs_obs_mut.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_regions_summary$pvalue,
+     go_expressed_regions_summary$median.obs.mut)
+dev.off()
+
+pdf("enu_ratio_gene_length_vs_obs_mut.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_regions_summary$gene_length,
+     go_expressed_regions_summary$median.obs.mut)
+dev.off()
+
+pdf("enu_ratio_obs_mut_vs_log2fc.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_regions_summary$median.obs.mut,
+     go_expressed_regions_summary$median_log2fc)
+dev.off()
+```
+
+##### Shuffled
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_shuffled_regions")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_shuffled_regions")
+
+go_expressed_shuffled_regions_levels <- unique(go_expressed_shuffled$region)
+
+go_expressed_shuffled_regions <- merge(go_expressed_shuffled, sample_table, by = "sample")
+
+go_expressed_shuffled_regions$region <- factor(go_expressed_shuffled_regions$region, go_expressed_shuffled_regions_levels)
+
+go_expressed_shuffled_regions <- subset(go_expressed_shuffled_regions, condition == "enu")
+
+go_expressed_shuffled_regions_ratio_significance <- ratio_significance_pathway(go_expressed_shuffled_regions,
+                                                   "condition",
+                                                   go_expressed_shuffled_regions_levels)
+
+
+# summarize by getting average log2fc for each group and then compare groups
+go_expressed_shuffled_regions_summary <- subset(go_expressed_shuffled_regions) %>%
+  group_by(region, condition) %>%
+  summarise(median_log2fc = median(log2fc, na.rm = TRUE),
+            median.obs.mut = median(obs.mut, na.rm = TRUE))
+
+# add significance values
+go_expressed_shuffled_regions_summary <- merge(go_expressed_shuffled_regions_summary, 
+                                      go_expressed_shuffled_regions_ratio_significance, 
+                                      by = "region")
+# add GO IDs
+go_expressed_shuffled_regions_summary$GO.ID <- go_ids$ID[match(go_expressed_shuffled_regions_summary$region, go_ids$Description)]
+
+# add size of gene set
+go_expressed_shuffled_regions_summary$genes <- go_ids$geneID[match(go_expressed_shuffled_regions_summary$region, go_ids$Description)]
+go_expressed_shuffled_regions_summary$gene_length <- unlist(lapply(strsplit(go_expressed_shuffled_regions_summary$genes, "/"), length))
+
+# add p-value correction
+go_expressed_shuffled_regions_summary$pvalue.adjust <- p.adjust(go_expressed_shuffled_regions_summary$pvalue, method = "BH")
+
+# filter out genes with 0 median obs mutations
+go_expressed_shuffled_regions_summary <- go_expressed_shuffled_regions_summary %>%
+  filter(median.obs.mut >= 1)
+
+# get significant hits
+go_expressed_shuffled_regions_summary_sig <- go_expressed_shuffled_regions_summary %>%
+  filter(pvalue.adjust <= 0.05)
+
+# enu vs control
+write.csv(go_expressed_shuffled_regions_summary, "enu_ratio_shuffled_results.csv", row.names = FALSE)
+
+# volcano
+pdf("enu_ratio_shuffled_volcano.pdf",
+    width = 6,
+    height = 6)
+EnhancedVolcano(go_expressed_shuffled_regions_summary,
+                lab = go_expressed_shuffled_regions_summary$region,
+                title = "ENU-treated cells",
+                subtitle = "Log2(Expected vs Observed SNV ratios)",
+                caption = NULL,
+                x = 'median_log2fc',
+                y = 'pvalue',
+                pCutoffCol = "pvalue.adjust",
+                pointSize = 4.0,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 0.5,
+                pCutoff = 0.05,
+                labSize = 4,
+                labCol = 'black',
+                #labFace = 'bold',
+                #boxedLabels = TRUE,
+                drawConnectors = TRUE,
+                #widthConnectors = 1.0,
+                #colConnectors = 'black',
+                #maxoverlapsConnectors = Inf,
+                #selectLab = KO_vs_WT$volcano.label,
+                #ylim = c(0,7),
+                # xlim = c(-3, 1.5),
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE)
+dev.off()
+```
+
+###### Relationships
+```{r}
+pdf("enu_ratio_sig_pvalue_vs_gene_length.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_shuffled_regions_summary$pvalue,
+     go_expressed_shuffled_regions_summary$gene_length)
+dev.off()
+
+pdf("enu_ratio_sig_log2fc_vs_gene_length.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_shuffled_regions_summary$median_log2fc,
+     go_expressed_shuffled_regions_summary$gene_length)
+dev.off()
+
+pdf("enu_ratio_sig_pvalue_vs_obs_mut.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_shuffled_regions_summary$pvalue,
+     go_expressed_shuffled_regions_summary$median.obs.mut)
+dev.off()
+
+pdf("enu_ratio_gene_length_vs_obs_mut.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_shuffled_regions_summary$gene_length,
+     go_expressed_shuffled_regions_summary$median.obs.mut)
+dev.off()
+
+pdf("enu_ratio_obs_mut_vs_log2fc.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_shuffled_regions_summary$median.obs.mut,
+     go_expressed_shuffled_regions_summary$median_log2fc)
+dev.off()
+```
+
+##### Overlap of genes in significant pathways
+- No overlaps
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/1-load-data")
+
+# load granges and results of enrichments
+go_expressed_granges <- readRDS("go.expressed.RDS")
+enrich.go_expressed <- readRDS("enrich.go.expressed.RDS")
+
+# filter significant hits in real based on shuffle
+go_expressed_regions_summary_sig <- go_expressed_regions_summary_sig %>%
+  filter(!GO.ID %in% go_expressed_shuffled_regions_summary_sig$GO.ID)
+
+# filter for sig hits
+go_expressed_granges_sig <- go_expressed_granges[names(go_expressed_granges) %in% go_expressed_regions_summary_sig$region]
+enrich.go_expressed.sig <- filter(enrich.go_expressed, ID %in% go_expressed_regions_summary_sig$GO.ID)
+
+# get sequence length distribution and add to results
+lengths <- unlist(lapply(go_expressed_granges_sig, function(x) sum(width(x))))
+go_expressed_regions_summary_sig$sequence_length <- lengths[match(go_expressed_regions_summary_sig$region, names(lengths))]
+
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+
+# edox <- pairwise_termsim(enrich.go_expressed.sig)
+# pdf("enu_ratio_sig_filtered_tree.pdf",
+#     width = 10,
+#     height = 10)
+# treeplot(edox)
+# dev.off()
+
+# using all go terms too complicated
+# pdf("enu_ratio_sig_filtered_cnet.pdf",
+#     width = 10,
+#     height = 10)
+# cnetplot(edox, 
+#          showCategory = 5)
+# dev.off()
+
+# get shared genes amongst significant go terms
+# genelist <- strsplit(go_expressed_regions_summary_sig$genes, "/")
+# names(genelist) <- go_expressed_regions_summary_sig$region
+# genelist <- fromList(genelist)
+# genelist.reduced <- genelist[rowSums(genelist[, names(genelist)]) > 1,] # filter out sets with no overlap between others
+#                        
+# pdf("enu_ratio_sig_filtered_upset.pdf",
+#     width = 8,
+#     height = 5)
+# upset(genelist.reduced,
+#       nsets	= 10,
+#       nintersects = NA,
+#       order.by = "freq",
+#       show.numbers = FALSE)
+# dev.off()
+
+# save
+# write.csv(go_expressed_regions_summary_sig, "enu_ratio_results_filtered.csv", row.names = FALSE)
+```
+
+##### Final plots
+- No significant genes
+```{r}
+# plot bar plot of significant hits
+go_expressed_regions_summary_sig <- go_expressed_regions_summary_sig[order(go_expressed_regions_summary_sig$median_log2fc, decreasing = TRUE),]
+go_expressed_regions_summary_sig$region <- factor(go_expressed_regions_summary_sig$region, levels = go_expressed_regions_summary_sig$region)
+
+pdf("enu_ratio_sig_filtered_bar.pdf",
+    width = 8,
+    height = 5)
+ggplot(go_expressed_regions_summary_sig[1:16,], aes(x = region, y = median_log2fc, fill = pvalue.adjust)) +
+  geom_bar(stat = "identity") +
+  scale_y_reverse() +
+  coord_flip() +
+  scale_fill_viridis() +
+  theme_Publication() +
+  theme(legend.justification = c("right","top"),
+        legend.position = "top",
+        legend.title = element_text(size=15),
+        legend.text = element_text(size=10),
+        axis.title.x = element_text(size = 12)) +
+  labs(x = "GO Biological Process", 
+       y = "Mean Log2(observed/expected)\nSNVs Per Cell",
+       fill = "Adjusted p-value")
+dev.off()
+
+# bar plot of number of increased estimated mutations
+bar_plot <- subset(go_expressed_regions, group == "observed") %>%
+  mutate(est.mut = obs.mut / Cov / Sen_SNV * hg19_size) %>%
+  group_by(region, condition) %>%
+  summarise(mean.est.mut = mean(est.mut, na.rm = TRUE)) %>%
+  group_by(region) %>%
+  spread(key = condition, value = mean.est.mut) %>%
+  mutate(group_diff = abs(enu - control)) %>%
+  filter(region %in% go_expressed_regions_summary_sig[1:16,]$region)
+
+bar_plot <- bar_plot[match(go_expressed_regions_summary_sig[1:16,]$region, bar_plot$region),]
+bar_plot$region <- factor(bar_plot$region, levels = bar_plot$region)
+bar_plot$group_diff
+
+pdf("enu_number_sig_filtered_bar.pdf",
+    width = 8,
+    height = 4.5)
+ggplot(bar_plot, aes(x = region, y = group_diff)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme_Publication() +
+  theme( 
+        axis.title.x = element_text(size = 12)) +
+  labs(x = "GO Biological Process", 
+       y = "Mean Estimated SNV increase\nin ENU-treated cells")
+dev.off()
+```
+
+
+#### Control
+
+##### Observed
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+
+go_expressed_regions_levels <- unique(go_expressed$region)
+
+go_expressed_regions <- merge(go_expressed, sample_table, by = "sample")
+
+go_expressed_regions$region <- factor(go_expressed_regions$region, go_expressed_regions_levels)
+
+go_expressed_regions <- subset(go_expressed_regions, condition == "control")
+
+go_expressed_regions_ratio_significance <- ratio_significance_pathway(go_expressed_regions,
+                                                   "condition",
+                                                   go_expressed_regions_levels)
+
+
+# summarize by getting average log2fc for each group and then compare groups
+go_expressed_regions_summary <- subset(go_expressed_regions) %>%
+  group_by(region, condition) %>%
+  summarise(median_log2fc = median(log2fc, na.rm = TRUE),
+            median.obs.mut = median(obs.mut, na.rm = TRUE))
+
+# add significance values
+go_expressed_regions_summary <- merge(go_expressed_regions_summary, 
+                                      go_expressed_regions_ratio_significance, 
+                                      by = "region")
+# add GO IDs
+go_expressed_regions_summary$GO.ID <- go_ids$ID[match(go_expressed_regions_summary$region, go_ids$Description)]
+
+# add size of gene set
+go_expressed_regions_summary$genes <- go_ids$geneID[match(go_expressed_regions_summary$region, go_ids$Description)]
+go_expressed_regions_summary$gene_length <- unlist(lapply(strsplit(go_expressed_regions_summary$genes, "/"), length))
+
+# add p-value correction
+go_expressed_regions_summary$pvalue.adjust <- p.adjust(go_expressed_regions_summary$pvalue, method = "BH")
+
+# filter out genes with 0 median obs mutations
+go_expressed_regions_summary <- go_expressed_regions_summary %>%
+  filter(median.obs.mut >= 1)
+
+# get significant hits
+go_expressed_regions_summary_sig <- go_expressed_regions_summary %>%
+  filter(pvalue.adjust <= 0.05)
+
+# control vs control
+write.csv(go_expressed_regions_summary, "control_ratio_results.csv", row.names = FALSE)
+
+# volcano
+pdf("control_ratio_volcano.pdf",
+    width = 6,
+    height = 6)
+EnhancedVolcano(go_expressed_regions_summary,
+                lab = go_expressed_regions_summary$region,
+                title = "control-treated cells",
+                subtitle = "Log2(Expected vs Observed SNV ratios)",
+                caption = NULL,
+                x = 'median_log2fc',
+                y = 'pvalue',
+                pCutoffCol = "pvalue.adjust",
+                pointSize = 4.0,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 0.5,
+                pCutoff = 0.05,
+                labSize = 4,
+                labCol = 'black',
+                #labFace = 'bold',
+                #boxedLabels = TRUE,
+                drawConnectors = TRUE,
+                #widthConnectors = 1.0,
+                #colConnectors = 'black',
+                #maxoverlapsConnectors = Inf,
+                #selectLab = KO_vs_WT$volcano.label,
+                #ylim = c(0,7),
+                # xlim = c(-3, 1.5),
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE)
+dev.off()
+```
+
+###### Relationships
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+
+pdf("control_ratio_sig_pvalue_vs_gene_length.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_regions_summary$pvalue,
+     go_expressed_regions_summary$gene_length)
+dev.off()
+
+pdf("control_ratio_sig_log2fc_vs_gene_length.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_regions_summary$median_log2fc,
+     go_expressed_regions_summary$gene_length)
+dev.off()
+
+pdf("control_ratio_sig_pvalue_vs_obs_mut.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_regions_summary$pvalue,
+     go_expressed_regions_summary$median.obs.mut)
+dev.off()
+
+pdf("control_ratio_gene_length_vs_obs_mut.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_regions_summary$gene_length,
+     go_expressed_regions_summary$median.obs.mut)
+dev.off()
+
+pdf("control_ratio_obs_mut_vs_log2fc.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_regions_summary$median.obs.mut,
+     go_expressed_regions_summary$median_log2fc)
+dev.off()
+```
+
+##### Shuffled
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+
+go_expressed_shuffled_regions_levels <- unique(go_expressed_shuffled$region)
+
+go_expressed_shuffled_regions <- merge(go_expressed_shuffled, sample_table, by = "sample")
+
+go_expressed_shuffled_regions$region <- factor(go_expressed_shuffled_regions$region, go_expressed_shuffled_regions_levels)
+
+go_expressed_shuffled_regions <- subset(go_expressed_shuffled_regions, condition == "control")
+
+go_expressed_shuffled_regions_ratio_significance <- ratio_significance_pathway(go_expressed_shuffled_regions,
+                                                   "condition",
+                                                   go_expressed_shuffled_regions_levels)
+
+
+# summarize by getting average log2fc for each group and then compare groups
+go_expressed_shuffled_regions_summary <- subset(go_expressed_shuffled_regions) %>%
+  group_by(region, condition) %>%
+  summarise(median_log2fc = median(log2fc, na.rm = TRUE),
+            median.obs.mut = median(obs.mut, na.rm = TRUE))
+
+# add significance values
+go_expressed_shuffled_regions_summary <- merge(go_expressed_shuffled_regions_summary, 
+                                      go_expressed_shuffled_regions_ratio_significance, 
+                                      by = "region")
+# add GO IDs
+go_expressed_shuffled_regions_summary$GO.ID <- go_ids$ID[match(go_expressed_shuffled_regions_summary$region, go_ids$Description)]
+
+# add size of gene set
+go_expressed_shuffled_regions_summary$genes <- go_ids$geneID[match(go_expressed_shuffled_regions_summary$region, go_ids$Description)]
+go_expressed_shuffled_regions_summary$gene_length <- unlist(lapply(strsplit(go_expressed_shuffled_regions_summary$genes, "/"), length))
+
+# add p-value correction
+go_expressed_shuffled_regions_summary$pvalue.adjust <- p.adjust(go_expressed_shuffled_regions_summary$pvalue, method = "BH")
+
+# filter out genes with 0 median obs mutations
+go_expressed_shuffled_regions_summary <- go_expressed_shuffled_regions_summary %>%
+  filter(median.obs.mut >= 1)
+
+# get significant hits
+go_expressed_shuffled_regions_summary_sig <- go_expressed_shuffled_regions_summary %>%
+  filter(pvalue.adjust <= 0.05)
+
+# control vs control
+write.csv(go_expressed_shuffled_regions_summary, "control_ratio_shuffled_results.csv", row.names = FALSE)
+
+# volcano
+pdf("control_ratio_shuffled_volcano.pdf",
+    width = 6,
+    height = 6)
+EnhancedVolcano(go_expressed_shuffled_regions_summary,
+                lab = go_expressed_shuffled_regions_summary$region,
+                title = "control-treated cells",
+                subtitle = "Log2(Expected vs Observed SNV ratios)",
+                caption = NULL,
+                x = 'median_log2fc',
+                y = 'pvalue',
+                pCutoffCol = "pvalue.adjust",
+                pointSize = 4.0,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 0.5,
+                pCutoff = 0.05,
+                labSize = 4,
+                labCol = 'black',
+                #labFace = 'bold',
+                #boxedLabels = TRUE,
+                drawConnectors = TRUE,
+                #widthConnectors = 1.0,
+                #colConnectors = 'black',
+                #maxoverlapsConnectors = Inf,
+                #selectLab = KO_vs_WT$volcano.label,
+                #ylim = c(0,7),
+                # xlim = c(-3, 1.5),
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE)
+dev.off()
+```
+
+###### Relationships
+```{r}
+pdf("control_ratio_sig_pvalue_vs_gene_length.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_shuffled_regions_summary$pvalue,
+     go_expressed_shuffled_regions_summary$gene_length)
+dev.off()
+
+pdf("control_ratio_sig_log2fc_vs_gene_length.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_shuffled_regions_summary$median_log2fc,
+     go_expressed_shuffled_regions_summary$gene_length)
+dev.off()
+
+pdf("control_ratio_sig_pvalue_vs_obs_mut.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_shuffled_regions_summary$pvalue,
+     go_expressed_shuffled_regions_summary$median.obs.mut)
+dev.off()
+
+pdf("control_ratio_gene_length_vs_obs_mut.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_shuffled_regions_summary$gene_length,
+     go_expressed_shuffled_regions_summary$median.obs.mut)
+dev.off()
+
+pdf("control_ratio_obs_mut_vs_log2fc.pdf",
+    width = 4,
+    height = 4)
+plot(go_expressed_shuffled_regions_summary$median.obs.mut,
+     go_expressed_shuffled_regions_summary$median_log2fc)
+dev.off()
+```
+
+##### Overlap of genes in significant pathways
+- No overlaps
+```{r}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/1-load-data")
+
+# load granges and results of enrichments
+go_expressed_granges <- readRDS("go.expressed.RDS")
+enrich.go_expressed <- readRDS("enrich.go.expressed.RDS")
+
+# filter significant hits in real based on shuffle
+go_expressed_regions_summary_sig <- go_expressed_regions_summary_sig %>%
+  filter(!GO.ID %in% go_expressed_shuffled_regions_summary_sig$GO.ID)
+
+# filter for sig hits
+go_expressed_granges_sig <- go_expressed_granges[names(go_expressed_granges) %in% go_expressed_regions_summary_sig$region]
+enrich.go_expressed.sig <- filter(enrich.go_expressed, ID %in% go_expressed_regions_summary_sig$GO.ID)
+
+# get sequence length distribution and add to results
+lengths <- unlist(lapply(go_expressed_granges_sig, function(x) sum(width(x))))
+go_expressed_regions_summary_sig$sequence_length <- lengths[match(go_expressed_regions_summary_sig$region, names(lengths))]
+
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+
+# edox <- pairwise_termsim(enrich.go_expressed.sig)
+# pdf("control_ratio_sig_filtered_tree.pdf",
+#     width = 10,
+#     height = 10)
+# treeplot(edox)
+# dev.off()
+
+# using all go terms too complicated
+# pdf("control_ratio_sig_filtered_cnet.pdf",
+#     width = 10,
+#     height = 10)
+# cnetplot(edox, 
+#          showCategory = 5)
+# dev.off()
+
+# get shared genes amongst significant go terms
+# genelist <- strsplit(go_expressed_regions_summary_sig$genes, "/")
+# names(genelist) <- go_expressed_regions_summary_sig$region
+# genelist <- fromList(genelist)
+# genelist.reduced <- genelist[rowSums(genelist[, names(genelist)]) > 1,] # filter out sets with no overlap between others
+#                        
+# pdf("control_ratio_sig_filtered_upset.pdf",
+#     width = 8,
+#     height = 5)
+# upset(genelist.reduced,
+#       nsets	= 10,
+#       nintersects = NA,
+#       order.by = "freq",
+#       show.numbers = FALSE)
+# dev.off()
+
+# save
+# write.csv(go_expressed_regions_summary_sig, "control_ratio_results_filtered.csv", row.names = FALSE)
+```
+
+##### Final plots
+- No significant genes
+```{r, eval = FALSE}
+# plot bar plot of significant hits
+go_expressed_regions_summary_sig <- go_expressed_regions_summary_sig[order(go_expressed_regions_summary_sig$median_log2fc, decreasing = TRUE),]
+go_expressed_regions_summary_sig$region <- factor(go_expressed_regions_summary_sig$region, levels = go_expressed_regions_summary_sig$region)
+
+pdf("control_ratio_sig_filtered_bar.pdf",
+    width = 8,
+    height = 5)
+ggplot(go_expressed_regions_summary_sig[1:16,], aes(x = region, y = median_log2fc, fill = pvalue.adjust)) +
+  geom_bar(stat = "identity") +
+  scale_y_reverse() +
+  coord_flip() +
+  scale_fill_viridis() +
+  theme_Publication() +
+  theme(legend.justification = c("right","top"),
+        legend.position = "top",
+        legend.title = element_text(size=15),
+        legend.text = element_text(size=10),
+        axis.title.x = element_text(size = 12)) +
+  labs(x = "GO Biological Process", 
+       y = "Mean Log2(observed/expected)\nSNVs Per Cell",
+       fill = "Adjusted p-value")
+dev.off()
+
+# bar plot of number of increased estimated mutations
+bar_plot <- subset(go_expressed_regions) %>%
+  mutate(est.mut = obs.mut / Cov / Sen_SNV * hg19_size) %>%
+  group_by(region, condition) %>%
+  summarise(mean.est.mut = mean(est.mut, na.rm = TRUE)) %>%
+  group_by(region) %>%
+  spread(key = condition, value = mean.est.mut) %>%
+  mutate(group_diff = abs(control - control)) %>%
+  filter(region %in% go_expressed_regions_summary_sig[1:16,]$region)
+
+bar_plot <- bar_plot[match(go_expressed_regions_summary_sig[1:16,]$region, bar_plot$region),]
+bar_plot$region <- factor(bar_plot$region, levels = bar_plot$region)
+bar_plot$group_diff
+
+pdf("control_number_sig_filtered_bar.pdf",
+    width = 8,
+    height = 4.5)
+ggplot(bar_plot, aes(x = region, y = group_diff)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme_Publication() +
+  theme( 
+        axis.title.x = element_text(size = 12)) +
+  labs(x = "GO Biological Process", 
+       y = "Mean Estimated SNV increase\nin control-treated cells")
+dev.off()
+```
+
+### ENU vs Control
+
+#### Observed
+```{r}
+dir.create("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/231009\ multiple\ ENU\ analysis/6-pathway-overlap/3-ratio-plot/downsampled/go_expressed_regions")
+
+go_expressed_regions_levels <- unique(go_expressed$region)
+
+go_expressed_regions <- merge(go_expressed, sample_table, by = "sample")
+
+go_expressed_regions$region <- factor(go_expressed_regions$region, go_expressed_regions_levels)
+
+go_expressed_regions_ratio_significance <- ratio_significance_pathway(go_expressed_regions,
+                                                   "condition",
+                                                   go_expressed_regions_levels)
+
+go_expressed_regions_group_significance <- group_significance(go_expressed_regions,
+                                                         c("group", "region"),
+                                                         "condition",
+                                                         go_expressed_regions_levels)
+
+# summarize by getting average log2fc for each group and then compare groups
+go_expressed_regions_summary <- subset(go_expressed_regions) %>%
+  group_by(region, condition) %>%
+  summarise(median_log2fc = mean(log2fc, na.rm = TRUE)) %>%
+  group_by(region) %>%
+  spread(key = condition, value = median_log2fc) %>%
+  mutate(group_diff = enu - control)
+
+# add group significance values
+go_expressed_regions_summary <- merge(go_expressed_regions_summary, 
+                                      go_expressed_regions_group_significance, 
+                                      by = "region")
+# add GO IDs
+go_expressed_regions_summary$GO.ID <- go_ids$ID[match(go_expressed_regions_summary$region, go_ids$Description)]
+
+# add p-value corerection
+go_expressed_regions_summary$p_value.adjust <- p.adjust(go_expressed_regions_summary$p_value, method = "BH")
+
+# enu vs control
+write.csv(go_expressed_regions_summary, "enu_vs_control_ratio_results.csv", row.names = FALSE)
+
+pdf("enu_vs_control_ratio_volcano.pdf",
+    width = 6,
+    height = 6)
+EnhancedVolcano(go_expressed_regions_summary,
+                lab = go_expressed_regions_summary$region,
+                title = "ENU vs Control expected vs observed ratios",
+                subtitle = NULL,
+                caption = NULL,
+                x = 'group_diff',
+                y = 'p_value',
+                pCutoffCol = "p_value.adjust",
+                pointSize = 4.0,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 0.5,
+                pCutoff = 0.05,
+                labSize = 4,
+                labCol = 'black',
+                labFace = 'bold',
+                #boxedLabels = TRUE,
+                #drawConnectors = TRUE,
+                #widthConnectors = 1.0,
+                #colConnectors = 'black',
+                #maxoverlapsConnectors = Inf,
+                #selectLab = KO_vs_WT$volcano.label,
+                ylim = c(0,3),
+                xlim = c(-2,2),
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE)
+dev.off()
+```

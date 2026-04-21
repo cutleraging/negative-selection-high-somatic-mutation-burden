@@ -1,0 +1,33 @@
+Comment[ArrayExpressAccession]	E-MTAB-2086
+MAGE-TAB Version	1.1
+Investigation Title	IMR90 Senescence
+Comment[Submitted Name]	IMR90 Senescence
+Experiment Description	Transcription profiling from human primary fibroblasts as they progress into senescence. Samples were taken early population doubling onwards until cells reached replicative senescence and stopped dividing. Population doubling values are contained in Characteristics[generation] column.
+Experimental Design	development or differentiation design	co-expression_design	replicate design
+Comment[AEExperimentType]	transcription profiling by array
+Comment[AEExperimentDisplayName]	Transcription profiling by array of human primary fibroblasts as they progress into senescence
+Experimental Factor Name	generation	developmental stage
+Experimental Factor Type	generation	developmental stage
+Quality Control Type	biological replicate	technical replicate
+Quality Control Term Source REF	EFO	EFO
+Public Release Date	2014-06-17
+Person Last Name	Lackner
+Person First Name	Daniel
+Person Mid Initials	H
+Person Email	dlackner@salk.edu
+Person Phone	858.453.4100 x1868
+Person Address	10010 North Torrey Pines Road,  La Jolla, CA-92037-1002, USA
+Person Affiliation	The Salk Institute for Biological Studies, Molecular and Cell Biology Laboratory
+Person Roles	submitter
+PubMed ID
+Publication Author List	Lackner, D. H., Hayashi, M. T., Cesare, A. J. and Karlseder, J.
+Publication Title	A genomics approach identifies senescence-specific gene expression regulation
+Publication Status	in preparation
+Protocol Name	P-MTAB-36175	P-MTAB-36176	P-MTAB-36177
+Protocol Type	growth protocol	RNA extraction	nucleic acid labeling protocol
+Protocol Description	All experiments were performed using IMR90 cells, which were grown in DMEM medium containing 15% Fetal Bovine Serum, antibiotics (Penicillin, Streptomycin), and non-essential amino acids. Cells were grown at 7.5% CO2 and 3.5% O2	RNA was extracted with Trizol Reagent according to manufacturers instructions and purified using RNeasy mini kits (Qiagen).	Standard Affymetrix labeling and hybridization for GeneChip Human Gene 1.0 ST array
+Protocol Term Source REF	EFO	EFO	EFO
+Term Source Name	EFO	ArrayExpress
+Term Source File	http://www.ebi.ac.uk/efo	http://www.ebi.ac.uk/arrayexpress
+SDRF File	E-MTAB-2086.sdrf.txt
+Publication DOI	10.1111/acel.12234

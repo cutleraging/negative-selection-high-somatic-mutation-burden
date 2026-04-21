@@ -1,0 +1,342 @@
+---
+title: "mutation-distribution - calculate-ratio - multiple ENU"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preparation
+
+## Load libraries
+```{r}
+library(VariantAnnotation)
+library(GenomicRanges)
+library(GenomicFeatures)
+library(GenomicScores)
+library(rtracklayer)
+library(MutationalPatterns)
+library(ggplot2)
+library(AnnotationHub)
+library(tidyr)
+library(tools)
+library(foreach)
+library(doParallel)
+```
+
+## Functions
+```{r}
+# obs = obs_snv[grep("C1_05_24", names(obs_snv))]
+# sim = sim_snv[grep("C1_05_24", names(sim_snv))]
+# regions = generic_regions[1:2]
+
+calc_OE_ratio <- function(obs, sim, regions){
+  
+  # Preallocate vector for observed overlap
+  obs_overlaps <- numeric(length(regions))
+  
+  # get number of observed mutations overlapping genomic region of interest
+  obs_overlaps <- sapply(regions, function(region) countOverlaps(obs, region, type = "any", ignore.strand = TRUE))
+  names(obs_overlaps) <- names(regions)
+  
+  # Preallocate matrix for simulated overlaps
+  sim_overlaps_df <- matrix(nrow = length(sim), ncol = length(regions))
+  colnames(sim_overlaps_df) <- names(regions)
+
+  # get number of simulated mutations overlapping genomic region of interest
+  # there should be at least 1000 simulation for 1 observed sample
+  sim_overlaps_df <- t(sapply(sim, function(sim_item) {
+    sapply(regions, function(region) {
+      countOverlaps(GRangesList(sim_item), region, type = "any", ignore.strand = TRUE)
+    })
+  }))
+  
+  # get normality of distribution for simulated samples
+  sim.norm.pvalues <- apply(sim_overlaps_df, 2, function(column) shapiro.test(column)$p.value)
+  
+  # adjust normality test pvalue for multiple testing
+  sim.norm.pvalues.adj <- p.adjust(sim.norm.pvalues, method = "BH")
+  
+  # create log2 ratio using observed / (average simulated i.e. expected)
+  # using median here instead of mean in case distributions are not normal
+  sim.overlaps.median <- colMedians(sim_overlaps_df) 
+  log2fc <- log2((obs_overlaps + 1) / (sim.overlaps.median + 1))
+  
+  # permutation test to calculate significance
+  # how many simulation had equal or more/less mutations compared to observed (one-sided)
+  perm.test.pvalues <- sapply(seq_along(regions), function(i) {
+    region_name <- names(regions)[i]
+    sim.median <- median(sim_overlaps_df[, region_name])
+    sim.log2fc <-  log2((sim.median + 1) / (sim_overlaps_df[, region_name] + 1))
+    obs.log2fc <-  log2((obs_overlaps[region_name] + 1) / (sim.median + 1))
+    mean(abs(sim.log2fc)>=abs(obs.log2fc))
+  })
+  names(perm.test.pvalues) <- names(regions)
+
+  # adjust permutation test pvalue for multiple testing
+  perm.test.pvalues.adj <- p.adjust(perm.test.pvalues, method = "BH")
+  
+  res <- data.frame(region = names(regions),
+                    sample = names(obs),
+                    obs.mut = obs_overlaps,
+                    sim.mut = sim.overlaps.median,
+                    log2fc = log2fc,
+                    pvalue = perm.test.pvalues,
+                    pvalue.adj = perm.test.pvalues.adj,
+                    sim.distr.norm.pvalue.adj = sim.norm.pvalues.adj)
+  
+  return(res)
+}
+
+calc_OE_ratio_parallel <- function(samples, obs_snv, sim_snv, regions) {
+    # Function to process a single sample
+    process_sample <- function(sample, obs_snv, sim_snv, regions) {
+        obs_sample <- obs_snv[grep(sample, names(obs_snv))]
+        sim_sample <- sim_snv[grep(sample, names(sim_snv))]
+        calc_OE_ratio(obs = obs_sample, sim = sim_sample, regions = regions)
+    }
+
+    # Detect the number of cores and register parallel backend
+    no_cores <- detectCores() - 1  # Leaving one core free
+    registerDoParallel(no_cores)
+
+    # Apply calc_OE_ratio in parallel and row-bind the results
+    results_df <- foreach(sample = samples, .combine = 'rbind', .packages = c("GenomicRanges")) %dopar% {
+        process_sample(sample, obs_snv, sim_snv, regions)
+    }
+    return(results_df)
+}
+
+theme_Publication <- function(base_size=16, base_family="helvetica") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family = "")
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               #legend.key.size= unit(0.2, "cm"),
+               legend.margin = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+          ))
+      
+}
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+wrap_labels <- function(labels, width = 5) {
+  wrapped_labels <- str_wrap(labels, width)
+  names(wrapped_labels) <- names(labels)
+  return(wrapped_labels)
+}
+```
+
+## Load data
+```{r}
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/1-load-data")
+
+sample_table <- read.table("sample_table_filtered.txt", header = TRUE, sep = "\t")
+
+sample_table_downsample <- sample_table[!(sample_table$condition == "enu" & sample_table$cycle == "3"),]
+
+# observed mutations
+obs_snv <- readRDS("obs_snv.RDS")
+obs_indel <- readRDS("obs_indel.RDS")
+
+# simulated mutations
+sim_snv <- readRDS("sim_snv.RDS")
+sim_indel <- readRDS("sim_indel.RDS")
+
+# downsampled observed mutations
+obs_snv_downsampled <- readRDS("obs_snv_downsampled.RDS")
+obs_indel_downsampled <- readRDS("obs_indel_downsampled.RDS")
+
+# downsampled simulated mutations
+sim_snv_downsampled <- readRDS("sim_snv_downsampled.RDS")
+sim_indel_downsampled <- readRDS("sim_indel_downsampled.RDS")
+
+# annotations
+expressed_nonexpressed_regions <- readRDS("expressed_nonexpressed_regions.RDS")
+go.expressed_regions <- readRDS("go.expressed.RDS")
+go.expressed.shuffled_regions <- readRDS("go.expressed.shuffled.RDS")
+kegg.expressed_regions <- readRDS("kegg.expressed.RDS")
+kegg.expressed.shuffled_regions <- readRDS("kegg.expressed.shuffled.RDS")
+essential_genes_regions <- readRDS("essential_genes.RDS")
+marker_genes_regions <- GRangesList(marker_genes = readRDS("marker_genes.RDS"))
+```
+
+# Mutation distribution analysis
+- Improvement: also get where in the genomic region this is occuring - i.e. the topography (left, right, center)
+- Improvement: Examine mutation density vs epigenetic signals (e.g. RNA-Seq), use simulated to calculate background signal
+
+## INDEL
+
+### expressed_nonexpressed_regions
+```{r}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+
+# observed 
+expressed_nonexpressed_regions_res_indel <- calc_OE_ratio_parallel(samples = sample_table$sample,
+                                                  obs_indel = obs_indel,
+                                                  sim_indel = sim_indel,
+                                                  regions = expressed_nonexpressed_regions)
+write.csv(expressed_nonexpressed_regions_res_indel, "expressed_nonexpressed_regions_res_indel.csv")
+
+# downsample mutations to match in all samples
+expressed_nonexpressed_regions_res_downsample_indel <- calc_OE_ratio_parallel(samples = sample_table_downsample$sample,
+                                                             obs_indel = obs_indel_downsampled,
+                                                             sim_indel = sim_indel_downsampled,
+                                                             regions = expressed_nonexpressed_regions)
+write.csv(expressed_nonexpressed_regions_res_downsample_indel, "expressed_nonexpressed_regions_res_downsample_indel.csv")
+```
+
+### go.expressed_regions 
+```{r}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+
+# observed 
+go.expressed_regions_res_indel <- calc_OE_ratio_parallel(samples = sample_table$sample,
+                                                  obs_indel = obs_indel,
+                                                  sim_indel = sim_indel,
+                                                  regions = go.expressed_regions )
+write.csv(go.expressed_regions_res_indel, "go.expressed_regions_res_indel.csv")
+
+# downsample mutations to match in all samples
+go.expressed_regions_res_downsample_indel <- calc_OE_ratio_parallel(samples = sample_table_downsample$sample,
+                                                             obs_indel = obs_indel_downsampled,
+                                                             sim_indel = sim_indel_downsampled,
+                                                             regions = go.expressed_regions )
+write.csv(go.expressed_regions_res_downsample_indel, "go.expressed_regions_res_downsample_indel.csv")
+```
+
+### go.expressed.shuffled_regions
+```{r}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+
+# observed 
+go.expressed.shuffled_regions_res_indel <- calc_OE_ratio_parallel(samples = sample_table$sample,
+                                                  obs_indel = obs_indel,
+                                                  sim_indel = sim_indel,
+                                                  regions = go.expressed.shuffled_regions)
+write.csv(go.expressed.shuffled_regions_res_indel, "go.expressed.shuffled_regions_res_indel.csv")
+
+# downsample mutations to match in all samples
+go.expressed.shuffled_regions_res_downsample_indel <- calc_OE_ratio_parallel(samples = sample_table_downsample$sample,
+                                                             obs_indel = obs_indel_downsampled,
+                                                             sim_indel = sim_indel_downsampled,
+                                                             regions = go.expressed.shuffled_regions)
+write.csv(go.expressed.shuffled_regions_res_downsample_indel, "go.expressed.shuffled_regions_res_downsample_indel.csv")
+
+```
+
+### kegg.expressed_regions 
+```{r}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+
+# observed 
+kegg.expressed_regions_res_indel <- calc_OE_ratio_parallel(samples = sample_table$sample,
+                                                  obs_indel = obs_indel,
+                                                  sim_indel = sim_indel,
+                                                  regions = kegg.expressed_regions )
+write.csv(kegg.expressed_regions_res_indel, "kegg.expressed_regions_res_indel.csv")
+
+# downsample mutations to match in all samples
+kegg.expressed_regions_res_downsample_indel <- calc_OE_ratio_parallel(samples = sample_table_downsample$sample,
+                                                             obs_indel = obs_indel_downsampled,
+                                                             sim_indel = sim_indel_downsampled,
+                                                             regions = kegg.expressed_regions )
+write.csv(kegg.expressed_regions_res_downsample_indel, "kegg.expressed_regions_res_downsample_indel.csv")
+```
+
+### kegg.expressed.shuffled_regions
+```{r}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+
+# observed 
+kegg.expressed.shuffled_regions_res_indel <- calc_OE_ratio_parallel(samples = sample_table$sample,
+                                                  obs_indel = obs_indel,
+                                                  sim_indel = sim_indel,
+                                                  regions = kegg.expressed.shuffled_regions)
+write.csv(kegg.expressed.shuffled_regions_res_indel, "kegg.expressed.shuffled_regions_res_indel.csv")
+
+# downsample mutations to match in all samples
+kegg.expressed.shuffled_regions_res_downsample_indel <- calc_OE_ratio_parallel(samples = sample_table_downsample$sample,
+                                                             obs_indel = obs_indel_downsampled,
+                                                             sim_indel = sim_indel_downsampled,
+                                                             regions = kegg.expressed.shuffled_regions)
+write.csv(kegg.expressed.shuffled_regions_res_downsample_indel, "kegg.expressed.shuffled_regions_res_downsample_indel.csv")
+
+```
+
+### essential_genes_regions
+```{r}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+
+# observed 
+essential_genes_regions_res_indel <- calc_OE_ratio_parallel(samples = sample_table$sample,
+                                                  obs_indel = obs_indel,
+                                                  sim_indel = sim_indel,
+                                                  regions = essential_genes_regions)
+write.csv(essential_genes_regions_res_indel, "essential_genes_regions_res_indel.csv")
+
+# downsample mutations to match in all samples
+essential_genes_regions_res_downsample_indel <- calc_OE_ratio_parallel(samples = sample_table_downsample$sample,
+                                                             obs_indel = obs_indel_downsampled,
+                                                             sim_indel = sim_indel_downsampled,
+                                                             regions = essential_genes_regions)
+write.csv(essential_genes_regions_res_downsample_indel, "essential_genes_regions_res_downsample_indel.csv")
+
+```
+
+### marker_genes_regions
+```{r}
+dir.create("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+setwd("/gs/gsfs0/users/rcutler/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway-overlap/2-calculate-ratio/indel")
+
+# observed 
+marker_genes_regions_res_indel <- calc_OE_ratio_parallel(samples = sample_table$sample,
+                                                  obs_indel = obs_indel,
+                                                  sim_indel = sim_indel,
+                                                  regions = marker_genes_regions)
+write.csv(marker_genes_regions_res_indel, "marker_genes_regions_res_indel.csv")
+
+# downsample mutations to match in all samples
+marker_genes_regions_res_downsample_indel <- calc_OE_ratio_parallel(samples = sample_table_downsample$sample,
+                                                             obs_indel = obs_indel_downsampled,
+                                                             sim_indel = sim_indel_downsampled,
+                                                             regions = marker_genes_regions)
+write.csv(marker_genes_regions_res_downsample_indel, "marker_genes_regions_res_downsample_indel.csv")
+```

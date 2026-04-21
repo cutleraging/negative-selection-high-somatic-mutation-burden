@@ -1,0 +1,758 @@
+<?xml version='1.0' encoding='UTF-8'?><submission accno="E-MTAB-2086">
+  <attributes>
+    <attribute>
+      <name>Title</name>
+      <value>IMR90 Senescence</value>
+    </attribute>
+    <attribute>
+      <name>ReleaseDate</name>
+      <value>2014-06-17</value>
+    </attribute>
+    <attribute>
+      <name>RootPath</name>
+      <value>E-MTAB-2086</value>
+    </attribute>
+    <attribute>
+      <name>AttachTo</name>
+      <value>ArrayExpress</value>
+    </attribute>
+  </attributes>
+  <section accno="s-E-MTAB-2086" type="Study">
+    <attributes>
+      <attribute>
+        <name>Title</name>
+        <value>IMR90 Senescence</value>
+      </attribute>
+      <attribute>
+        <name>Study type</name>
+        <value>transcription profiling by array</value>
+        <valqual>
+          <name>Ontology</name>
+          <value>EFO</value>
+        </valqual>
+        <valqual>
+          <name>TermId</name>
+          <value>EFO_0002768</value>
+        </valqual>
+      </attribute>
+      <attribute>
+        <name>Organism</name>
+        <value>Homo sapiens</value>
+      </attribute>
+      <attribute>
+        <name>Description</name>
+        <value>Transcription profiling from human primary fibroblasts as they progress into senescence. Samples were taken early population doubling onwards until cells reached replicative senescence and stopped dividing. Population doubling values are contained in Characteristics[generation] column.</value>
+      </attribute>
+    </attributes>
+    <subsections>
+      <table>
+        <section accno="P-MTAB-36175" type="Protocols">
+          <attributes>
+            <attribute>
+              <name>Name</name>
+              <value>P-MTAB-36175</value>
+            </attribute>
+            <attribute>
+              <name>Type</name>
+              <value>growth protocol</value>
+              <valqual>
+                <name>Ontology</name>
+                <value>EFO</value>
+              </valqual>
+            </attribute>
+            <attribute>
+              <name>Description</name>
+              <value>All experiments were performed using IMR90 cells, which were grown in DMEM medium containing 15% Fetal Bovine Serum, antibiotics (Penicillin, Streptomycin), and non-essential amino acids. Cells were grown at 7.5% CO2 and 3.5% O2</value>
+            </attribute>
+          </attributes>
+        </section>
+        <section accno="P-MTAB-36176" type="Protocols">
+          <attributes>
+            <attribute>
+              <name>Name</name>
+              <value>P-MTAB-36176</value>
+            </attribute>
+            <attribute>
+              <name>Type</name>
+              <value>RNA extraction</value>
+              <valqual>
+                <name>Ontology</name>
+                <value>EFO</value>
+              </valqual>
+            </attribute>
+            <attribute>
+              <name>Description</name>
+              <value>RNA was extracted with Trizol Reagent according to manufacturers instructions and purified using RNeasy mini kits (Qiagen).</value>
+            </attribute>
+          </attributes>
+        </section>
+        <section accno="P-MTAB-36177" type="Protocols">
+          <attributes>
+            <attribute>
+              <name>Name</name>
+              <value>P-MTAB-36177</value>
+            </attribute>
+            <attribute>
+              <name>Type</name>
+              <value>nucleic acid labeling protocol</value>
+              <valqual>
+                <name>Ontology</name>
+                <value>EFO</value>
+              </valqual>
+            </attribute>
+            <attribute>
+              <name>Description</name>
+              <value>Standard Affymetrix labeling and hybridization for GeneChip Human Gene 1.0 ST array</value>
+            </attribute>
+          </attributes>
+        </section>
+      </table>
+      <section type="Author">
+        <attributes>
+          <attribute>
+            <name>Name</name>
+            <value>Daniel Lackner</value>
+          </attribute>
+          <attribute>
+            <name>Email</name>
+            <value>dlackner@salk.edu</value>
+          </attribute>
+          <attribute>
+            <name>Phone</name>
+            <value>858.453.4100 x1868</value>
+          </attribute>
+          <attribute>
+            <name>Role</name>
+            <value>submitter</value>
+          </attribute>
+          <attribute reference="true">
+            <name>affiliation</name>
+            <value>o1</value>
+          </attribute>
+        </attributes>
+      </section>
+      <section accno="o1" type="Organization">
+        <attributes>
+          <attribute>
+            <name>Name</name>
+            <value>The Salk Institute for Biological Studies, Molecular and Cell Biology Laboratory</value>
+          </attribute>
+          <attribute>
+            <name>Address</name>
+            <value>10010 North Torrey Pines Road,  La Jolla, CA-92037-1002, USA</value>
+          </attribute>
+        </attributes>
+      </section>
+      <section type="Publication">
+        <attributes>
+          <attribute>
+            <name>Title</name>
+            <value>A genomics approach identifies senescence-specific gene expression regulation</value>
+          </attribute>
+          <attribute>
+            <name>Authors</name>
+            <value>Lackner, D. H., Hayashi, M. T., Cesare, A. J. and Karlseder, J.</value>
+          </attribute>
+          <attribute>
+            <name>DOI</name>
+            <value>10.1111/acel.12234</value>
+          </attribute>
+          <attribute>
+            <name>Status</name>
+            <value>in preparation</value>
+          </attribute>
+        </attributes>
+        <links>
+          <link>
+            <url>10.1111/acel.12234</url>
+            <attributes>
+              <attribute>
+                <name>Type</name>
+                <value>DOI</value>
+              </attribute>
+            </attributes>
+          </link>
+        </links>
+      </section>
+      <section accno="s-samples-factors-E-MTAB-2086" type="Samples">
+        <attributes>
+          <attribute>
+            <name>Sample count</name>
+            <value>12</value>
+          </attribute>
+          <attribute>
+            <name>Experimental Designs</name>
+            <value>development or differentiation design</value>
+          </attribute>
+          <attribute>
+            <name>Experimental Designs</name>
+            <value>co-expression_design</value>
+          </attribute>
+          <attribute>
+            <name>Experimental Designs</name>
+            <value>replicate design</value>
+          </attribute>
+          <attribute>
+            <name>Experimental Factors</name>
+            <value>generation</value>
+            <valqual>
+              <name>TermName</name>
+              <value>generation</value>
+            </valqual>
+          </attribute>
+          <attribute>
+            <name>Experimental Factors</name>
+            <value>developmental stage</value>
+            <valqual>
+              <name>TermName</name>
+              <value>developmental stage</value>
+            </valqual>
+          </attribute>
+          <attribute>
+            <name>Quality Controls</name>
+            <value>biological replicate</value>
+            <valqual>
+              <name>TermId</name>
+              <value>EFO</value>
+            </valqual>
+          </attribute>
+          <attribute>
+            <name>Quality Controls</name>
+            <value>technical replicate</value>
+            <valqual>
+              <name>TermId</name>
+              <value>EFO</value>
+            </valqual>
+          </attribute>
+        </attributes>
+        <subsections>
+          <section accno="exp_factor-E-MTAB-2086" type="Experimental Factors">
+            <attributes>
+              <attribute>
+                <name>Generation</name>
+                <value>80</value>
+              </attribute>
+              <attribute>
+                <name>Generation</name>
+                <value>70</value>
+              </attribute>
+              <attribute>
+                <name>Generation</name>
+                <value>50</value>
+              </attribute>
+              <attribute>
+                <name>Generation</name>
+                <value>30</value>
+              </attribute>
+              <attribute>
+                <name>Developmental stage</name>
+                <value>Senescent</value>
+              </attribute>
+              <attribute>
+                <name>Developmental stage</name>
+                <value>Young</value>
+              </attribute>
+              <attribute>
+                <name>Developmental stage</name>
+                <value>Middle</value>
+              </attribute>
+              <attribute>
+                <name>Developmental stage</name>
+                <value>Old</value>
+              </attribute>
+            </attributes>
+            <subsections>
+              <table>
+                <section accno="factors_0" type="Factors Table">
+                  <attributes>
+                    <attribute>
+                      <name>generation</name>
+                      <value>30</value>
+                    </attribute>
+                    <attribute>
+                      <name>developmental stage</name>
+                      <value>Young</value>
+                    </attribute>
+                    <attribute>
+                      <name>No. of Samples</name>
+                      <value>3</value>
+                      <valqual>
+                        <name>search</name>
+                        <value>"DL10041401.CEL" OR "DL10082501.CEL" OR "DL10082502.CEL"</value>
+                      </valqual>
+                    </attribute>
+                  </attributes>
+                </section>
+                <section accno="factors_1" type="Factors Table">
+                  <attributes>
+                    <attribute>
+                      <name>generation</name>
+                      <value>50</value>
+                    </attribute>
+                    <attribute>
+                      <name>developmental stage</name>
+                      <value>Middle</value>
+                    </attribute>
+                    <attribute>
+                      <name>No. of Samples</name>
+                      <value>4</value>
+                      <valqual>
+                        <name>search</name>
+                        <value>"DL10041402.CEL" OR "DL10082503.CEL" OR "DL10082504.CEL" OR "DL10082517.CEL"</value>
+                      </valqual>
+                    </attribute>
+                  </attributes>
+                </section>
+                <section accno="factors_2" type="Factors Table">
+                  <attributes>
+                    <attribute>
+                      <name>generation</name>
+                      <value>70</value>
+                    </attribute>
+                    <attribute>
+                      <name>developmental stage</name>
+                      <value>Old</value>
+                    </attribute>
+                    <attribute>
+                      <name>No. of Samples</name>
+                      <value>3</value>
+                      <valqual>
+                        <name>search</name>
+                        <value>"DL10041403.CEL" OR "DL10082505.CEL" OR "DL10082506.CEL"</value>
+                      </valqual>
+                    </attribute>
+                  </attributes>
+                </section>
+                <section accno="factors_3" type="Factors Table">
+                  <attributes>
+                    <attribute>
+                      <name>generation</name>
+                      <value>80</value>
+                    </attribute>
+                    <attribute>
+                      <name>developmental stage</name>
+                      <value>Senescent</value>
+                    </attribute>
+                    <attribute>
+                      <name>No. of Samples</name>
+                      <value>2</value>
+                      <valqual>
+                        <name>search</name>
+                        <value>"DL10082507.CEL" OR "DL10082508.CEL"</value>
+                      </valqual>
+                    </attribute>
+                  </attributes>
+                </section>
+              </table>
+            </subsections>
+          </section>
+          <section accno="source_chars-E-MTAB-2086" type="Source Characteristics">
+            <attributes>
+              <attribute>
+                <name>Organism</name>
+                <value>Homo sapiens</value>
+              </attribute>
+              <attribute>
+                <name>Cell line</name>
+                <value>IMR-90</value>
+              </attribute>
+              <attribute>
+                <name>Cell type</name>
+                <value>fibroblast</value>
+              </attribute>
+              <attribute>
+                <name>Generation</name>
+                <value>80</value>
+              </attribute>
+              <attribute>
+                <name>Generation</name>
+                <value>70</value>
+              </attribute>
+              <attribute>
+                <name>Generation</name>
+                <value>50</value>
+              </attribute>
+              <attribute>
+                <name>Generation</name>
+                <value>30</value>
+              </attribute>
+              <attribute>
+                <name>Developmental stage</name>
+                <value>Senescent</value>
+              </attribute>
+              <attribute>
+                <name>Developmental stage</name>
+                <value>Young</value>
+              </attribute>
+              <attribute>
+                <name>Developmental stage</name>
+                <value>Middle</value>
+              </attribute>
+              <attribute>
+                <name>Developmental stage</name>
+                <value>Old</value>
+              </attribute>
+            </attributes>
+            <subsections>
+              <table>
+                <section accno="source_0" type="Characteristics Table">
+                  <attributes>
+                    <attribute>
+                      <name>generation</name>
+                      <value>30</value>
+                    </attribute>
+                    <attribute>
+                      <name>developmental stage</name>
+                      <value>Young</value>
+                    </attribute>
+                    <attribute>
+                      <name>No. of Samples</name>
+                      <value>3</value>
+                      <valqual>
+                        <name>search</name>
+                        <value>"DL10041401.CEL" OR "DL10082501.CEL" OR "DL10082502.CEL"</value>
+                      </valqual>
+                    </attribute>
+                  </attributes>
+                </section>
+                <section accno="source_1" type="Characteristics Table">
+                  <attributes>
+                    <attribute>
+                      <name>generation</name>
+                      <value>50</value>
+                    </attribute>
+                    <attribute>
+                      <name>developmental stage</name>
+                      <value>Middle</value>
+                    </attribute>
+                    <attribute>
+                      <name>No. of Samples</name>
+                      <value>4</value>
+                      <valqual>
+                        <name>search</name>
+                        <value>"DL10041402.CEL" OR "DL10082503.CEL" OR "DL10082504.CEL" OR "DL10082517.CEL"</value>
+                      </valqual>
+                    </attribute>
+                  </attributes>
+                </section>
+                <section accno="source_2" type="Characteristics Table">
+                  <attributes>
+                    <attribute>
+                      <name>generation</name>
+                      <value>70</value>
+                    </attribute>
+                    <attribute>
+                      <name>developmental stage</name>
+                      <value>Old</value>
+                    </attribute>
+                    <attribute>
+                      <name>No. of Samples</name>
+                      <value>3</value>
+                      <valqual>
+                        <name>search</name>
+                        <value>"DL10041403.CEL" OR "DL10082505.CEL" OR "DL10082506.CEL"</value>
+                      </valqual>
+                    </attribute>
+                  </attributes>
+                </section>
+                <section accno="source_3" type="Characteristics Table">
+                  <attributes>
+                    <attribute>
+                      <name>generation</name>
+                      <value>80</value>
+                    </attribute>
+                    <attribute>
+                      <name>developmental stage</name>
+                      <value>Senescent</value>
+                    </attribute>
+                    <attribute>
+                      <name>No. of Samples</name>
+                      <value>2</value>
+                      <valqual>
+                        <name>search</name>
+                        <value>"DL10082507.CEL" OR "DL10082508.CEL"</value>
+                      </valqual>
+                    </attribute>
+                  </attributes>
+                </section>
+              </table>
+            </subsections>
+          </section>
+        </subsections>
+      </section>
+      <section accno="s-assays-data-E-MTAB-2086" type="Assays and Data">
+        <attributes>
+          <attribute>
+            <name>Assay count</name>
+            <value>12</value>
+          </attribute>
+          <attribute>
+            <name>Technology</name>
+            <value>Array assay</value>
+          </attribute>
+          <attribute>
+            <name>Assay by Molecule</name>
+            <value>RNA assay</value>
+          </attribute>
+        </attributes>
+        <subsections>
+          <section accno="raw-data" type="Raw Data">
+            <files>
+              <table>
+                <file size="11059903">
+                  <path>DL10041401.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_young_1</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11064659">
+                  <path>DL10082501.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_young_2</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11066183">
+                  <path>DL10082502.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_young_3</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11065555">
+                  <path>DL10041402.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_middle_1</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11066555">
+                  <path>DL10082503.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_middle_2</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11068227">
+                  <path>DL10082504.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_middle_3</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11062731">
+                  <path>DL10082517.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_middle_4</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11064515">
+                  <path>DL10041403.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_old_1</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11066075">
+                  <path>DL10082505.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_old_2</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11064383">
+                  <path>DL10082506.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_old_3</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11061431">
+                  <path>DL10082507.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_senescent_1</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="11064567">
+                  <path>DL10082508.CEL</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Samples</name>
+                      <value>cell_culture_senescent_2</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Raw data file</value>
+                    </attribute>
+                  </attributes>
+                </file>
+              </table>
+            </files>
+          </section>
+          <section accno="mt-E-MTAB-2086" type="MAGE-TAB Files">
+            <files>
+              <table>
+                <file size="2341">
+                  <path>E-MTAB-2086.idf.txt</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Type</name>
+                      <value>IDF File</value>
+                    </attribute>
+                    <attribute>
+                      <name>Format</name>
+                      <value>tab-delimited text</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Investigation Design Format (IDF)</value>
+                    </attribute>
+                  </attributes>
+                </file>
+                <file size="4871">
+                  <path>E-MTAB-2086.sdrf.txt</path>
+                  <type>file</type>
+                  <attributes>
+                    <attribute>
+                      <name>Type</name>
+                      <value>SDRF File</value>
+                    </attribute>
+                    <attribute>
+                      <name>Format</name>
+                      <value>tab-delimited text</value>
+                    </attribute>
+                    <attribute>
+                      <name>Description</name>
+                      <value>Sample and Data Relationship Format (SDRF)</value>
+                    </attribute>
+                  </attributes>
+                </file>
+              </table>
+            </files>
+          </section>
+          <section accno="ad-E-MTAB-2086" type="Array Designs">
+            <links>
+              <table>
+                <link>
+                  <url>A-AFFY-141</url>
+                  <attributes>
+                    <attribute>
+                      <name>Type</name>
+                      <value>Array Design</value>
+                    </attribute>
+                  </attributes>
+                </link>
+              </table>
+            </links>
+          </section>
+        </subsections>
+      </section>
+      <section accno="score-E-MTAB-2086" type="MIAME Score">
+        <attributes>
+          <attribute>
+            <name>Platforms</name>
+            <value>-</value>
+          </attribute>
+          <attribute>
+            <name>Protocols</name>
+            <value>*</value>
+          </attribute>
+          <attribute>
+            <name>Raw</name>
+            <value>*</value>
+          </attribute>
+          <attribute>
+            <name>Variables</name>
+            <value>*</value>
+          </attribute>
+          <attribute>
+            <name>Processed</name>
+            <value>-</value>
+          </attribute>
+        </attributes>
+      </section>
+    </subsections>
+  </section>
+</submission>

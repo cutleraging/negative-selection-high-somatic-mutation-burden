@@ -1,0 +1,11 @@
+"","condition","cycle","region","mean","sd"
+"1","control",1,"nonexpressed_regions_exons_promoters_enhancers",15.6666666666667,2.88675134594813
+"2","control",1,"expressed_regions_exons_promoters_enhancers",34,6.2449979983984
+"3","control",9,"nonexpressed_regions_exons_promoters_enhancers",14,3.89871773792359
+"4","control",9,"expressed_regions_exons_promoters_enhancers",18.1666666666667,4.4007575105505
+"5","enu",3,"nonexpressed_regions_exons_promoters_enhancers",98,12
+"6","enu",3,"expressed_regions_exons_promoters_enhancers",197.333333333333,41.2956817758629
+"7","enu",6,"nonexpressed_regions_exons_promoters_enhancers",233,67.5795827154918
+"8","enu",6,"expressed_regions_exons_promoters_enhancers",458,148.704404776725
+"9","enu",9,"nonexpressed_regions_exons_promoters_enhancers",315,134.062671911312
+"10","enu",9,"expressed_regions_exons_promoters_enhancers",631,278.38390758088

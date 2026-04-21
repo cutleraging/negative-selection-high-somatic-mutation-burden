@@ -1,0 +1,11 @@
+"","condition","cycle","region","p_value","p_adjusted","significant_p_adjusted"
+"1","control",1,"nonexpressed_regions_exons_promoters_enhancers",0.960253377176031,0.960253377176031,NA
+"2","control",1,"expressed_regions_exons_promoters_enhancers",0.0117414044385931,0.0234828088771863,"*"
+"3","control",9,"nonexpressed_regions_exons_promoters_enhancers",0.546835136352386,0.546835136352386,NA
+"4","control",9,"expressed_regions_exons_promoters_enhancers",3.78045752910082e-11,7.56091505820164e-11,"****"
+"5","enu",3,"nonexpressed_regions_exons_promoters_enhancers",0.863949426865939,0.863949426865939,NA
+"6","enu",3,"expressed_regions_exons_promoters_enhancers",2.96770435880706e-06,5.93540871761412e-06,"****"
+"7","enu",6,"nonexpressed_regions_exons_promoters_enhancers",0.394378854511591,0.394378854511591,NA
+"8","enu",6,"expressed_regions_exons_promoters_enhancers",1.48655027188838e-09,2.97310054377676e-09,"****"
+"9","enu",9,"nonexpressed_regions_exons_promoters_enhancers",0.317811871556512,0.317811871556512,NA
+"10","enu",9,"expressed_regions_exons_promoters_enhancers",4.71320841104651e-18,9.42641682209301e-18,"****"

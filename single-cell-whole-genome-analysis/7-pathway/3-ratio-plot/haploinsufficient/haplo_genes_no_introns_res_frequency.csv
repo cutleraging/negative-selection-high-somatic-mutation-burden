@@ -1,0 +1,11 @@
+"","condition","cycle","region","mean","sd"
+"1","control",1,"haplosufficient",18.6666666666667,4.50924975282289
+"2","control",1,"haploinsufficient",5.33333333333333,1.52752523165195
+"3","control",9,"haplosufficient",13.3333333333333,3.2659863237109
+"4","control",9,"haploinsufficient",5,2.44948974278318
+"5","enu",3,"haplosufficient",113.666666666667,24.0069434400411
+"6","enu",3,"haploinsufficient",45.6666666666667,10.9696551146029
+"7","enu",6,"haplosufficient",246.666666666667,75.0355471315651
+"8","enu",6,"haploinsufficient",104.666666666667,34.0196021924615
+"9","enu",9,"haplosufficient",332.5,153.895743930753
+"10","enu",9,"haploinsufficient",145.333333333333,68.9859889156245

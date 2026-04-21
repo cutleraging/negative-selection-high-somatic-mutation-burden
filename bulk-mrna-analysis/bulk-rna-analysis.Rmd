@@ -14,23 +14,30 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Preparation
 
+## Working directory
+```{r}
+working.dir <- "~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA"
+```
+
+
 ## Load libraries
 ```{r}
 library(biomaRt)
-library(msigdbr)
+#library(msigdbr)
 library(KEGGREST)
 
 library(tximport)
 library(SummarizedExperiment)
 library(DESeq2)
-library(limma)
 library(PCAtools)
-library(genefilter)
+#library(genefilter)
 library(zFPKM)
-library(sva)
+#library(sva)
 library(clusterProfiler)
 library(enrichplot)
 library(org.Hs.eg.db)
+library(limma)
+library(GSVA)
 
 library(ggplot2)
 library(cowplot)
@@ -113,7 +120,7 @@ remove_version <- function(df) {
 
 ## Load data
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/1-data")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/1-data")
 
 # sample table
 sample.table <- read.csv('sample_table.csv', header = TRUE)
@@ -146,7 +153,7 @@ se <- SummarizedExperiment(assays=SimpleList(counts = as.matrix(round(txi$counts
 
 ### Save
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA")
 
 saveRDS(se, "se.RDS")
 ```
@@ -155,8 +162,8 @@ saveRDS(se, "se.RDS")
 
 ## Raw genes expressed per sample
 ```{r}
-dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 df <- data.frame(Sample = se$sample, 
                  Frequency = colSums(assay(se, "tpm") > 1)) 
@@ -174,7 +181,7 @@ dev.off()
 
 ## Distribution of raw counts
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 df <- as.data.frame(log2(assay(se) + 1))
 colnames(df) <- se$sample
@@ -195,7 +202,7 @@ dev.off()
 
 ## Filter for expressed genes
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 # filtering non-expressed genes
 assay(se, "zfpkm") <- zFPKM(se, assayName = "tpm")
@@ -227,14 +234,14 @@ se.filter <- se[rownames(se) %in% activeGenes$gene]
 
 ### Save
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA")
 
 saveRDS(se.filter, "se.filter.RDS")
 ```
 
 ## Filtered genes expressed per sample
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 df <- data.frame(Sample = se$sample, 
                  Frequency = colSums(assay(se.filter, "tpm") > 1)) 
@@ -252,7 +259,7 @@ dev.off()
 
 ## Distribution of filtered counts
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 df <- as.data.frame(log2(assay(se.filter) + 1))
 colnames(df) <- se$sample
@@ -275,7 +282,7 @@ dev.off()
 
 ### All samples
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 # tpm
 df <- log2(assay(se.filter, "tpm") + 1)
@@ -290,7 +297,7 @@ dev.off()
 
 ### Control cycle 1
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 # tpm
 df <- log2(assay(se.filter, "tpm") + 1)
@@ -308,7 +315,7 @@ dev.off()
 
 ### Control cycle 9
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 # tpm
 df <- log2(assay(se.filter, "tpm") + 1)
@@ -326,7 +333,7 @@ dev.off()
 
 ### ENU cycle 9
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 # tpm
 df <- log2(assay(se.filter, "tpm") + 1)
@@ -344,7 +351,7 @@ dev.off()
 
 ## Overlap analysis
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 binary_expr <- as.data.frame(t(apply(assay(se.filter, "tpm"), 1, function(x) as.integer(x > 0))))
 colnames(binary_expr) <- se.filter$sample
@@ -407,7 +414,7 @@ rowData(se.filter) <- names.match
 
 ### Save
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA")
 
 saveRDS(se.filter, "se.filter.RDS")
 #se.filter <- readRDS("se.filter.RDS")
@@ -415,7 +422,7 @@ saveRDS(se.filter, "se.filter.RDS")
 
 ## Output tables
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/2-quality-control")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/2-quality-control")
 
 write.csv(merge(rowData(se.filter), assay(se.filter, "counts"), by = 'row.names'), "counts.filtered",
           row.names = FALSE)
@@ -428,8 +435,8 @@ write.csv(merge(rowData(se.filter), assay(se.filter, "tpm"), by = 'row.names'), 
 
 ## DeSeq2 normalization and modeling
 ```{r}
-dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/3-normalization")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/3-normalization")
 
 # combine condition and cycle variables
 se.filter$condition.cycle <- paste(se.filter$condition,
@@ -461,13 +468,13 @@ resultsNames(dds)
 ### Save and output normalized counts
 ```{r}
 # save object
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA")
 
 saveRDS(dds, "dds.RDS")
 dds <- readRDS("dds.RDS")
 
 # save norm counts
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/3-normalization")
 
 write.csv(merge(rowData(se.filter), counts(dds, normalized = TRUE), by = 'row.names'), "counts.filtered.normalized.csv",
           row.names = FALSE)
@@ -475,7 +482,7 @@ write.csv(merge(rowData(se.filter), counts(dds, normalized = TRUE), by = 'row.na
 
 ## DESeq2 model estimates
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/3-normalization")
 
 # Mean and variance relationship
 pdf("mean-variance.pdf",
@@ -500,7 +507,7 @@ dev.off()
 
 ## Distribution of normalized counts
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/3-normalization")
 
 df <- as.data.frame(log2(counts(dds, normalized=TRUE) + 1))
 colnames(df) <- dds$sample
@@ -532,7 +539,7 @@ dev.off()
 
 ## Sample-sample correlations
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/3-normalization")
 
 df <- as.data.frame(log2(counts(dds, normalized=TRUE) + 1))
 colnames(df) <- dds$sample
@@ -567,7 +574,7 @@ dev.off()
 
 ## Principle component analysis
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/3-normalization")
 
 # Transform counts to stabalize mean-variance
 # blind = FALSE for downstream analysis, where the full use of the design information should be made
@@ -622,7 +629,7 @@ dev.off()
 
 # Batch effect correction
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/3-normalization")
 # mod <- model.matrix(~condition.cycle, data=colData(dds))
 # mod
 # 
@@ -656,7 +663,7 @@ assays(dds, withDimnames=FALSE)[["counts.normalized.batchCorrect"]] <- removeBat
 
 ## Principle component analysis
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/3-normalization")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/3-normalization")
 
 # Transform counts to stabalize mean-variance
 # blind = FALSE for downstream analysis, where the full use of the design information should be made
@@ -715,12 +722,12 @@ dev.off()
 ## Control 9 vs Control 1
 - Effect of passaging
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/4-differential-expression")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/4-differential-expression")
 
 # get results
 control9_vs_control1 <- results(dds, 
                   alpha = 0.05, 
-                  contrast = c("condition.cycle", "control_1", "control_9"))
+                  contrast = c("condition.cycle", "control_9", "control_1"))
 
 # get a summary of the amount of significantly DEG 
 summary(control9_vs_control1, 
@@ -889,10 +896,70 @@ Heatmap(mat.sig.scaled,
 dev.off()
 ```
 
+### Comparison to previous data
+- https://onlinelibrary.wiley.com/doi/10.1111/acel.12234
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/4-differential-expression")
+
+previous_data <- read.csv("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/E-MTAB-2086/acel.12234&file=acel12234-sup-0006-TableS1.csv")
+
+previous_data_matched <- left_join(previous_data, 
+                                   control9_vs_control1,
+                                   by = c("Gene.Symbol" = "external_gene_name"))
+
+# remove rows with NA values
+previous_data_matched <- previous_data_matched %>%
+  filter(!is.na(ensembl_gene_id))
+
+# Group 1: PD 50 vs PD 30
+df_pd50 <- previous_data_matched %>%
+  filter(P.value..Middle.Young. < 0.05 & padj < 0.05) %>%
+  select(log2FoldChange, 
+         Ratio = Ratio..Middle.Young.) %>%
+  mutate(Group = "PD 50 vs PD 30")
+
+# Group 2: PD 70 vs PD 30
+df_pd70 <- previous_data_matched %>%
+  filter(P.value..Old.Young. < 0.05 & padj < 0.05) %>%
+  select(log2FoldChange, 
+         Ratio = Ratio..Old.Young.) %>%
+  mutate(Group = "PD 70 vs PD 30")
+
+# Group 3: PD 80 vs PD 30
+df_pd80 <- previous_data_matched %>%
+  filter(P.value..Senescent.Young. < 0.05 & padj < 0.05) %>%
+  select(log2FoldChange, 
+         Ratio = Ratio..Senescent.Young.) %>%
+  mutate(Group = "PD 80 vs PD 30")
+
+# 2. Combine them into one large dataframe
+plot_data_combined <- bind_rows(df_pd50, df_pd70, df_pd80)
+
+# 3. Plot everything on one graph using the 'color' aesthetic
+pdf("control9_vs_control1_lackner2014.pdf", width = 6, height = 5)
+
+ggplot(plot_data_combined, aes(x = log2FoldChange, y = log2(Ratio), color = Group)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE) +
+  theme_Publication() +
+  labs(x = "Log2FC Control 9 vs Control 1",
+       y = "Log2FC (Lackner et al. 2014)",
+       color = "Lackner et al. 2014\nComparisons") +
+  stat_cor(method = "pearson",
+           label.x.npc = "left",
+           label.y.npc = "top", 
+           show.legend = FALSE) +
+  theme(legend.position = "right",
+        legend.direction = "vertical")
+
+dev.off()
+```
+
+
 ## ENU 9 vs Control 9
 - Effect of ENu-treatment
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/4-differential-expression")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/4-differential-expression")
 
 # get results
 enu9_vs_control9 <- results(dds, 
@@ -1070,8 +1137,8 @@ dev.off()
 
 ## Control 9 vs Control 1
 ```{r}
-dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 # get score to use in enrichment
 control9_vs_control1$score <- sign(control9_vs_control1$log2FoldChange) * -log10(control9_vs_control1$pvalue)
@@ -1084,7 +1151,7 @@ res.list <- res.list[!is.na(res.list)] # remove genes with no score
 
 ### Biological process
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 bp <- gseGO(geneList     = res.list,
             OrgDb        = org.Hs.eg.db,
@@ -1114,7 +1181,7 @@ dev.off()
 
 ### Moelcular function
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 mf <- gseGO(geneList     = res.list,
             OrgDb        = org.Hs.eg.db,
@@ -1144,7 +1211,7 @@ dev.off()
 
 ### Cellular component
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 cc <- gseGO(geneList     = res.list,
             OrgDb        = org.Hs.eg.db,
@@ -1174,7 +1241,7 @@ dev.off()
 
 ### Hallmark DNA repair
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 # get gene set
 msigdb_dna_repair <- msigdbr(species = "human") %>%
@@ -1201,7 +1268,7 @@ dev.off()
 
 ### KEGG DNA repair
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 # get gene sets
 dna_repair_pathways <- c("Base excision repair",
@@ -1266,9 +1333,130 @@ plot_grid(plotlist=pp, ncol=2)
 dev.off()
 ```
 
+### KEGG Cell Cycle
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
+
+# get gene sets
+pathways <- c("Cell cycle")
+
+pathways_list <- keggList("pathway", "hsa")
+
+# Loop through each DNA repair pathway and filter the pathways_list
+filtered_pathways <- c()
+for (pathway in pathways) {
+    matching_pathways <- grep(pathway, pathways_list, value = TRUE)
+    filtered_pathways <- c(filtered_pathways, matching_pathways)
+}
+
+# Loop through each DNA repair pathway and retrieve the associated genes
+filtered_pathways_genes <- list()
+for (pathway_id in names(filtered_pathways)) {
+    # Get pathway information
+    pathway_info <- keggGet(pathway_id)
+    
+    # Extract gene information
+    if (!is.null(pathway_info[[1]]$GENE)) {
+        genes <- pathway_info[[1]]$GENE
+        gene_ids <- genes[seq(1, length(genes), 2)]
+        filtered_pathways_genes[[pathway_id]] <- gene_ids
+    }
+}
+names(filtered_pathways_genes) <- filtered_pathways
+
+# Convert the list to a tibble
+kegg_cell_cycle <- enframe(filtered_pathways_genes, name = "pathway", value = "entrez_id")
+
+# Unnest the tibble to create a long-format table
+kegg_cell_cycle <- kegg_cell_cycle %>%
+  unnest(entrez_id)
+
+# trim names
+kegg_cell_cycle$pathway <-  sub(" - Homo sapiens \\(human\\)", "", kegg_cell_cycle$pathway)
+
+# gsea
+kegg_cell_cycle_gsea <- GSEA(res.list, 
+                   TERM2GENE = kegg_cell_cycle,
+                   pvalueCutoff = 0.1)
+
+# plot
+anno <- kegg_cell_cycle_gsea[,c("NES", "pvalue")]
+anno$NES <- round(anno$NES, 2)
+lab <- paste0(names(anno), "=",  anno, collapse="\n")
+
+pdf("control9_vs_control1_kegg_cell_cycle.pdf",
+    width = 5,
+    height = 5)
+gsearank(kegg_cell_cycle_gsea, 1, title = "KEGG Cell Cycle Gene Set") +
+  annotate("text", 1000, -0.5, label = lab, hjust=0, vjust=0, size = 5) +
+  theme(text=element_text(size=15))
+dev.off()
+```
+
+### KEGG Apoptosis
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
+
+# get gene sets
+pathways <- c("Apoptosis - Homo sapiens")
+
+pathways_list <- keggList("pathway", "hsa")
+
+# Loop through each DNA repair pathway and filter the pathways_list
+filtered_pathways <- c()
+for (pathway in pathways) {
+    matching_pathways <- grep(pathway, pathways_list, value = TRUE)
+    filtered_pathways <- c(filtered_pathways, matching_pathways)
+}
+
+# Loop through each DNA repair pathway and retrieve the associated genes
+filtered_pathways_genes <- list()
+for (pathway_id in names(filtered_pathways)) {
+    # Get pathway information
+    pathway_info <- keggGet(pathway_id)
+    
+    # Extract gene information
+    if (!is.null(pathway_info[[1]]$GENE)) {
+        genes <- pathway_info[[1]]$GENE
+        gene_ids <- genes[seq(1, length(genes), 2)]
+        filtered_pathways_genes[[pathway_id]] <- gene_ids
+    }
+}
+names(filtered_pathways_genes) <- filtered_pathways
+
+# Convert the list to a tibble
+kegg_apoptosis <- enframe(filtered_pathways_genes, name = "pathway", value = "entrez_id")
+
+# Unnest the tibble to create a long-format table
+kegg_apoptosis <- kegg_apoptosis %>%
+  unnest(entrez_id)
+
+# trim names
+kegg_apoptosis$pathway <-  sub(" - Homo sapiens \\(human\\)", "", kegg_apoptosis$pathway)
+
+# gsea
+kegg_apoptosis_gsea <- GSEA(res.list, 
+                   TERM2GENE = kegg_apoptosis,
+                   pvalueCutoff = 1)
+
+# plot
+anno <- kegg_apoptosis_gsea[,c("NES", "pvalue")]
+anno$NES <- round(anno$NES, 2)
+anno$pvalue <- round(anno$pvalue, 2)
+lab <- paste0(names(anno), "=",  anno, collapse="\n")
+
+pdf("control9_vs_control1_kegg_apoptosis.pdf",
+    width = 5,
+    height = 5)
+gsearank(kegg_apoptosis_gsea, 1, title = "KEGG Apoptosis Gene Set") +
+  annotate("text", 10000, 0.2, label = lab, hjust=0, vjust=0, size = 5) +
+  theme(text=element_text(size=15))
+dev.off()
+```
+
 ### SenMayo
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 # get gene sets
 senmayo <- read.csv("senmayo.csv",
@@ -1291,15 +1479,18 @@ lab <- paste0(names(anno), "=",  round(anno, 3), collapse="\n")
 pdf("control9_vs_control1_senmayo.pdf",
     width = 5,
     height = 5)
-gsearank(senmayo_gsea, 1, title = senmayo_gsea[1, "Description"]) +
-  annotate("text", 10000, senmayo_gsea[, "enrichmentScore"] * .75, label = lab, hjust=0, vjust=0)
+gsearank(senmayo_gsea, 1, title = "SenMayo Senescence Gene Set") +
+  annotate("text", 1000, -0.3, label = lab, hjust=0, vjust=0, size = 5) +
+  theme(text=element_text(size=15))
 dev.off()
 ```
 
+
+
 ## ENU 9 vs Control 9
 ```{r}
-dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+dir.create("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 # get score to use in enrichment
 enu9_vs_control9$score <- sign(enu9_vs_control9$log2FoldChange) * -log10(enu9_vs_control9$pvalue)
@@ -1312,7 +1503,7 @@ res.list <- res.list[!is.na(res.list)] # remove genes with no score
 
 ### Biological process
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 bp <- gseGO(geneList     = res.list,
             OrgDb        = org.Hs.eg.db,
@@ -1342,7 +1533,7 @@ dev.off()
 
 ### Moelcular function
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 mf <- gseGO(geneList     = res.list,
             OrgDb        = org.Hs.eg.db,
@@ -1372,7 +1563,7 @@ dev.off()
 
 ### Cellular component
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 cc <- gseGO(geneList     = res.list,
             OrgDb        = org.Hs.eg.db,
@@ -1402,7 +1593,7 @@ dev.off()
 
 ### Hallmark DNA repair
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 # get gene set
 msigdb_dna_repair <- msigdbr(species = "human") %>%
@@ -1429,7 +1620,7 @@ dev.off()
 
 ### KEGG DNA repair
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 # get gene sets
 dna_repair_pathways <- c("Base excision repair",
@@ -1494,9 +1685,131 @@ plot_grid(plotlist=pp, ncol=2)
 dev.off()
 ```
 
+### KEGG Cell Cycle
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
+
+# get gene sets
+pathways <- c("Cell cycle")
+
+pathways_list <- keggList("pathway", "hsa")
+
+# Loop through each DNA repair pathway and filter the pathways_list
+filtered_pathways <- c()
+for (pathway in pathways) {
+    matching_pathways <- grep(pathway, pathways_list, value = TRUE)
+    filtered_pathways <- c(filtered_pathways, matching_pathways)
+}
+
+# Loop through each DNA repair pathway and retrieve the associated genes
+filtered_pathways_genes <- list()
+for (pathway_id in names(filtered_pathways)) {
+    # Get pathway information
+    pathway_info <- keggGet(pathway_id)
+    
+    # Extract gene information
+    if (!is.null(pathway_info[[1]]$GENE)) {
+        genes <- pathway_info[[1]]$GENE
+        gene_ids <- genes[seq(1, length(genes), 2)]
+        filtered_pathways_genes[[pathway_id]] <- gene_ids
+    }
+}
+names(filtered_pathways_genes) <- filtered_pathways
+
+# Convert the list to a tibble
+kegg_cell_cycle <- enframe(filtered_pathways_genes, name = "pathway", value = "entrez_id")
+
+# Unnest the tibble to create a long-format table
+kegg_cell_cycle <- kegg_cell_cycle %>%
+  unnest(entrez_id)
+
+# trim names
+kegg_cell_cycle$pathway <-  sub(" - Homo sapiens \\(human\\)", "", kegg_cell_cycle$pathway)
+
+# gsea
+kegg_cell_cycle_gsea <- GSEA(res.list, 
+                   TERM2GENE = kegg_cell_cycle,
+                   pvalueCutoff = 0.1)
+
+# plot
+anno <- kegg_cell_cycle_gsea[,c("NES", "pvalue")]
+anno$NES <- round(anno$NES, 2)
+anno$pvalue <- round(anno$pvalue, 8)
+lab <- paste0(names(anno), "=",  anno, collapse="\n")
+
+pdf("enu9_vs_control9_kegg_cell_cycle.pdf",
+    width = 5,
+    height = 5)
+gsearank(kegg_cell_cycle_gsea, 1, title = "KEGG Cell Cycle Gene Set") +
+  annotate("text", 1000, -0.3, label = lab, hjust=0, vjust=0, size = 5) +
+  theme(text=element_text(size=15))
+dev.off()
+```
+
+### KEGG Apoptosis
+```{r}
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
+
+# get gene sets
+pathways <- c("Apoptosis - Homo sapiens")
+
+pathways_list <- keggList("pathway", "hsa")
+
+# Loop through each DNA repair pathway and filter the pathways_list
+filtered_pathways <- c()
+for (pathway in pathways) {
+    matching_pathways <- grep(pathway, pathways_list, value = TRUE)
+    filtered_pathways <- c(filtered_pathways, matching_pathways)
+}
+
+# Loop through each DNA repair pathway and retrieve the associated genes
+filtered_pathways_genes <- list()
+for (pathway_id in names(filtered_pathways)) {
+    # Get pathway information
+    pathway_info <- keggGet(pathway_id)
+    
+    # Extract gene information
+    if (!is.null(pathway_info[[1]]$GENE)) {
+        genes <- pathway_info[[1]]$GENE
+        gene_ids <- genes[seq(1, length(genes), 2)]
+        filtered_pathways_genes[[pathway_id]] <- gene_ids
+    }
+}
+names(filtered_pathways_genes) <- filtered_pathways
+
+# Convert the list to a tibble
+kegg_apoptosis <- enframe(filtered_pathways_genes, name = "pathway", value = "entrez_id")
+
+# Unnest the tibble to create a long-format table
+kegg_apoptosis <- kegg_apoptosis %>%
+  unnest(entrez_id)
+
+# trim names
+kegg_apoptosis$pathway <-  sub(" - Homo sapiens \\(human\\)", "", kegg_apoptosis$pathway)
+
+# gsea
+kegg_apoptosis_gsea <- GSEA(sort(-res.list, decreasing = TRUE), 
+                   TERM2GENE = kegg_apoptosis,
+                   pvalueCutoff = 1)
+
+# plot
+anno <- kegg_apoptosis_gsea[,c("NES", "pvalue")]
+anno$NES <- round(anno$NES, 2)
+anno$pvalue <- round(anno$pvalue, 2)
+lab <- paste0(names(anno), "=",  anno, collapse="\n")
+
+pdf("enu9_vs_control9_kegg_apoptosis.pdf",
+    width = 5,
+    height = 5)
+gsearank(kegg_apoptosis_gsea, 1, title = "KEGG Apoptosis Gene Set") +
+  annotate("text", 10000, 0.2, label = lab, hjust=0, vjust=0, size = 5) +
+  theme(text=element_text(size=15))
+dev.off()
+```
+
 ### SenMayo
 ```{r}
-setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/14-bulk-rna-analysis/5-functional-enrichment")
+setwd("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/bulk RNA/5-functional-enrichment")
 
 # get gene sets
 senmayo <- read.csv("senmayo.csv",
@@ -1519,7 +1832,660 @@ lab <- paste0(names(anno), "=",  round(anno, 3), collapse="\n")
 pdf("enu9_vs_control9_senmayo.pdf",
     width = 5,
     height = 5)
-gsearank(senmayo_gsea, 1, title = senmayo_gsea[1, "Description"]) +
-  annotate("text", 10000, senmayo_gsea[, "enrichmentScore"] * .75, label = lab, hjust=0, vjust=0)
+gsearank(senmayo_gsea, 1, title = "SenMayo Senescence Gene Set") +
+  annotate("text", 1000, -0.3, label = lab, hjust=0, vjust=0, size = 5) +
+  theme(text=element_text(size=15))
 dev.off()
 ```
+
+# Gene set variation analysis
+
+## Get gene sets
+- Using GO gene sets found to be enriched
+```{r}
+dir.create(paste0(working.dir, "7-gene-set-variation"))
+setwd(paste0(working.dir, "7-gene-set-variation"))
+
+# Load GO gene sets
+enrich.ge.expressed <- read.csv("~/EinsteinMed Dropbox/Ronald Cutler/Vijg-lab/Projects/mutation accumulation/9 cycles ENU/single-cell DNA/6-pathway/1-load-data/enrich.go.expressed.csv")
+
+# Convert to a list that matches with row names of expression matrix
+gene_sets <- split(enrich.ge.expressed$geneID,
+                      enrich.ge.expressed$ID)
+```
+
+## Calcaulte GSVA enrichment score
+```{r}
+setwd(paste0(working.dir, "7-gene-set-variation"))
+
+exprData <- assay(dds, "counts.normalized.batchCorrect") 
+rownames(exprData) <- rowData(dds)$entrezgene_id
+exprData <- exprData[!is.na(rownames(exprData)), ]
+
+se.filter.param <- gsvaParam(exprData = exprData,
+                         geneSets = m2_gene_sets, 
+                         minSize=5, 
+                         maxSize=500,
+                         kcdf="Gaussian")
+
+se.filter.gsva <- gsva(se.filter.param,
+                           verbose = TRUE)
+
+write.csv(se.filter.gsva, "se.filter.gsva.csv")
+```
+
+## Differential abundance
+
+### Fit linear model
+```{r}
+setwd(paste0(working.dir, "7-gene-set-variation"))
+
+# Create the design matrix
+design <- model.matrix(~ sex * diet, data = colData(dds))
+
+# make names in correct format=
+colnames(design) <- make.names(colnames(design))
+
+# Fit the linear model
+fit <- lmFit(se.filter.gsva, design)
+
+# Compute empirical Bayes statistics
+fit.eb <- eBayes(fit, robust=TRUE)
+
+gssizes <- sapply(se.filter.param@geneSets, length)
+gssizes <- gssizes[rownames(se.filter.gsva)]
+all(names(gssizes) == names(fit.eb$sigma))
+
+pdf("gene_set_size_vs_precision.pdf",
+    width = 5,
+    height = 5)
+plot(sqrt(gssizes), sqrt(fit.eb$sigma), xlab="Sqrt(gene sets sizes)",
+          ylab="Sqrt(standard deviation)", las=1, pch=".", cex=4)
+lines(lowess(sqrt(gssizes), sqrt(fit.eb$sigma)), col="red", lwd=2)
+dev.off()
+
+# account for increased precision of larger gene sets using limma trend
+fit.eb.trend <- eBayes(fit, robust=TRUE, trend=gssizes)
+
+# set up contrasts
+contrasts <- makeContrasts(
+  # Diet effect in males: (MHF - MNC) = diethigh.fat coefficient
+  Diet_Male       = diethigh.fat,
+
+  # Diet effect in females: (FHF - FNC) = diethigh.fat + interaction
+  Diet_Female     = diethigh.fat + sexfemale.diethigh.fat,
+
+  # Sex effect in normal chow: (FNC - MNC) = sexfemale coefficient
+  Sex_NC          = sexfemale,
+
+  # Sex effect in high fat: (FHF - MHF) = sexfemale + interaction
+  Sex_HF          = sexfemale + sexfemale.diethigh.fat,
+
+  # Interaction: (Diet_Female - Diet_Male) = interaction coefficient
+  Interaction     = sexfemale.diethigh.fat,
+
+  levels = colnames(design)
+)
+
+# Apply the contrasts to the fit object
+fit.eb.trend <- contrasts.fit(fit.eb.trend, contrasts)
+
+# Re-compute the empirical Bayes statistics for this specific contrast
+fit.eb.trend <- eBayes(fit.eb.trend, robust=TRUE, trend=gssizes)
+
+results.adjusted <- summary(decideTests(fit.eb.trend,
+                    adjust.method = 'BH',
+                    p.value = 0.05,
+                    lfc = 0.5))
+write.csv(results.adjusted, "summary_expression_abundance_pathway_lfc1_pvalue0.05.csv")
+```
+
+### Male High-Fat vs Male Normal
+```{r}
+setwd(paste0(working.dir, "7-gene-set-variation"))
+
+effector_male_142oe_vs_control_gsva <- topTable(fit.eb.trend, coef="Diet_Male", number = Inf)
+
+# make pathways easier to read
+effector_male_142oe_vs_control_gsva$pathway <- tools::toTitleCase(tolower(str_wrap(gsub("_", " ", sub(".*?_", "", rownames(effector_male_142oe_vs_control_gsva))), width = 50)))
+effector_male_142oe_vs_control_gsva$database <- sub("_.*", "", rownames(effector_male_142oe_vs_control_gsva))
+
+# save
+write.csv(effector_male_142oe_vs_control_gsva, "effector_male_142oe_vs_control_gsva.csv")
+
+# p-value distribution histogram
+pdf("effector_male_142oe_vs_control_gsva_pvalue_distribution.pdf",
+    width = 5,
+    height = 5)
+hist(effector_male_142oe_vs_control_gsva$P.Value, 
+     main = "Male High-Fat vs Male Normal", 
+     xlab = "P-value", 
+     ylab = "Frequency")
+dev.off()
+
+
+# ma plot
+effector_male_142oe_vs_control_gsva <- effector_male_142oe_vs_control_gsva %>%
+  as.data.frame() %>%
+  mutate(sig = case_when(logFC > 0 & effector_male_142oe_vs_control_gsva$adj.P.Val < 0.05 ~ "Upregulated",
+                         logFC < 0 & effector_male_142oe_vs_control_gsva$adj.P.Val < 0.05 ~ "Downregulated",
+                         .default = "")
+         )
+
+pdf("effector_male_142oe_vs_control_gsva_ma_log2.pdf",
+    width = 5,
+    height = 5)
+ggplot(effector_male_142oe_vs_control_gsva, aes(log2(AveExpr + 1), logFC, color = sig)) +
+  geom_point(alpha = 0.5, size = 4) +
+  theme_Publication() +
+  scale_colour_manual(values = c("grey", "blue", "red")) +
+  geom_hline(yintercept= 0, 
+             size=1,
+             linetype = "dashed") +
+  labs(title = "Male High-Fat vs Male Normal",
+       subtitle = "Signficant Pathways: padj < 0.05",
+       x = "Average Normalized Log2(pathway score) + 1",
+       y = "Log2(fold change)")
+dev.off()
+
+# volcano plot
+
+# pick the top 20 most significant gene names
+res_df <- as.data.frame(effector_male_142oe_vs_control_gsva) %>%
+  arrange(P.Value)
+top20 <- res_df$pathway[1:20]
+
+# color volcano points
+thresh <- 0.5 # match with what is in plot below
+keyvals <- rep('grey', nrow(effector_male_142oe_vs_control_gsva))
+names(keyvals) <- rownames(effector_male_142oe_vs_control_gsva)
+keyvals[effector_male_142oe_vs_control_gsva$logFC < -thresh & effector_male_142oe_vs_control_gsva$adj.P.Val < 0.05] <- 'blue'
+keyvals[effector_male_142oe_vs_control_gsva$logFC > thresh & effector_male_142oe_vs_control_gsva$adj.P.Val < 0.05] <- 'red'
+
+# volcano 
+pdf("effector_male_142oe_vs_control_gsva_volcano.pdf",
+    width = 5, 
+    height = 5)
+EnhancedVolcano(effector_male_142oe_vs_control_gsva,
+                lab = effector_male_142oe_vs_control_gsva$pathway,
+                selectLab = top20,
+                title = "Male High-Fat vs Male Normal",
+                subtitle = "Log2FC > 0.5; padj < 0.05",
+                caption = NULL,
+                x = 'logFC',
+                y = 'P.Value',
+                pCutoffCol = "adj.P.Val",
+                pointSize = 3,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 0.5,
+                pCutoff = 0.05,
+                labSize = 2,
+                labCol = 'black',
+                labFace = 'bold',
+                drawConnectors = TRUE,
+                colConnectors = 'black',
+                maxoverlapsConnectors = Inf,
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE,
+                #ylim = c(0, 8),
+                colCustom = keyvals)
+dev.off()
+
+# heatmap of significant changes
+ha <- HeatmapAnnotation(Diet = dds$diet,
+                        Sex = dds$sex)
+
+# get normalized counts
+mat <- as.matrix(se.filter.gsva)
+
+# order by results
+mat.order <- mat[match(rownames(effector_male_142oe_vs_control_gsva), rownames(mat)),]
+
+# get significant genes
+mat.sig <- mat.order[effector_male_142oe_vs_control_gsva$adj.P.Val < 0.05 & abs(effector_male_142oe_vs_control_gsva$logFC) > 0.5,]
+mat.sig <- mat.sig[!is.na(row.names(mat.sig)),]
+
+# scale and center normalized counts
+mat.sig.scaled <- t(scale(t(mat.sig)))
+
+# replace underscores with spaces & wrap at 30 characters
+new.rn <- rownames(mat.sig.scaled) %>%
+  str_replace_all("_", " ")
+  #str_wrap(width = 20)
+
+rownames(mat.sig.scaled) <- new.rn
+
+ht <- Heatmap(
+  mat.sig.scaled,
+  name = "Z-score",
+  column_title = "CIMSS Infected vs CIMSS Mock\nSignficant pathways: log2FC > 0.5 & padj < 0.05",
+  top_annotation = ha,
+  border = TRUE,
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  show_row_names = TRUE,
+  row_names_gp = gpar(fontsize = 12),
+  show_column_names = FALSE,
+  row_dend_width = unit(20, "mm")
+)
+
+
+pdf("effector_male_142oe_vs_control_gsva_sig_heatmap.pdf",
+    width = 20, height = 50)
+draw(ht,
+     heatmap_legend_side      = "top",
+     annotation_legend_side   = "top",
+     padding               = unit(c(2, 2, 2, 200), "mm")  # top, right, bottom, left
+)
+dev.off()
+```
+
+### Female High-Fat vs Female Normal
+```{r}
+setwd(paste0(working.dir, "7-gene-set-variation"))
+
+neg_guide2_vs_scramble_gsva <- topTable(fit.eb.trend, coef="Diet_Female", number = Inf)
+
+# make pathways easier to read
+neg_guide2_vs_scramble_gsva$pathway <- tools::toTitleCase(tolower(str_wrap(gsub("_", " ", sub(".*?_", "", rownames(neg_guide2_vs_scramble_gsva))), width = 50)))
+neg_guide2_vs_scramble_gsva$database <- sub("_.*", "", rownames(neg_guide2_vs_scramble_gsva))
+
+# save
+write.csv(neg_guide2_vs_scramble_gsva, "neg_guide2_vs_scramble_gsva.csv")
+
+# p-value distribution histogram
+pdf("neg_guide2_vs_scramble_gsva_pvalue_distribution.pdf",
+    width = 5,
+    height = 5)
+hist(neg_guide2_vs_scramble_gsva$P.Value, 
+     main = "Female High-Fat vs Female Normal", 
+     xlab = "P-value", 
+     ylab = "Frequency")
+dev.off()
+
+
+# ma plot
+neg_guide2_vs_scramble_gsva <- neg_guide2_vs_scramble_gsva %>%
+  as.data.frame() %>%
+  mutate(sig = case_when(logFC > 0 & neg_guide2_vs_scramble_gsva$adj.P.Val < 0.05 ~ "Upregulated",
+                         logFC < 0 & neg_guide2_vs_scramble_gsva$adj.P.Val < 0.05 ~ "Downregulated",
+                         .default = "")
+         )
+
+pdf("neg_guide2_vs_scramble_gsva_ma_log2.pdf",
+    width = 5,
+    height = 5)
+ggplot(neg_guide2_vs_scramble_gsva, aes(log2(AveExpr + 1), logFC, color = sig)) +
+  geom_point(alpha = 0.5, size = 4) +
+  theme_Publication() +
+  scale_colour_manual(values = c("grey", "blue", "red")) +
+  geom_hline(yintercept= 0, 
+             size=1,
+             linetype = "dashed") +
+  labs(title = "Female High-Fat vs Female Normal",
+       subtitle = "Signficant Pathways: padj < 0.05",
+       x = "Average Normalized Log2(pathway score) + 1",
+       y = "Log2(fold change)")
+dev.off()
+
+# volcano plot
+
+# pick the top 20 most significant gene names
+res_df <- as.data.frame(neg_guide2_vs_scramble_gsva) %>%
+  arrange(P.Value)
+top20 <- res_df$pathway[1:20]
+
+# color volcano points
+thresh <- 0.5 # match with what is in plot below
+keyvals <- rep('grey', nrow(neg_guide2_vs_scramble_gsva))
+names(keyvals) <- rownames(neg_guide2_vs_scramble_gsva)
+keyvals[neg_guide2_vs_scramble_gsva$logFC < -thresh & neg_guide2_vs_scramble_gsva$adj.P.Val < 0.05] <- 'blue'
+keyvals[neg_guide2_vs_scramble_gsva$logFC > thresh & neg_guide2_vs_scramble_gsva$adj.P.Val < 0.05] <- 'red'
+
+# volcano 
+pdf("neg_guide2_vs_scramble_gsva_volcano.pdf",
+    width = 5, 
+    height = 5)
+EnhancedVolcano(neg_guide2_vs_scramble_gsva,
+                lab = neg_guide2_vs_scramble_gsva$pathway,
+                selectLab = top20,
+                title = "Female High-Fat vs Female Normal",
+                subtitle = "Log2FC > 0.5; padj < 0.05",
+                caption = NULL,
+                x = 'logFC',
+                y = 'P.Value',
+                pCutoffCol = "adj.P.Val",
+                pointSize = 3,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 0.5,
+                pCutoff = 0.05,
+                labSize = 2,
+                labCol = 'black',
+                labFace = 'bold',
+                drawConnectors = TRUE,
+                colConnectors = 'black',
+                maxoverlapsConnectors = Inf,
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE,
+                #ylim = c(0, 8),
+                colCustom = keyvals)
+dev.off()
+
+# heatmap of significant changes
+ha <- HeatmapAnnotation(Diet = dds$diet,
+                        Sex = dds$sex)
+
+# get normalized counts
+mat <- as.matrix(se.filter.gsva)
+
+# order by results
+mat.order <- mat[match(rownames(neg_guide2_vs_scramble_gsva), rownames(mat)),]
+
+# get significant genes
+mat.sig <- mat.order[neg_guide2_vs_scramble_gsva$adj.P.Val < 0.05 & abs(neg_guide2_vs_scramble_gsva$logFC) > 0.5,]
+mat.sig <- mat.sig[!is.na(row.names(mat.sig)),]
+
+# scale and center normalized counts
+mat.sig.scaled <- t(scale(t(mat.sig)))
+
+# replace underscores with spaces & wrap at 30 characters
+new.rn <- rownames(mat.sig.scaled) %>%
+  str_replace_all("_", " ")
+  #str_wrap(width = 20)
+
+rownames(mat.sig.scaled) <- new.rn
+
+ht <- Heatmap(
+  mat.sig.scaled,
+  name = "Z-score",
+  column_title = "CIMSS Infected vs CIMSS Mock\nSignficant pathways: log2FC > 0.5 & padj < 0.05",
+  top_annotation = ha,
+  border = TRUE,
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  show_row_names = TRUE,
+  row_names_gp = gpar(fontsize = 12),
+  show_column_names = FALSE,
+  row_dend_width = unit(20, "mm")
+)
+
+
+pdf("neg_guide2_vs_scramble_gsva_sig_heatmap.pdf",
+    width = 20, height = 50)
+draw(ht,
+     heatmap_legend_side      = "top",
+     annotation_legend_side   = "top",
+     padding               = unit(c(2, 2, 2, 200), "mm")  # top, right, bottom, left
+)
+dev.off()
+```
+
+### Interaction between diet and sex
+```{r}
+setwd(paste0(working.dir, "7-gene-set-variation"))
+
+diet_sex_interaction_gsva <- topTable(fit.eb.trend, coef="Interaction", number = Inf)
+
+# make pathways easier to read
+diet_sex_interaction_gsva$pathway <- tools::toTitleCase(tolower(str_wrap(gsub("_", " ", sub(".*?_", "", rownames(diet_sex_interaction_gsva))), width = 30)))
+diet_sex_interaction_gsva$database <- sub("_.*", "", rownames(diet_sex_interaction_gsva))
+
+# save
+write.csv(diet_sex_interaction_gsva, "diet_sex_interaction_gsva.csv")
+
+# p-value distribution histogram
+pdf("diet_sex_interaction_gsva_pvalue_distribution.pdf",
+    width = 5,
+    height = 5)
+hist(diet_sex_interaction_gsva$P.Value, 
+     main = "Interaction between drug and infection", 
+     xlab = "P-value", 
+     ylab = "Frequency")
+dev.off()
+
+
+# ma plot
+diet_sex_interaction_gsva <- diet_sex_interaction_gsva %>%
+  as.data.frame() %>%
+  mutate(sig = case_when(logFC > 0 & diet_sex_interaction_gsva$adj.P.Val < 0.05 ~ "Upregulated",
+                         logFC < 0 & diet_sex_interaction_gsva$adj.P.Val < 0.05 ~ "Downregulated",
+                         .default = "")
+         )
+
+pdf("diet_sex_interaction_gsva_ma_log2.pdf",
+    width = 5,
+    height = 5)
+ggplot(diet_sex_interaction_gsva, aes(log2(AveExpr + 1), logFC, color = sig)) +
+  geom_point(alpha = 0.5, size = 4) +
+  theme_Publication() +
+  scale_colour_manual(values = c("grey", "blue", "red")) +
+  geom_hline(yintercept= 0, 
+             size=1,
+             linetype = "dashed") +
+  labs(title = "Interaction between drug and infection",
+       subtitle = "Signficant Pathways: padj < 0.05",
+       x = "Average Normalized Log2(pathway score) + 1",
+       y = "Log2(fold change)")
+dev.off()
+
+# volcano plot
+
+# pick the top 20 most significant gene names
+res_df <- as.data.frame(diet_sex_interaction_gsva) %>%
+  arrange(P.Value)
+top20 <- res_df$pathway[1:10]
+
+# color volcano points
+thresh <- 0.5 # match with what is in plot below
+keyvals <- rep('grey', nrow(diet_sex_interaction_gsva))
+names(keyvals) <- rownames(diet_sex_interaction_gsva)
+keyvals[diet_sex_interaction_gsva$logFC < -thresh & diet_sex_interaction_gsva$adj.P.Val < 0.05] <- 'blue'
+keyvals[diet_sex_interaction_gsva$logFC > thresh & diet_sex_interaction_gsva$adj.P.Val < 0.05] <- 'red'
+
+# volcano 
+pdf("diet_sex_interaction_gsva_volcano.pdf",
+    width = 5, 
+    height = 5)
+EnhancedVolcano(diet_sex_interaction_gsva,
+                lab = diet_sex_interaction_gsva$pathway,
+                selectLab = top20,
+                title = "Interaction between drug and infection",
+                subtitle = "Log2FC > 0.5; padj < 0.05",
+                caption = NULL,
+                x = 'logFC',
+                y = 'P.Value',
+                pCutoffCol = "adj.P.Val",
+                pointSize = 3,
+                colAlpha = 0.5,
+                legendPosition = "none",
+                FCcutoff = 0.5,
+                pCutoff = 0.05,
+                labSize = 2,
+                labCol = 'black',
+                labFace = 'bold',
+                drawConnectors = TRUE,
+                colConnectors = 'black',
+                maxoverlapsConnectors = Inf,
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE,
+                #ylim = c(0, 5),
+                colCustom = keyvals)
+dev.off()
+
+# heatmap of significant changes
+ha <- HeatmapAnnotation(Diet = dds$diet,
+                        Sex = dds$sex)
+
+# get normalized counts
+mat <- as.matrix(se.filter.gsva)
+
+# order by results
+mat.order <- mat[match(rownames(diet_sex_interaction_gsva), rownames(mat)),]
+
+# get significant genes
+mat.sig <- mat.order[diet_sex_interaction_gsva$adj.P.Val < 0.05 & abs(diet_sex_interaction_gsva$logFC) > 0.5,]
+mat.sig <- mat.sig[!is.na(row.names(mat.sig)),]
+
+# scale and center normalized counts
+mat.sig.scaled <- t(scale(t(mat.sig)))
+
+# replace underscores with spaces & wrap at 30 characters
+new.rn <- rownames(mat.sig.scaled) %>%
+  str_replace_all("_", " ") %>%
+  str_wrap(width = 20)
+
+rownames(mat.sig.scaled) <- new.rn
+
+ht <- Heatmap(
+  mat.sig.scaled,
+  name = "Z-score",
+  column_title = "Interaction between drug and infection\nSignficant pathways: log2FC > 0.5 & padj < 0.05",
+  top_annotation = ha,
+  border = TRUE,
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  show_row_names = TRUE,
+  row_names_gp = gpar(fontsize = 12),
+  show_column_names = FALSE,
+  row_dend_width = unit(20, "mm")
+)
+
+
+pdf("diet_sex_interaction_gsva_sig_heatmap.pdf",
+    width = 10, height = 10)
+draw(ht,
+     heatmap_legend_side      = "top",
+     annotation_legend_side   = "top",
+     padding               = unit(c(2, 2, 2, 100), "mm")  # top, right, bottom, left
+)
+dev.off()
+```
+
+#### Scatter plot
+```{r}
+# merge tables
+diet_sex_interaction_gsva_merge <- merge(effector_male_142oe_vs_control_gsva,
+                        neg_guide2_vs_scramble_gsva[,c("logFC", "P.Value", "adj.P.Val")],
+                        by = "row.names")
+rownames(diet_sex_interaction_gsva_merge) <- diet_sex_interaction_gsva_merge$Row.names
+
+diet_sex_interaction_gsva_merge <- merge(diet_sex_interaction_gsva_merge, 
+                        diet_sex_interaction_gsva[,c("logFC", "P.Value", "adj.P.Val")],
+                        by = "row.names")
+rownames(diet_sex_interaction_gsva_merge) <- diet_sex_interaction_gsva_merge$Row.names
+diet_sex_interaction_gsva_merge$Row.names <- NULL
+
+# clean up columns
+diet_sex_interaction_gsva_merge <- diet_sex_interaction_gsva_merge[c("pathway", "database",
+                                   "logFC.x", "P.Value.x", "adj.P.Val.x",
+                                   "logFC.y", "P.Value.y", "adj.P.Val.y",
+                                   "logFC", "P.Value", "adj.P.Val")]
+
+# rename columns
+colnames(diet_sex_interaction_gsva_merge)[3:11] <- c("effector_male_142oe_vs_control_gsva.logFC",
+                                    "effector_male_142oe_vs_control_gsva.P.Value",
+                                    "effector_male_142oe_vs_control_gsva.adj.P.Val",
+                                    "neg_guide2_vs_scramble_gsva.logFC",
+                                    "neg_guide2_vs_scramble_gsva.P.Value",
+                                    "neg_guide2_vs_scramble_gsva.adj.P.Val",
+                                    "diet_sex_interaction_gsva_merge.logFC",
+                                    "diet_sex_interaction_gsva_merge.P.Value",
+                                    "diet_sex_interaction_gsva_merge.adj.P.Val")
+
+fc_thr    <- 0.5
+p_thr     <- 0.05
+delta_thr <- 0.1
+
+diet_sex_interaction_gsva_merge <- diet_sex_interaction_gsva_merge %>%
+  mutate(
+    x = effector_male_142oe_vs_control_gsva.logFC,
+    y = neg_guide2_vs_scramble_gsva.logFC,
+    delta = diet_sex_interaction_gsva_merge.logFC,
+    quadrant = case_when(
+      x > 0 & y > 0 ~ "Concordant Up",
+      x < 0 & y < 0 ~ "Concordant Down",
+      x > 0 & y < 0 ~ "Negative Reversal: Up -> Down",
+      x < 0 & y > 0 ~ "Positive Reversal: Down -> Up",
+      TRUE ~ "Near Zero / Mixed"
+    ),
+    modulation = case_when(
+      quadrant == "Concordant Up"   & delta >  delta_thr ~ "Amplified Up",
+      quadrant == "Concordant Up"   & delta < -delta_thr ~ "Attenuated Up",
+      quadrant == "Concordant Down" & delta < -delta_thr ~ "Amplified Down",
+      quadrant == "Concordant Down" & delta >  delta_thr ~ "Attenuated Down",
+      TRUE ~ NA_character_
+    ),
+    sig_int = !is.na(diet_sex_interaction_gsva_merge.adj.P.Val) &
+              diet_sex_interaction_gsva_merge.adj.P.Val < p_thr,
+    sig_simple = ((abs(x) > fc_thr) & !is.na(effector_male_142oe_vs_control_gsva.adj.P.Val) &
+                   effector_male_142oe_vs_control_gsva.adj.P.Val < p_thr) |
+                 ((abs(y) > fc_thr) & !is.na(neg_guide2_vs_scramble_gsva.adj.P.Val) &
+                   neg_guide2_vs_scramble_gsva.adj.P.Val < p_thr),
+    Label = case_when(
+      sig_int    ~ if_else(!is.na(modulation), modulation, quadrant),
+      sig_simple ~ if_else(!is.na(modulation), modulation, quadrant),
+      TRUE       ~ "Not Significant"
+    )
+  )
+
+table(diet_sex_interaction_gsva_merge$modulation)
+
+# output
+write.csv(diet_sex_interaction_gsva_merge, "diet_sex_interaction_gsva_merge.csv", row.names = FALSE)
+
+## ---- plot ----
+
+# only significant-interaction genes
+out <- diet_sex_interaction_gsva_merge %>%
+  mutate(sig_int = !is.na(diet_sex_interaction_gsva_merge.adj.P.Val) &
+                   diet_sex_interaction_gsva_merge.adj.P.Val < p_thr)
+sig <- out %>% filter(sig_int)  
+
+# label top genes by interaction padj
+highlight <- out %>%
+  filter(sig_int) %>%
+  arrange(diet_sex_interaction_gsva_merge.adj.P.Val) %>%
+  slice_head(n = 20)
+
+pdf("diet_sex_interaction_gsva_merge_log2fc_corr.pdf", height = 4, width = 6)
+ggplot() +
+  # background: nonsignificant interaction genes
+  geom_point(data = out, aes(x = x, y = y),
+             color = "grey40", alpha = 0.1, size = 1, show.legend = FALSE) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  # overlay: only significant interaction genes are colored
+ geom_point(data = sig, aes(x = x, y = y, color = Label),
+             size = 2, alpha = 0.75) +
+ geom_text_repel(
+    data = highlight,
+    aes(x = x, y = y, label = pathway),
+    size = 2, fontface = "bold", colour = "black",
+    segment.color = "black", segment.size = 0.3,
+    box.padding = 0.4, point.padding = 0.3,
+    max.overlaps = Inf, min.segment.length = 0
+  ) +
+  lims(x = c(-2, 2), y = c(-2, 2)) +
+  scale_color_manual(
+    name = "Interaction class",
+    values = c(
+    "Amplified Up"       = "firebrick",
+    "Attenuated Up"      = "orange3",
+    "Amplified Down"     = "navy",
+    "Attenuated Down"    = "skyblue4",
+    "Negative Reversal: Up -> Down"   = "purple",
+    "Positive Reversal: Down -> Up"   = "darkgreen"
+  ) # , drop = FALSE  # uncomment to keep all legend entries even if absent
+  ) +
+  guides(color = guide_legend(override.aes = list(alpha = 1, size = 2))) +
+  theme_bw() + theme(panel.grid = element_blank()) +
+  labs(x = "Effect of infection with DMSO (log2FC)",
+       y = "Effect of infection with CIMSS (log2FC)",
+       title = "Drug × Infection: Significant Interactions",
+       subtitle = "Log2FC > 0.5; padj < 0.5",)
+dev.off()
+```
+

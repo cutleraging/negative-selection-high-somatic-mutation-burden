@@ -1,0 +1,26 @@
+"","condition","cycle","variant_type","mean","sd"
+"1","control","1","stop retained variant",0,0
+"2","control","1","missense variant",3.66666666666667,1.52752523165195
+"3","control","1","start lost",0,0
+"4","control","1","stop gained",0.333333333333333,0.577350269189626
+"5","control","1","stop lost",0,0
+"6","control","9","stop retained variant",0,0
+"7","control","9","missense variant",3.83333333333333,0.408248290463863
+"8","control","9","start lost",0,0
+"9","control","9","stop gained",0.666666666666667,0.816496580927726
+"10","control","9","stop lost",0,0
+"11","enu","3","stop retained variant",0,0
+"12","enu","3","missense variant",28,12.1243556529821
+"13","enu","3","start lost",0,0
+"14","enu","3","stop gained",2.66666666666667,2.08166599946613
+"15","enu","3","stop lost",0,0
+"16","enu","6","stop retained variant",0,0
+"17","enu","6","missense variant",50.3333333333333,8.02080627701064
+"18","enu","6","start lost",0.333333333333333,0.577350269189626
+"19","enu","6","stop gained",4.33333333333333,2.3094010767585
+"20","enu","6","stop lost",0,0
+"21","enu","9","stop retained variant",0.166666666666667,0.408248290463863
+"22","enu","9","missense variant",73.6666666666667,31.7090943842089
+"23","enu","9","start lost",0.166666666666667,0.408248290463863
+"24","enu","9","stop gained",6.16666666666667,4.02077936060494
+"25","enu","9","stop lost",0,0

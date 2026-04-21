@@ -1,0 +1,400 @@
+"region","sample","obs.mut","sim.mut","sim.mut.normality","log2fc","pvalue"
+"ncRNA processing","MMEA9_C3",2,5,3.7e-24,-1,0.1254
+"ribosome biogenesis","MMEA9_C3",1,4,3.7e-24,-1.32192809488736,0.086
+"rRNA metabolic process","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.5976
+"proteasome-mediated ubiquitin-dependent protein catabolic process","MMEA9_C3",4,5,3.7e-24,-0.263034405833794,0.679
+"regulation of response to DNA damage stimulus","MMEA9_C3",2,4,3.7e-24,-0.736965594166206,0.3243
+"establishment of protein localization to organelle","MMEA9_C3",5,6,3.7e-24,-0.222392421336448,0.7026
+"macroautophagy","MMEA9_C3",0,4,3.7e-24,-2.32192809488736,0.0126
+"regulation of chromosome organization","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.609
+"Golgi vesicle transport","MMEA9_C3",3,3,3.7e-24,0,1
+"double-strand break repair","MMEA9_C3",1,3,3.7e-24,-1,0.1976
+"histone modification","MMEA9_C3",2,5,3.7e-24,-1,0.1232
+"sister chromatid segregation","MMEA9_C3",2,4,3.7e-24,-0.736965594166206,0.3066
+"DNA replication","MMEA9_C3",3,3,3.7e-24,0,1
+"chromosome segregation","MMEA9_C3",1,6,3.7e-24,-1.8073549220576,0.0236
+"mitochondrial gene expression","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1264
+"nucleocytoplasmic transport","MMEA9_C3",3,3,3.7e-24,0,1
+"nuclear transport","MMEA9_C3",0,3,3.7e-24,-2,0.0289
+"regulation of DNA repair","MMEA9_C3",0,3,3.7e-24,-2,0.0355
+"peptidyl-lysine modification","MMEA9_C3",0,4,3.7e-24,-2.32192809488736,0.0151
+"protein targeting","MMEA9_C3",1,4,3.7e-24,-1.32192809488736,0.0975
+"cytoplasmic translation","MMEA9_C3",2,2,3.7e-24,0,1
+"regulation of autophagy","MMEA9_C3",1,3,3.7e-24,-1,0.2063
+"signal transduction in response to DNA damage","MMEA9_C3",0,3,3.7e-24,-2,0.0675
+"regulation of intracellular transport","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.5825
+"protein localization to nucleus","MMEA9_C3",3,4,3.7e-24,-0.321928094887362,0.6525
+"microtubule cytoskeleton organization involved in mitosis","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.0999
+"telomere maintenance","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1016
+"cell cycle checkpoint signaling","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5428
+"regulation of protein modification by small protein conjugation or removal","MMEA9_C3",1,3,3.7e-24,-1,0.229
+"cellular respiration","MMEA9_C3",1,3,3.7e-24,-1,0.2123
+"cellular component disassembly","MMEA9_C3",3,5,3.7e-24,-0.584962500721156,0.3087
+"nuclear chromosome segregation","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.5938
+"regulation of protein stability","MMEA9_C3",1,3,3.7e-24,-1,0.1985
+"regulation of cell cycle phase transition","MMEA9_C3",2,4,3.7e-24,-0.736965594166206,0.2666
+"regulation of protein catabolic process","MMEA9_C3",2,5,3.7e-24,-1,0.1546
+"response to endoplasmic reticulum stress","MMEA9_C3",0,3,3.7e-24,-2,0.0593
+"vesicle organization","MMEA9_C3",0,4,3.7e-24,-2.32192809488736,0.015
+"mitochondrial respiratory chain complex assembly","MMEA9_C3",1,1,3.7e-24,0,1
+"DNA-templated transcription elongation","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1805
+"mitochondrial transport","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.6164
+"establishment of organelle localization","MMEA9_C3",2,5,3.7e-24,-1,0.1541
+"regulation of intracellular protein transport","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.5991
+"response to UV","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5413
+"RNA localization","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.0958
+"response to topologically incorrect protein","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1776
+"organelle fission","MMEA9_C3",2,5,3.7e-24,-1,0.1085
+"non-membrane-bounded organelle assembly","MMEA9_C3",2,6,3.7e-24,-1.22239242133645,0.0425
+"protein polyubiquitination","MMEA9_C3",0,3,3.7e-24,-2,0.0607
+"methylation","MMEA9_C3",0,4,3.7e-24,-2.32192809488736,0.0188
+"phospholipid biosynthetic process","MMEA9_C3",1,3,3.7e-24,-1,0.2242
+"oxidative phosphorylation","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.159
+"establishment of protein localization to membrane","MMEA9_C3",1,3,3.7e-24,-1,0.2012
+"in utero embryonic development","MMEA9_C3",3,5,3.7e-24,-0.584962500721156,0.3523
+"vacuole organization","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.6023
+"nuclear-transcribed mRNA catabolic process","MMEA9_C3",1,1,3.7e-24,0,1
+"protein folding","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.616
+"DNA conformation change","MMEA9_C3",0,1,3.7e-24,-1,0.4259
+"regulation of chromosome segregation","MMEA9_C3",2,1,3.7e-24,0.584962500721156,0.6527
+"regulation of apoptotic signaling pathway","MMEA9_C3",2,4,3.7e-24,-0.736965594166206,0.2577
+"cell cycle G2/M phase transition","MMEA9_C3",2,2,3.7e-24,0,1
+"vacuolar transport","MMEA9_C3",1,1,3.7e-24,0,1
+"response to ionizing radiation","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.089
+"cellular response to UV","MMEA9_C3",1,1,3.7e-24,0,1
+"regulation of binding","MMEA9_C3",2,4,3.7e-24,-0.736965594166206,0.2681
+"nucleic acid transport","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5456
+"RNA transport","MMEA9_C3",0,1,3.7e-24,-1,0.42
+"ribonucleoprotein complex subunit organization","MMEA9_C3",1,3,3.7e-24,-1,0.2396
+"regulation of DNA replication","MMEA9_C3",2,2,3.7e-24,0,1
+"ribose phosphate metabolic process","MMEA9_C3",2,5,3.7e-24,-1,0.1464
+"proton motive force-driven ATP synthesis","MMEA9_C3",0,1,3.7e-24,-1,0.5108
+"ribonucleotide metabolic process","MMEA9_C3",2,5,3.7e-24,-1,0.1506
+"telomere organization","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5485
+"cellular response to topologically incorrect protein","MMEA9_C3",2,2,3.7e-24,0,1
+"Golgi organization","MMEA9_C3",0,1,3.7e-24,-1,0.4263
+"ribonucleoprotein complex assembly","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5556
+"cellular nitrogen compound catabolic process","MMEA9_C3",4,6,3.7e-24,-0.485426827170242,0.4444
+"negative regulation of phosphorus metabolic process","MMEA9_C3",4,4,3.7e-24,0,1
+"heterocycle catabolic process","MMEA9_C3",1,5,3.7e-24,-1.58496250072116,0.0348
+"mitochondrial membrane organization","MMEA9_C3",1,1,3.7e-24,0,1
+"regulation of protein-containing complex assembly","MMEA9_C3",0,4,3.7e-24,-2.32192809488736,0.023
+"positive regulation of cellular component biogenesis","MMEA9_C3",1,5,3.7e-24,-1.58496250072116,0.0283
+"response to oxidative stress","MMEA9_C3",3,5,3.7e-24,-0.584962500721156,0.3091
+"regulation of supramolecular fiber organization","MMEA9_C3",3,4,3.7e-24,-0.321928094887362,0.6576
+"positive regulation of protein localization","MMEA9_C3",4,6,3.7e-24,-0.485426827170242,0.451
+"positive regulation of cell projection organization","MMEA9_C3",3,5,3.7e-24,-0.584962500721156,0.3264
+"negative regulation of transferase activity","MMEA9_C3",2,2,3.7e-24,0,1
+"autophagy of mitochondrion","MMEA9_C3",0,1,3.7e-24,-1,0.4794
+"positive regulation of amide metabolic process","MMEA9_C3",1,1,3.7e-24,0,1
+"chromatin remodeling","MMEA9_C3",2,4,3.7e-24,-0.736965594166206,0.2787
+"viral process","MMEA9_C3",3,5,3.7e-24,-0.584962500721156,0.3596
+"macromolecule deacylation","MMEA9_C3",1,1,3.7e-24,0,1
+"mitotic cytokinesis","MMEA9_C3",0,1,3.7e-24,-1,0.44
+"aromatic compound catabolic process","MMEA9_C3",3,5,3.7e-24,-0.584962500721156,0.3079
+"vesicle localization","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.552
+"establishment or maintenance of cell polarity","MMEA9_C3",0,3,3.7e-24,-2,0.034
+"Wnt signaling pathway","MMEA9_C3",3,5,3.7e-24,-0.584962500721156,0.3266
+"cell-cell signaling by wnt","MMEA9_C3",4,5,3.7e-24,-0.263034405833794,0.6806
+"ATP metabolic process","MMEA9_C3",3,2,3.7e-24,0.415037499278844,0.7247
+"cellular response to chemical stress","MMEA9_C3",2,4,3.7e-24,-0.736965594166206,0.3145
+"regulation of vacuole organization","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular response to external stimulus","MMEA9_C3",0,3,3.7e-24,-2,0.0629
+"negative regulation of protein phosphorylation","MMEA9_C3",1,3,3.7e-24,-1,0.2305
+"negative regulation of catabolic process","MMEA9_C3",5,3,3.7e-24,0.584962500721156,0.4211
+"regulation of microtubule cytoskeleton organization","MMEA9_C3",0,1,3.7e-24,-1,0.4199
+"chromosome localization","MMEA9_C3",1,1,3.7e-24,0,1
+"negative regulation of mitotic nuclear division","MMEA9_C3",1,0,3.7e-24,1,0.3837
+"regulation of actin filament organization","MMEA9_C3",4,3,3.7e-24,0.321928094887362,0.7692
+"dephosphorylation","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.5869
+"glycosylation","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.116
+"positive regulation of establishment of protein localization","MMEA9_C3",1,3,3.7e-24,-1,0.2059
+"regulation of microtubule-based process","MMEA9_C3",0,3,3.7e-24,-2,0.0683
+"cell-substrate junction organization","MMEA9_C3",0,1,3.7e-24,-1,0.4117
+"protein-containing complex localization","MMEA9_C3",2,2,3.7e-24,0,1
+"mitochondrial transmembrane transport","MMEA9_C3",1,1,3.7e-24,0,1
+"stem cell population maintenance","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.575
+"ribosome assembly","MMEA9_C3",0,0,3.7e-24,0,1
+"intraciliary transport","MMEA9_C3",0,1,3.7e-24,-1,0.5284
+"Golgi to plasma membrane protein transport","MMEA9_C3",1,1,3.7e-24,0,1
+"response to amino acid starvation","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular response to extracellular stimulus","MMEA9_C3",1,3,3.7e-24,-1,0.207
+"cell growth","MMEA9_C3",2,5,3.7e-24,-1,0.1611
+"protein glycosylation","MMEA9_C3",3,2,3.7e-24,0.415037499278844,0.7391
+"macromolecule glycosylation","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5606
+"maintenance of cell number","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1486
+"response to reactive oxygen species","MMEA9_C3",0,1,3.7e-24,-1,0.4161
+"regulation of cell morphogenesis","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.6287
+"regulation of cellular component size","MMEA9_C3",0,3,3.7e-24,-2,0.0602
+"cell-substrate junction assembly","MMEA9_C3",0,1,3.7e-24,-1,0.4762
+"membrane fission","MMEA9_C3",0,0,3.7e-24,0,1
+"membrane docking","MMEA9_C3",1,1,3.7e-24,0,1
+"fibroblast migration","MMEA9_C3",0,0,3.7e-24,0,1
+"nucleus organization","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1697
+"regulation of cell growth","MMEA9_C3",4,5,3.7e-24,-0.263034405833794,0.6852
+"fibroblast proliferation","MMEA9_C3",1,1,3.7e-24,0,1
+"cell cycle G1/S phase transition","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.6195
+"actin filament organization","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.5967
+"response to oxygen levels","MMEA9_C3",3,3,3.7e-24,0,1
+"epigenetic regulation of gene expression","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.0934
+"organelle fusion","MMEA9_C3",2,1,3.7e-24,0.584962500721156,0.6446
+"lipoprotein metabolic process","MMEA9_C3",0,1,3.7e-24,-1,0.4157
+"protein lipidation","MMEA9_C3",0,1,3.7e-24,-1,0.4821
+"regulation of plasma membrane bounded cell projection assembly","MMEA9_C3",0,1,3.7e-24,-1,0.421
+"regulation of actin filament-based process","MMEA9_C3",2,4,3.7e-24,-0.736965594166206,0.2696
+"regulation of GTPase activity","MMEA9_C3",3,3,3.7e-24,0,1
+"nuclear envelope organization","MMEA9_C3",1,1,3.7e-24,0,1
+"protein autophosphorylation","MMEA9_C3",3,2,3.7e-24,0.415037499278844,0.7467
+"connective tissue development","MMEA9_C3",1,3,3.7e-24,-1,0.1954
+"cellular response to heat","MMEA9_C3",0,1,3.7e-24,-1,0.528
+"myeloid cell homeostasis","MMEA9_C3",1,1,3.7e-24,0,1
+"regulation of neuron projection development","MMEA9_C3",4,5,3.7e-24,-0.263034405833794,0.6742
+"receptor metabolic process","MMEA9_C3",0,1,3.7e-24,-1,0.4291
+"maintenance of protein location in cell","MMEA9_C3",0,0,3.7e-24,0,1
+"apoptotic mitochondrial changes","MMEA9_C3",0,1,3.7e-24,-1,0.4577
+"response to transforming growth factor beta","MMEA9_C3",0,3,3.7e-24,-2,0.0323
+"neural tube development","MMEA9_C3",0,1,3.7e-24,-1,0.4218
+"maintenance of protein location","MMEA9_C3",1,1,3.7e-24,0,1
+"regulation of ubiquitin-protein transferase activity","MMEA9_C3",0,1,3.7e-24,-1,0.524
+"cilium assembly","MMEA9_C3",0,4,3.7e-24,-2.32192809488736,0.0208
+"mRNA export from nucleus","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of cell-substrate junction organization","MMEA9_C3",0,1,3.7e-24,-1,0.4826
+"membrane biogenesis","MMEA9_C3",0,0,3.7e-24,0,1
+"cilium organization","MMEA9_C3",4,4,3.7e-24,0,1
+"platelet-derived growth factor receptor signaling pathway","MMEA9_C3",0,0,3.7e-24,0,1
+"iron-sulfur cluster assembly","MMEA9_C3",1,0,3.7e-24,1,0.2454
+"metallo-sulfur cluster assembly","MMEA9_C3",0,0,3.7e-24,0,1
+"centromere complex assembly","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular response to oxygen levels","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5572
+"fatty acid beta-oxidation","MMEA9_C3",0,0,3.7e-24,0,1
+"organelle localization by membrane tethering","MMEA9_C3",0,1,3.7e-24,-1,0.4819
+"autophagosome maturation","MMEA9_C3",1,0,3.7e-24,1,0.4418
+"cellular response to transforming growth factor beta stimulus","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.6069
+"nucleotide catabolic process","MMEA9_C3",0,1,3.7e-24,-1,0.5339
+"tube closure","MMEA9_C3",1,1,3.7e-24,0,1
+"regulation of stem cell differentiation","MMEA9_C3",1,1,3.7e-24,0,1
+"substrate adhesion-dependent cell spreading","MMEA9_C3",0,1,3.7e-24,-1,0.4603
+"chondrocyte differentiation","MMEA9_C3",0,1,3.7e-24,-1,0.4208
+"regulation of fibroblast proliferation","MMEA9_C3",0,1,3.7e-24,-1,0.4695
+"morphogenesis of an epithelial sheet","MMEA9_C3",0,1,3.7e-24,-1,0.5245
+"microtubule polymerization","MMEA9_C3",0,1,3.7e-24,-1,0.5024
+"response to virus","MMEA9_C3",3,4,3.7e-24,-0.321928094887362,0.6447
+"membrane assembly","MMEA9_C3",1,1,3.7e-24,0,1
+"COPII vesicle coating","MMEA9_C3",1,0,3.7e-24,1,0.4236
+"erythrocyte differentiation","MMEA9_C3",0,1,3.7e-24,-1,0.4113
+"organophosphate catabolic process","MMEA9_C3",2,1,3.7e-24,0.584962500721156,0.6592
+"regulation of embryonic development","MMEA9_C3",1,1,3.7e-24,0,1
+"regulation of focal adhesion assembly","MMEA9_C3",1,1,3.7e-24,0,1
+"regulation of cell-substrate junction assembly","MMEA9_C3",0,1,3.7e-24,-1,0.4681
+"regulation of extracellular matrix organization","MMEA9_C3",0,0,3.7e-24,0,1
+"GPI anchor biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"lamellipodium organization","MMEA9_C3",0,1,3.7e-24,-1,0.4962
+"positive regulation of stem cell population maintenance","MMEA9_C3",1,0,3.7e-24,1,0.4311
+"monosaccharide metabolic process","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5183
+"U2-type prespliceosome assembly","MMEA9_C3",0,0,3.7e-24,0,1
+"heterochromatin formation","MMEA9_C3",0,1,3.7e-24,-1,0.4229
+"peroxisome organization","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of mitochondrial fission","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular pigmentation","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of fibroblast migration","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular carbohydrate metabolic process","MMEA9_C3",3,2,3.7e-24,0.415037499278844,0.7385
+"positive regulation of axonogenesis","MMEA9_C3",1,0,3.7e-24,1,0.4344
+"kinetochore organization","MMEA9_C3",0,0,3.7e-24,0,1
+"stem cell differentiation","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.0906
+"proton transmembrane transport","MMEA9_C3",1,1,3.7e-24,0,1
+"cellular response to insulin stimulus","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1794
+"establishment of mitotic spindle localization","MMEA9_C3",0,0,3.7e-24,0,1
+"cell redox homeostasis","MMEA9_C3",0,1,3.7e-24,-1,0.4931
+"stress granule assembly","MMEA9_C3",0,0,3.7e-24,0,1
+"protein neddylation","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of mitochondrial membrane potential","MMEA9_C3",0,0,3.7e-24,0,1
+"neuron death","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.6032
+"defense response to virus","MMEA9_C3",1,3,3.7e-24,-1,0.2436
+"sulfur compound metabolic process","MMEA9_C3",4,3,3.7e-24,0.321928094887362,0.7751
+"NADP metabolic process","MMEA9_C3",0,0,3.7e-24,0,1
+"vacuolar acidification","MMEA9_C3",0,0,3.7e-24,0,1
+"oligosaccharide-lipid intermediate biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"lysosomal lumen acidification","MMEA9_C3",1,0,3.7e-24,1,0.3948
+"glycosyl compound biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"heart valve development","MMEA9_C3",0,1,3.7e-24,-1,0.4125
+"water-soluble vitamin metabolic process","MMEA9_C3",0,1,3.7e-24,-1,0.5261
+"interferon-beta production","MMEA9_C3",1,0,3.7e-24,1,0.4903
+"regulation of interferon-beta production","MMEA9_C3",0,1,3.7e-24,-1,0.5265
+"branched-chain amino acid metabolic process","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of mitochondrial membrane permeability","MMEA9_C3",0,0,3.7e-24,0,1
+"respiratory tube development","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1044
+"cellular senescence","MMEA9_C3",0,1,3.7e-24,-1,0.4321
+"positive regulation of neurogenesis","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5393
+"mitochondrial outer membrane permeabilization","MMEA9_C3",0,0,3.7e-24,0,1
+"immune system development","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1602
+"clathrin-dependent endocytosis","MMEA9_C3",0,1,3.7e-24,-1,0.5191
+"positive regulation of viral process","MMEA9_C3",0,1,3.7e-24,-1,0.5152
+"bone development","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1586
+"cell-substrate adhesion","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.595
+"positive regulation of microtubule polymerization","MMEA9_C3",0,0,3.7e-24,0,1
+"pteridine-containing compound metabolic process","MMEA9_C3",1,0,3.7e-24,1,0.2881
+"response to arsenic-containing substance","MMEA9_C3",0,0,3.7e-24,0,1
+"response to insulin","MMEA9_C3",4,3,3.7e-24,0.321928094887362,0.7733
+"ubiquinone metabolic process","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular response to arsenic-containing substance","MMEA9_C3",0,0,3.7e-24,0,1
+"inositol phosphate catabolic process","MMEA9_C3",0,0,3.7e-24,0,1
+"telomerase RNA localization to Cajal body","MMEA9_C3",0,0,3.7e-24,0,1
+"respiratory system development","MMEA9_C3",3,3,3.7e-24,0,1
+"regulation of generation of precursor metabolites and energy","MMEA9_C3",1,1,3.7e-24,0,1
+"mitochondrial calcium ion homeostasis","MMEA9_C3",0,0,3.7e-24,0,1
+"G0 to G1 transition","MMEA9_C3",1,0,3.7e-24,1,0.2518
+"mitochondrial genome maintenance","MMEA9_C3",0,0,3.7e-24,0,1
+"release of cytochrome c from mitochondria","MMEA9_C3",0,1,3.7e-24,-1,0.5303
+"cortical cytoskeleton organization","MMEA9_C3",0,0,3.7e-24,0,1
+"response to sterol depletion","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of ncRNA transcription","MMEA9_C3",0,0,3.7e-24,0,1
+"mesenchymal cell differentiation","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.621
+"protein-DNA complex subunit organization","MMEA9_C3",3,2,3.7e-24,0.415037499278844,0.741
+"response to fluid shear stress","MMEA9_C3",1,1,3.7e-24,0,1
+"collagen fibril organization","MMEA9_C3",0,0,3.7e-24,0,1
+"roof of mouth development","MMEA9_C3",0,1,3.7e-24,-1,0.4106
+"regulation of protein dephosphorylation","MMEA9_C3",0,1,3.7e-24,-1,0.4608
+"multicellular organism growth","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5822
+"miRNA processing","MMEA9_C3",1,0,3.7e-24,1,0.3141
+"small molecule catabolic process","MMEA9_C3",0,3,3.7e-24,-2,0.0342
+"regulation of G0 to G1 transition","MMEA9_C3",1,1,3.7e-24,0,1
+"circadian regulation of gene expression","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of translational fidelity","MMEA9_C3",0,0,3.7e-24,0,1
+"ubiquinone biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"mitochondrial calcium ion transmembrane transport","MMEA9_C3",0,0,3.7e-24,0,1
+"quinone biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"viral release from host cell","MMEA9_C3",0,0,3.7e-24,0,1
+"exit from host cell","MMEA9_C3",0,0,3.7e-24,0,1
+"positive regulation of GTPase activity","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5309
+"regulation of cytokinesis","MMEA9_C3",0,0,3.7e-24,0,1
+"mitochondrion localization","MMEA9_C3",0,0,3.7e-24,0,1
+"renal system development","MMEA9_C3",0,3,3.7e-24,-2,0.0381
+"regulation of cysteine-type endopeptidase activity involved in apoptotic process","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5409
+"regulation of cell-substrate adhesion","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1374
+"centrosome localization","MMEA9_C3",0,0,3.7e-24,0,1
+"microtubule organizing center localization","MMEA9_C3",0,0,3.7e-24,0,1
+"pinocytosis","MMEA9_C3",0,0,3.7e-24,0,1
+"lamellipodium assembly","MMEA9_C3",1,1,3.7e-24,0,1
+"cellular response to sterol depletion","MMEA9_C3",0,0,3.7e-24,0,1
+"placenta development","MMEA9_C3",1,1,3.7e-24,0,1
+"rhythmic process","MMEA9_C3",0,3,3.7e-24,-2,0.0366
+"spindle localization","MMEA9_C3",3,0,3.7e-24,2,0.0198
+"carbohydrate derivative catabolic process","MMEA9_C3",0,1,3.7e-24,-1,0.4225
+"response to amino acid","MMEA9_C3",1,1,3.7e-24,0,1
+"regulation of intracellular steroid hormone receptor signaling pathway","MMEA9_C3",0,1,3.7e-24,-1,0.53
+"regulation of neuron death","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.0757
+"ossification","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.5981
+"mammary gland epithelial cell proliferation","MMEA9_C3",0,0,3.7e-24,0,1
+"ribosomal subunit export from nucleus","MMEA9_C3",1,0,3.7e-24,1,0.211
+"ribosome localization","MMEA9_C3",0,0,3.7e-24,0,1
+"protein transport to vacuole involved in ubiquitin-dependent protein catabolic process via the multivesicular body sorting pathway","MMEA9_C3",0,0,3.7e-24,0,1
+"seminiferous tubule development","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular response to acid chemical","MMEA9_C3",0,1,3.7e-24,-1,0.4939
+"positive regulation of kinase activity","MMEA9_C3",3,3,3.7e-24,0,1
+"positive regulation by host of viral process","MMEA9_C3",1,0,3.7e-24,1,0.3112
+"mitochondrion morphogenesis","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of establishment of cell polarity","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular lipid catabolic process","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.6285
+"neuron apoptotic process","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5458
+"inner cell mass cell proliferation","MMEA9_C3",0,0,3.7e-24,0,1
+"polyamine biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"folic acid metabolic process","MMEA9_C3",1,0,3.7e-24,1,0.1168
+"organelle inheritance","MMEA9_C3",1,0,3.7e-24,1,0.2388
+"polyol metabolic process","MMEA9_C3",2,1,3.7e-24,0.584962500721156,0.6303
+"regulation of type I interferon-mediated signaling pathway","MMEA9_C3",1,0,3.7e-24,1,0.411
+"intracellular lipid transport","MMEA9_C3",2,1,3.7e-24,0.584962500721156,0.6388
+"fat cell differentiation","MMEA9_C3",2,3,3.7e-24,-0.415037499278844,0.6066
+"iron ion homeostasis","MMEA9_C3",1,1,3.7e-24,0,1
+"negative regulation of cell projection organization","MMEA9_C3",0,1,3.7e-24,-1,0.4125
+"dicarboxylic acid metabolic process","MMEA9_C3",0,1,3.7e-24,-1,0.4773
+"regulation of anatomical structure size","MMEA9_C3",3,5,3.7e-24,-0.584962500721156,0.3287
+"regulation of small molecule metabolic process","MMEA9_C3",3,3,3.7e-24,0,1
+"pentose-phosphate shunt","MMEA9_C3",0,0,3.7e-24,0,1
+"pericardium development","MMEA9_C3",0,0,3.7e-24,0,1
+"lysosomal protein catabolic process","MMEA9_C3",0,0,3.7e-24,0,1
+"carbohydrate derivative transport","MMEA9_C3",1,1,3.7e-24,0,1
+"alcohol biosynthetic process","MMEA9_C3",0,1,3.7e-24,-1,0.4474
+"regulation of membrane permeability","MMEA9_C3",2,1,3.7e-24,0.584962500721156,0.6268
+"signal peptide processing","MMEA9_C3",0,0,3.7e-24,0,1
+"UV-damage excision repair","MMEA9_C3",0,0,3.7e-24,0,1
+"biological process involved in interaction with host","MMEA9_C3",1,1,3.7e-24,0,1
+"body morphogenesis","MMEA9_C3",0,0,3.7e-24,0,1
+"extracellular vesicle biogenesis","MMEA9_C3",0,0,3.7e-24,0,1
+"negative regulation of defense response to virus","MMEA9_C3",0,0,3.7e-24,0,1
+"aminoglycan biosynthetic process","MMEA9_C3",0,1,3.7e-24,-1,0.4619
+"sterol biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"polyamine metabolic process","MMEA9_C3",0,0,3.7e-24,0,1
+"magnesium ion transport","MMEA9_C3",0,0,3.7e-24,0,1
+"lamellipodium morphogenesis","MMEA9_C3",0,0,3.7e-24,0,1
+"positive regulation of neuron migration","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of glucose metabolic process","MMEA9_C3",0,1,3.7e-24,-1,0.4372
+"monosaccharide biosynthetic process","MMEA9_C3",0,1,3.7e-24,-1,0.4102
+"response to acid chemical","MMEA9_C3",1,1,3.7e-24,0,1
+"regulation of carbohydrate metabolic process","MMEA9_C3",0,1,3.7e-24,-1,0.4137
+"positive regulation of nervous system development","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.079
+"regulation of circadian rhythm","MMEA9_C3",1,1,3.7e-24,0,1
+"trabecula morphogenesis","MMEA9_C3",1,1,3.7e-24,0,1
+"pigment accumulation","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular pigment accumulation","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of pinocytosis","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of ligase activity","MMEA9_C3",0,0,3.7e-24,0,1
+"smoothened signaling pathway involved in dorsal/ventral neural tube patterning","MMEA9_C3",0,0,3.7e-24,0,1
+"glycosyl compound metabolic process","MMEA9_C3",0,0,3.7e-24,0,1
+"substantia nigra development","MMEA9_C3",0,0,3.7e-24,0,1
+"negative regulation of GTPase activity","MMEA9_C3",0,0,3.7e-24,0,1
+"axon extension","MMEA9_C3",1,1,3.7e-24,0,1
+"positive regulation of epithelial to mesenchymal transition","MMEA9_C3",1,1,3.7e-24,0,1
+"one-carbon metabolic process","MMEA9_C3",0,0,3.7e-24,0,1
+"NADPH regeneration","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular response to dsRNA","MMEA9_C3",0,0,3.7e-24,0,1
+"neuron projection organization","MMEA9_C3",1,1,3.7e-24,0,1
+"postsynapse organization","MMEA9_C3",0,1,3.7e-24,-1,0.4082
+"regulation of ketone biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"mitochondrion distribution","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of autophagosome maturation","MMEA9_C3",0,0,3.7e-24,0,1
+"magnesium ion transmembrane transport","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of cell division","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5753
+"intermembrane lipid transfer","MMEA9_C3",0,0,3.7e-24,0,1
+"organophosphate ester transport","MMEA9_C3",0,1,3.7e-24,-1,0.4248
+"movement in host","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1693
+"extracellular matrix assembly","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular metabolic compound salvage","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of ATP-dependent activity","MMEA9_C3",0,0,3.7e-24,0,1
+"cell migration involved in heart development","MMEA9_C3",0,0,3.7e-24,0,1
+"cellular response to fluid shear stress","MMEA9_C3",0,0,3.7e-24,0,1
+"sphingomyelin biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"ether lipid biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"embryonic body morphogenesis","MMEA9_C3",0,0,3.7e-24,0,1
+"amino sugar biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"glycerol ether biosynthetic process","MMEA9_C3",1,0,3.7e-24,1,0.2166
+"pigmentation","MMEA9_C3",1,1,3.7e-24,0,1
+"cellular response to ketone","MMEA9_C3",0,1,3.7e-24,-1,0.4189
+"nonribosomal peptide biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"glial cell apoptotic process","MMEA9_C3",1,0,3.7e-24,1,0.104
+"lipoprotein catabolic process","MMEA9_C3",0,0,3.7e-24,0,1
+"suppression of viral release by host","MMEA9_C3",0,0,3.7e-24,0,1
+"chaperone-mediated autophagy","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of steroid hormone biosynthetic process","MMEA9_C3",0,0,3.7e-24,0,1
+"synaptic vesicle lumen acidification","MMEA9_C3",0,0,3.7e-24,0,1
+"semaphorin-plexin signaling pathway involved in neuron projection guidance","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of Golgi organization","MMEA9_C3",0,0,3.7e-24,0,1
+"Schwann cell differentiation","MMEA9_C3",0,0,3.7e-24,0,1
+"neurotrophin signaling pathway","MMEA9_C3",1,0,3.7e-24,1,0.3922
+"regulation of microtubule depolymerization","MMEA9_C3",0,0,3.7e-24,0,1
+"basement membrane organization","MMEA9_C3",0,0,3.7e-24,0,1
+"establishment or maintenance of epithelial cell apical/basal polarity","MMEA9_C3",1,0,3.7e-24,1,0.3457
+"face development","MMEA9_C3",0,0,3.7e-24,0,1
+"osteoblast differentiation","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1323
+"appendage development","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1338
+"limb development","MMEA9_C3",0,1,3.7e-24,-1,0.4169
+"regulation of ATP metabolic process","MMEA9_C3",2,1,3.7e-24,0.584962500721156,0.6244
+"developmental growth involved in morphogenesis","MMEA9_C3",0,2,3.7e-24,-1.58496250072116,0.1571
+"embryonic organ development","MMEA9_C3",1,4,3.7e-24,-1.32192809488736,0.1137
+"negative regulation of growth","MMEA9_C3",1,2,3.7e-24,-0.584962500721156,0.5252
+"microtubule depolymerization","MMEA9_C3",0,1,3.7e-24,-1,0.4512
+"heme metabolic process","MMEA9_C3",0,0,3.7e-24,0,1
+"regulation of neuron apoptotic process","MMEA9_C3",2,2,3.7e-24,0,1
+"plasma membrane tubulation","MMEA9_C3",0,0,3.7e-24,0,1
+"exosomal secretion","MMEA9_C3",0,0,3.7e-24,0,1
+"vasculogenesis","MMEA9_C3",0,0,3.7e-24,0,1
+"toxin transport","MMEA9_C3",0,0,3.7e-24,0,1

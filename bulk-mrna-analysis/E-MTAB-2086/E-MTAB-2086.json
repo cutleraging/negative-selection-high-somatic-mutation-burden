@@ -1,0 +1,603 @@
+{
+  "accno" : "E-MTAB-2086",
+  "attributes" : [ {
+    "name" : "Title",
+    "value" : "IMR90 Senescence"
+  }, {
+    "name" : "ReleaseDate",
+    "value" : "2014-06-17"
+  }, {
+    "name" : "RootPath",
+    "value" : "E-MTAB-2086"
+  }, {
+    "name" : "AttachTo",
+    "value" : "ArrayExpress"
+  } ],
+  "section" : {
+    "accno" : "s-E-MTAB-2086",
+    "type" : "Study",
+    "attributes" : [ {
+      "name" : "Title",
+      "value" : "IMR90 Senescence"
+    }, {
+      "name" : "Study type",
+      "value" : "transcription profiling by array",
+      "valqual" : [ {
+        "name" : "Ontology",
+        "value" : "EFO"
+      }, {
+        "name" : "TermId",
+        "value" : "EFO_0002768"
+      } ]
+    }, {
+      "name" : "Organism",
+      "value" : "Homo sapiens"
+    }, {
+      "name" : "Description",
+      "value" : "Transcription profiling from human primary fibroblasts as they progress into senescence. Samples were taken early population doubling onwards until cells reached replicative senescence and stopped dividing. Population doubling values are contained in Characteristics[generation] column."
+    } ],
+    "subsections" : [ [ {
+      "accno" : "P-MTAB-36175",
+      "type" : "Protocols",
+      "attributes" : [ {
+        "name" : "Name",
+        "value" : "P-MTAB-36175"
+      }, {
+        "name" : "Type",
+        "value" : "growth protocol",
+        "valqual" : [ {
+          "name" : "Ontology",
+          "value" : "EFO"
+        } ]
+      }, {
+        "name" : "Description",
+        "value" : "All experiments were performed using IMR90 cells, which were grown in DMEM medium containing 15% Fetal Bovine Serum, antibiotics (Penicillin, Streptomycin), and non-essential amino acids. Cells were grown at 7.5% CO2 and 3.5% O2"
+      } ]
+    }, {
+      "accno" : "P-MTAB-36176",
+      "type" : "Protocols",
+      "attributes" : [ {
+        "name" : "Name",
+        "value" : "P-MTAB-36176"
+      }, {
+        "name" : "Type",
+        "value" : "RNA extraction",
+        "valqual" : [ {
+          "name" : "Ontology",
+          "value" : "EFO"
+        } ]
+      }, {
+        "name" : "Description",
+        "value" : "RNA was extracted with Trizol Reagent according to manufacturers instructions and purified using RNeasy mini kits (Qiagen)."
+      } ]
+    }, {
+      "accno" : "P-MTAB-36177",
+      "type" : "Protocols",
+      "attributes" : [ {
+        "name" : "Name",
+        "value" : "P-MTAB-36177"
+      }, {
+        "name" : "Type",
+        "value" : "nucleic acid labeling protocol",
+        "valqual" : [ {
+          "name" : "Ontology",
+          "value" : "EFO"
+        } ]
+      }, {
+        "name" : "Description",
+        "value" : "Standard Affymetrix labeling and hybridization for GeneChip Human Gene 1.0 ST array"
+      } ]
+    } ], {
+      "type" : "Author",
+      "attributes" : [ {
+        "name" : "Name",
+        "value" : "Daniel Lackner"
+      }, {
+        "name" : "Email",
+        "value" : "dlackner@salk.edu"
+      }, {
+        "name" : "Phone",
+        "value" : "858.453.4100 x1868"
+      }, {
+        "name" : "Role",
+        "value" : "submitter"
+      }, {
+        "name" : "affiliation",
+        "value" : "o1",
+        "reference" : true
+      } ]
+    }, {
+      "accno" : "o1",
+      "type" : "Organization",
+      "attributes" : [ {
+        "name" : "Name",
+        "value" : "The Salk Institute for Biological Studies, Molecular and Cell Biology Laboratory"
+      }, {
+        "name" : "Address",
+        "value" : "10010 North Torrey Pines Road,  La Jolla, CA-92037-1002, USA"
+      } ]
+    }, {
+      "type" : "Publication",
+      "attributes" : [ {
+        "name" : "Title",
+        "value" : "A genomics approach identifies senescence-specific gene expression regulation"
+      }, {
+        "name" : "Authors",
+        "value" : "Lackner, D. H., Hayashi, M. T., Cesare, A. J. and Karlseder, J."
+      }, {
+        "name" : "DOI",
+        "value" : "10.1111/acel.12234"
+      }, {
+        "name" : "Status",
+        "value" : "in preparation"
+      } ],
+      "links" : [ {
+        "url" : "10.1111/acel.12234",
+        "attributes" : [ {
+          "name" : "Type",
+          "value" : "DOI"
+        } ]
+      } ]
+    }, {
+      "accno" : "s-samples-factors-E-MTAB-2086",
+      "type" : "Samples",
+      "attributes" : [ {
+        "name" : "Sample count",
+        "value" : "12"
+      }, {
+        "name" : "Experimental Designs",
+        "value" : "development or differentiation design"
+      }, {
+        "name" : "Experimental Designs",
+        "value" : "co-expression_design"
+      }, {
+        "name" : "Experimental Designs",
+        "value" : "replicate design"
+      }, {
+        "name" : "Experimental Factors",
+        "value" : "generation",
+        "valqual" : [ {
+          "name" : "TermName",
+          "value" : "generation"
+        } ]
+      }, {
+        "name" : "Experimental Factors",
+        "value" : "developmental stage",
+        "valqual" : [ {
+          "name" : "TermName",
+          "value" : "developmental stage"
+        } ]
+      }, {
+        "name" : "Quality Controls",
+        "value" : "biological replicate",
+        "valqual" : [ {
+          "name" : "TermId",
+          "value" : "EFO"
+        } ]
+      }, {
+        "name" : "Quality Controls",
+        "value" : "technical replicate",
+        "valqual" : [ {
+          "name" : "TermId",
+          "value" : "EFO"
+        } ]
+      } ],
+      "subsections" : [ {
+        "accno" : "exp_factor-E-MTAB-2086",
+        "type" : "Experimental Factors",
+        "attributes" : [ {
+          "name" : "Generation",
+          "value" : "80"
+        }, {
+          "name" : "Generation",
+          "value" : "70"
+        }, {
+          "name" : "Generation",
+          "value" : "50"
+        }, {
+          "name" : "Generation",
+          "value" : "30"
+        }, {
+          "name" : "Developmental stage",
+          "value" : "Senescent"
+        }, {
+          "name" : "Developmental stage",
+          "value" : "Young"
+        }, {
+          "name" : "Developmental stage",
+          "value" : "Middle"
+        }, {
+          "name" : "Developmental stage",
+          "value" : "Old"
+        } ],
+        "subsections" : [ [ {
+          "accno" : "factors_0",
+          "type" : "Factors Table",
+          "attributes" : [ {
+            "name" : "generation",
+            "value" : "30"
+          }, {
+            "name" : "developmental stage",
+            "value" : "Young"
+          }, {
+            "name" : "No. of Samples",
+            "value" : "3",
+            "valqual" : [ {
+              "name" : "search",
+              "value" : "\"DL10041401.CEL\" OR \"DL10082501.CEL\" OR \"DL10082502.CEL\""
+            } ]
+          } ]
+        }, {
+          "accno" : "factors_1",
+          "type" : "Factors Table",
+          "attributes" : [ {
+            "name" : "generation",
+            "value" : "50"
+          }, {
+            "name" : "developmental stage",
+            "value" : "Middle"
+          }, {
+            "name" : "No. of Samples",
+            "value" : "4",
+            "valqual" : [ {
+              "name" : "search",
+              "value" : "\"DL10041402.CEL\" OR \"DL10082503.CEL\" OR \"DL10082504.CEL\" OR \"DL10082517.CEL\""
+            } ]
+          } ]
+        }, {
+          "accno" : "factors_2",
+          "type" : "Factors Table",
+          "attributes" : [ {
+            "name" : "generation",
+            "value" : "70"
+          }, {
+            "name" : "developmental stage",
+            "value" : "Old"
+          }, {
+            "name" : "No. of Samples",
+            "value" : "3",
+            "valqual" : [ {
+              "name" : "search",
+              "value" : "\"DL10041403.CEL\" OR \"DL10082505.CEL\" OR \"DL10082506.CEL\""
+            } ]
+          } ]
+        }, {
+          "accno" : "factors_3",
+          "type" : "Factors Table",
+          "attributes" : [ {
+            "name" : "generation",
+            "value" : "80"
+          }, {
+            "name" : "developmental stage",
+            "value" : "Senescent"
+          }, {
+            "name" : "No. of Samples",
+            "value" : "2",
+            "valqual" : [ {
+              "name" : "search",
+              "value" : "\"DL10082507.CEL\" OR \"DL10082508.CEL\""
+            } ]
+          } ]
+        } ] ]
+      }, {
+        "accno" : "source_chars-E-MTAB-2086",
+        "type" : "Source Characteristics",
+        "attributes" : [ {
+          "name" : "Organism",
+          "value" : "Homo sapiens"
+        }, {
+          "name" : "Cell line",
+          "value" : "IMR-90"
+        }, {
+          "name" : "Cell type",
+          "value" : "fibroblast"
+        }, {
+          "name" : "Generation",
+          "value" : "80"
+        }, {
+          "name" : "Generation",
+          "value" : "70"
+        }, {
+          "name" : "Generation",
+          "value" : "50"
+        }, {
+          "name" : "Generation",
+          "value" : "30"
+        }, {
+          "name" : "Developmental stage",
+          "value" : "Senescent"
+        }, {
+          "name" : "Developmental stage",
+          "value" : "Young"
+        }, {
+          "name" : "Developmental stage",
+          "value" : "Middle"
+        }, {
+          "name" : "Developmental stage",
+          "value" : "Old"
+        } ],
+        "subsections" : [ [ {
+          "accno" : "source_0",
+          "type" : "Characteristics Table",
+          "attributes" : [ {
+            "name" : "generation",
+            "value" : "30"
+          }, {
+            "name" : "developmental stage",
+            "value" : "Young"
+          }, {
+            "name" : "No. of Samples",
+            "value" : "3",
+            "valqual" : [ {
+              "name" : "search",
+              "value" : "\"DL10041401.CEL\" OR \"DL10082501.CEL\" OR \"DL10082502.CEL\""
+            } ]
+          } ]
+        }, {
+          "accno" : "source_1",
+          "type" : "Characteristics Table",
+          "attributes" : [ {
+            "name" : "generation",
+            "value" : "50"
+          }, {
+            "name" : "developmental stage",
+            "value" : "Middle"
+          }, {
+            "name" : "No. of Samples",
+            "value" : "4",
+            "valqual" : [ {
+              "name" : "search",
+              "value" : "\"DL10041402.CEL\" OR \"DL10082503.CEL\" OR \"DL10082504.CEL\" OR \"DL10082517.CEL\""
+            } ]
+          } ]
+        }, {
+          "accno" : "source_2",
+          "type" : "Characteristics Table",
+          "attributes" : [ {
+            "name" : "generation",
+            "value" : "70"
+          }, {
+            "name" : "developmental stage",
+            "value" : "Old"
+          }, {
+            "name" : "No. of Samples",
+            "value" : "3",
+            "valqual" : [ {
+              "name" : "search",
+              "value" : "\"DL10041403.CEL\" OR \"DL10082505.CEL\" OR \"DL10082506.CEL\""
+            } ]
+          } ]
+        }, {
+          "accno" : "source_3",
+          "type" : "Characteristics Table",
+          "attributes" : [ {
+            "name" : "generation",
+            "value" : "80"
+          }, {
+            "name" : "developmental stage",
+            "value" : "Senescent"
+          }, {
+            "name" : "No. of Samples",
+            "value" : "2",
+            "valqual" : [ {
+              "name" : "search",
+              "value" : "\"DL10082507.CEL\" OR \"DL10082508.CEL\""
+            } ]
+          } ]
+        } ] ]
+      } ]
+    }, {
+      "accno" : "s-assays-data-E-MTAB-2086",
+      "type" : "Assays and Data",
+      "attributes" : [ {
+        "name" : "Assay count",
+        "value" : "12"
+      }, {
+        "name" : "Technology",
+        "value" : "Array assay"
+      }, {
+        "name" : "Assay by Molecule",
+        "value" : "RNA assay"
+      } ],
+      "subsections" : [ {
+        "accno" : "raw-data",
+        "type" : "Raw Data",
+        "files" : [ [ {
+          "path" : "DL10041401.CEL",
+          "size" : 11059903,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_young_1"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10082501.CEL",
+          "size" : 11064659,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_young_2"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10082502.CEL",
+          "size" : 11066183,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_young_3"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10041402.CEL",
+          "size" : 11065555,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_middle_1"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10082503.CEL",
+          "size" : 11066555,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_middle_2"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10082504.CEL",
+          "size" : 11068227,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_middle_3"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10082517.CEL",
+          "size" : 11062731,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_middle_4"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10041403.CEL",
+          "size" : 11064515,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_old_1"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10082505.CEL",
+          "size" : 11066075,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_old_2"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10082506.CEL",
+          "size" : 11064383,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_old_3"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10082507.CEL",
+          "size" : 11061431,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_senescent_1"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "DL10082508.CEL",
+          "size" : 11064567,
+          "attributes" : [ {
+            "name" : "Samples",
+            "value" : "cell_culture_senescent_2"
+          }, {
+            "name" : "Description",
+            "value" : "Raw data file"
+          } ],
+          "type" : "file"
+        } ] ]
+      }, {
+        "accno" : "mt-E-MTAB-2086",
+        "type" : "MAGE-TAB Files",
+        "files" : [ [ {
+          "path" : "E-MTAB-2086.idf.txt",
+          "size" : 2341,
+          "attributes" : [ {
+            "name" : "Type",
+            "value" : "IDF File"
+          }, {
+            "name" : "Format",
+            "value" : "tab-delimited text"
+          }, {
+            "name" : "Description",
+            "value" : "Investigation Design Format (IDF)"
+          } ],
+          "type" : "file"
+        }, {
+          "path" : "E-MTAB-2086.sdrf.txt",
+          "size" : 4871,
+          "attributes" : [ {
+            "name" : "Type",
+            "value" : "SDRF File"
+          }, {
+            "name" : "Format",
+            "value" : "tab-delimited text"
+          }, {
+            "name" : "Description",
+            "value" : "Sample and Data Relationship Format (SDRF)"
+          } ],
+          "type" : "file"
+        } ] ]
+      }, {
+        "accno" : "ad-E-MTAB-2086",
+        "type" : "Array Designs",
+        "links" : [ [ {
+          "url" : "A-AFFY-141",
+          "attributes" : [ {
+            "name" : "Type",
+            "value" : "Array Design"
+          } ]
+        } ] ]
+      } ]
+    }, {
+      "accno" : "score-E-MTAB-2086",
+      "type" : "MIAME Score",
+      "attributes" : [ {
+        "name" : "Platforms",
+        "value" : "-"
+      }, {
+        "name" : "Protocols",
+        "value" : "*"
+      }, {
+        "name" : "Raw",
+        "value" : "*"
+      }, {
+        "name" : "Variables",
+        "value" : "*"
+      }, {
+        "name" : "Processed",
+        "value" : "-"
+      } ]
+    } ]
+  },
+  "type" : "submission"
+}

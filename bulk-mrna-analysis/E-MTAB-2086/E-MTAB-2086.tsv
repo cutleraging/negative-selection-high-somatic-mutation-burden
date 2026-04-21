@@ -1,0 +1,126 @@
+Submission	E-MTAB-2086
+Title	IMR90 Senescence
+ReleaseDate	2014-06-17
+RootPath	E-MTAB-2086
+AttachTo	ArrayExpress
+
+Study	s-E-MTAB-2086
+Title	IMR90 Senescence
+Study type	transcription profiling by array
+[Ontology]	EFO
+[TermId]	EFO_0002768
+Organism	Homo sapiens
+Description	Transcription profiling from human primary fibroblasts as they progress into senescence. Samples were taken early population doubling onwards until cells reached replicative senescence and stopped dividing. Population doubling values are contained in Characteristics[generation] column.
+
+Protocols[s-E-MTAB-2086]	Name	Type	[Ontology]	Description
+P-MTAB-36175	P-MTAB-36175	growth protocol	EFO	All experiments were performed using IMR90 cells, which were grown in DMEM medium containing 15% Fetal Bovine Serum, antibiotics (Penicillin, Streptomycin), and non-essential amino acids. Cells were grown at 7.5% CO2 and 3.5% O2
+P-MTAB-36176	P-MTAB-36176	RNA extraction	EFO	RNA was extracted with Trizol Reagent according to manufacturers instructions and purified using RNeasy mini kits (Qiagen).
+P-MTAB-36177	P-MTAB-36177	nucleic acid labeling protocol	EFO	Standard Affymetrix labeling and hybridization for GeneChip Human Gene 1.0 ST array
+
+Author		s-E-MTAB-2086
+Name	Daniel Lackner
+Email	dlackner@salk.edu
+Phone	858.453.4100 x1868
+Role	submitter
+<affiliation>	o1
+
+Organization	o1	s-E-MTAB-2086
+Name	The Salk Institute for Biological Studies, Molecular and Cell Biology Laboratory
+Address	10010 North Torrey Pines Road,  La Jolla, CA-92037-1002, USA
+
+Publication		s-E-MTAB-2086
+Title	A genomics approach identifies senescence-specific gene expression regulation
+Authors	Lackner, D. H., Hayashi, M. T., Cesare, A. J. and Karlseder, J.
+DOI	10.1111/acel.12234
+Status	in preparation
+
+Link	10.1111/acel.12234
+Type	DOI
+
+Samples	s-samples-factors-E-MTAB-2086	s-E-MTAB-2086
+Sample count	12
+Experimental Designs	development or differentiation design
+Experimental Designs	co-expression_design
+Experimental Designs	replicate design
+Experimental Factors	generation
+[TermName]	generation
+Experimental Factors	developmental stage
+[TermName]	developmental stage
+Quality Controls	biological replicate
+[TermId]	EFO
+Quality Controls	technical replicate
+[TermId]	EFO
+
+Experimental Factors	exp_factor-E-MTAB-2086	s-samples-factors-E-MTAB-2086
+Generation	80
+Generation	70
+Generation	50
+Generation	30
+Developmental stage	Senescent
+Developmental stage	Young
+Developmental stage	Middle
+Developmental stage	Old
+
+Factors Table[exp_factor-E-MTAB-2086]	generation	developmental stage	No. of Samples	[search]
+factors_0	30	Young	3	"DL10041401.CEL" OR "DL10082501.CEL" OR "DL10082502.CEL"
+factors_1	50	Middle	4	"DL10041402.CEL" OR "DL10082503.CEL" OR "DL10082504.CEL" OR "DL10082517.CEL"
+factors_2	70	Old	3	"DL10041403.CEL" OR "DL10082505.CEL" OR "DL10082506.CEL"
+factors_3	80	Senescent	2	"DL10082507.CEL" OR "DL10082508.CEL"
+
+Source Characteristics	source_chars-E-MTAB-2086	s-samples-factors-E-MTAB-2086
+Organism	Homo sapiens
+Cell line	IMR-90
+Cell type	fibroblast
+Generation	80
+Generation	70
+Generation	50
+Generation	30
+Developmental stage	Senescent
+Developmental stage	Young
+Developmental stage	Middle
+Developmental stage	Old
+
+Characteristics Table[source_chars-E-MTAB-2086]	generation	developmental stage	No. of Samples	[search]
+source_0	30	Young	3	"DL10041401.CEL" OR "DL10082501.CEL" OR "DL10082502.CEL"
+source_1	50	Middle	4	"DL10041402.CEL" OR "DL10082503.CEL" OR "DL10082504.CEL" OR "DL10082517.CEL"
+source_2	70	Old	3	"DL10041403.CEL" OR "DL10082505.CEL" OR "DL10082506.CEL"
+source_3	80	Senescent	2	"DL10082507.CEL" OR "DL10082508.CEL"
+
+Assays and Data	s-assays-data-E-MTAB-2086	s-E-MTAB-2086
+Assay count	12
+Technology	Array assay
+Assay by Molecule	RNA assay
+
+Raw Data	raw-data	s-assays-data-E-MTAB-2086
+
+Files	Samples	Description
+DL10041401.CEL	cell_culture_young_1	Raw data file
+DL10082501.CEL	cell_culture_young_2	Raw data file
+DL10082502.CEL	cell_culture_young_3	Raw data file
+DL10041402.CEL	cell_culture_middle_1	Raw data file
+DL10082503.CEL	cell_culture_middle_2	Raw data file
+DL10082504.CEL	cell_culture_middle_3	Raw data file
+DL10082517.CEL	cell_culture_middle_4	Raw data file
+DL10041403.CEL	cell_culture_old_1	Raw data file
+DL10082505.CEL	cell_culture_old_2	Raw data file
+DL10082506.CEL	cell_culture_old_3	Raw data file
+DL10082507.CEL	cell_culture_senescent_1	Raw data file
+DL10082508.CEL	cell_culture_senescent_2	Raw data file
+
+MAGE-TAB Files	mt-E-MTAB-2086	s-assays-data-E-MTAB-2086
+
+Files	Type	Format	Description
+E-MTAB-2086.idf.txt	IDF File	tab-delimited text	Investigation Design Format (IDF)
+E-MTAB-2086.sdrf.txt	SDRF File	tab-delimited text	Sample and Data Relationship Format (SDRF)
+
+Array Designs	ad-E-MTAB-2086	s-assays-data-E-MTAB-2086
+
+Links	Type
+A-AFFY-141	Array Design
+
+MIAME Score	score-E-MTAB-2086	s-E-MTAB-2086
+Platforms	-
+Protocols	*
+Raw	*
+Variables	*
+Processed	-

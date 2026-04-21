@@ -1,0 +1,896 @@
+---
+title: "Load regions of interest for pathway oe ratio calculation"
+output: html_document
+date: "2023-10-10"
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preparation
+
+## Load libraries
+```{r}
+library(VariantAnnotation)
+library(GenomicRanges)
+library(GenomicFeatures)
+library(rtracklayer)
+library(MutationalPatterns)
+library(ggplot2)
+library(AnnotationHub)
+library(tximport)
+library(zFPKM)
+library(dplyr)
+library(tidyr)
+library(SummarizedExperiment)
+library(biomaRt)
+library(clusterProfiler)
+library(ggbio)
+library(tibble)
+library(foreach)
+library(doParallel)
+
+library(org.Hs.eg.db)
+library(BSgenome.Hsapiens.UCSC.hg19)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+TxDb.Hsapiens.UCSC.hg19.knownGene <- keepStandardChromosomes(TxDb.Hsapiens.UCSC.hg19.knownGene)
+TxDb.Hsapiens.UCSC.hg19.knownGene <- dropSeqlevels(TxDb.Hsapiens.UCSC.hg19.knownGene, c("chrY", "chrM"), pruning.mode="coarse")
+hg19_size <- sum(seqlengths(TxDb.Hsapiens.UCSC.hg19.knownGene))
+```
+
+## Functions
+```{r}
+# function to create bed file from granges
+export.granges.bed <- function(gr, outputDir, fileName) {
+  if (!dir.exists(outputDir)) {
+    dir.create(outputDir, recursive = TRUE)
+  }
+
+  sanitizeFileName <- function(name) {
+    # Replace problematic characters with an underscore
+    name <- gsub("[/\\\\:*?\"<>|,()']", "_", name)
+    # Replace multiple underscores with a single one
+    gsub("_+", "_", name)
+  }
+
+  # Sanitize file name
+  name <- sanitizeFileName(fileName)
+
+  bed <- data.frame(
+    seqnames = as.character(seqnames(gr)),
+    start = start(gr) - 1, # bed uses 0 coordinate system
+    end = end(gr),
+    name = seq(1:length(gr)),
+    score = rep(1, length(gr)),
+    stringsAsFactors = FALSE
+  )
+
+  filePath <- paste0(outputDir, "/", name)
+  write.table(bed, file = filePath, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+}
+
+# function to create bed files from a list of granges
+export.grangesList.bed <- function(grList, outputDir) {
+  if (!dir.exists(outputDir)) {
+    dir.create(outputDir, recursive = TRUE)
+  }
+
+  sanitizeFileName <- function(name) {
+    # Replace problematic characters with an underscore
+    name <- gsub("[/\\\\:*?\"<>|,()']", "_", name)
+    # Replace multiple underscores with a single one
+    gsub("_+", "_", name)
+  }
+
+  for (i in seq_along(grList)) {
+    name <- sanitizeFileName(names(grList)[i])
+    gr <- grList[[i]]
+
+    bed <- data.frame(
+      seqnames = as.character(seqnames(gr)),
+      start = start(gr) - 1, # bed uses 0 coordinate system
+      end = end(gr),
+      name = seq(1:length(gr)),
+      score = rep(1, length(gr)),
+      stringsAsFactors = FALSE
+    )
+
+    fileName <- paste0(outputDir, "/", name, ".bed")
+    write.table(bed, file = fileName, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+  }
+}
+
+# function to subset granges based on genes from a pathway enrichment
+subset_regions_pathways <- function(expressed_regions, enrich_result, intron = FALSE){
+  
+  # split 
+  exon <- expressed_regions[["exons"]]
+  if(intron){introns <- expressed_regions[["introns"]]}
+  promoter <- expressed_regions[["promoters"]]
+  enhancer <- expressed_regions[["enhancers"]]
+
+  pathways <- GRangesList()
+  for(i in 1:nrow(enrich_result@result)){
+    # get genes
+    genes <- unlist(strsplit(enrich_result@result$geneID[i], "/"))
+    
+    # susbet lists
+    exons.subset <- exon[exon$entrezgene_id %in% genes]
+    if(intron){introns.subset <- introns[introns$entrezgene_id %in% genes]}
+    promoter.subset <- promoter[promoter$entrezgene_id %in% genes]
+    enhancer.subset <- enhancer[enhancer$entrezgene_id %in% genes]
+    
+    # merge 
+    merged.subset <- c(exons.subset, 
+                       promoter.subset,
+                       enhancer.subset)
+    
+    if(intron){
+      merged.subset <- c(exons.subset,
+                         introns.subset,
+                       promoter.subset,
+                       enhancer.subset)
+    }
+    
+    # add to pathway list
+    pathways <- append(pathways, GRangesList(merged.subset))
+    
+    # name
+    names(pathways)[i] <- enrich_result@result$Description[i]
+  }
+  
+  return(pathways)
+}
+
+# function to create pathways with random genes
+# for each pathway get the number of genes
+# randomly sample genes from all the genes that were found in enrichment
+# create list list of 100000 different shuffled objects
+subset_regions_pathways_shuffle <- function(expressed_regions, enrich_result, intron = TRUE, n_iterations = 10000) {
+  # Split expressed_regions into types
+  exon <- expressed_regions[["exons"]]
+  if(intron){introns <- expressed_regions[["introns"]]}
+  promoter <- expressed_regions[["promoters"]]
+  enhancer <- expressed_regions[["enhancers"]]
+  
+  # Get all unique genes found in all pathways
+  all.genes <- unique(unlist(sapply(enrich_result@result$geneID, function(x) strsplit(x, "/"))))
+  
+  # Initialize a list to store each iteration's results
+  all_pathways_list <- vector("list", n_iterations)
+  
+  # Perform shuffling n_iterations times
+  for (n in 1:n_iterations) {
+    pathways <- GRangesList()
+    
+    for (i in 1:nrow(enrich_result@result)) {
+      # Get number of genes in each pathway
+      genes.length <- length(unlist(strsplit(enrich_result@result$geneID[i], "/")))
+      
+      # Randomly sample genes from all the genes that were found in enrichment
+      genes <- sample(all.genes, genes.length)
+      
+      # Subset lists
+      exons.subset <- exon[exon$entrezgene_id %in% genes]
+      if(intron){introns.subset <- introns[introns$entrezgene_id %in% genes]}
+      promoter.subset <- promoter[promoter$entrezgene_id %in% genes]
+      enhancer.subset <- enhancer[enhancer$entrezgene_id %in% genes]
+      
+      # merge 
+      merged.subset <- c(exons.subset,
+                         promoter.subset,
+                         enhancer.subset)
+  
+      if(intron){
+        merged.subset <- c(exons.subset,
+                           introns.subset,
+                         promoter.subset,
+                         enhancer.subset)
+      }
+
+      # Add to pathway list
+      pathways <- append(pathways, GRangesList(merged.subset))
+      
+      # Name the current pathway according to the description in enrich_result
+      names(pathways)[i] <- enrich_result@result$Description[i]
+    }
+    
+    # Store the shuffled pathways of the current iteration
+    all_pathways_list[[n]] <- pathways
+  }
+  
+  return(all_pathways_list)
+}
+
+
+# function to subset granges based on genes from a pathway enrichment
+# subset_regions_gene_sets <- function(expressed_regions, gene_sets){
+#   
+#   # split 
+#   exon <- expressed_regions[["exons"]]
+#   promoter <- expressed_regions[["promoters"]]
+#   enhancer <- expressed_regions[["enhancers"]]
+# 
+#   pathways <- GRangesList()
+#   for(i in 1:length(gene_sets)){
+#     # get genes
+#     genes <- gene_sets[[i]][,"entrezgene_id"]
+#     
+#     
+#     # susbet lists
+#     exons.subset <- exon[exon$entrezgene_id %in% genes]
+#     promoter.subset <- promoter[promoter$entrezgene_id %in% genes]
+#     enhancer.subset <- enhancer[enhancer$entrezgene_id %in% genes]
+#     
+#     # merge 
+#     merged.subset <- c(exons.subset, 
+#                        promoter.subset,
+#                        enhancer.subset)
+#     
+#     # add to pathway list
+#     pathways <- append(pathways, GRangesList(merged.subset))
+#     
+#     # name
+#     names(pathways)[i] <- names(gene_sets)[i]
+#   }
+#   
+#   return(pathways)
+# }
+# 
+# subset_regions_genes <- function(expressed_regions, genes){
+#   
+#   # split 
+#   exon <- expressed_regions[["exons"]]
+#   promoter <- expressed_regions[["promoters"]]
+#   enhancer <- expressed_regions[["enhancers"]]
+#     
+#   # susbet lists
+#   exons.subset <- exon[exon$entrezgene_id %in% genes]
+#   promoter.subset <- promoter[promoter$entrezgene_id %in% genes]
+#   enhancer.subset <- enhancer[enhancer$entrezgene_id %in% genes]
+#   
+#   # merge 
+#   pathways <- c(exons.subset, 
+#                      promoter.subset,
+#                      enhancer.subset)
+#     
+#   return(pathways)
+# }
+
+load_bed <- function(dir, file, hg19_size, includeMetadata = FALSE, reduce = TRUE) {
+  setwd(dir)
+  
+  # Read the BED file
+  if (includeMetadata) {
+    bed <- read.table(file, header = FALSE, stringsAsFactors = FALSE)
+    # Assuming the first three columns are always chr, start, end
+    colnames(bed)[1:3] <- c("chr", "start", "end")
+  } else {
+    bed <- read.table(file, header = FALSE, stringsAsFactors = FALSE)
+    colnames(bed) <- c("chr", "start", "end")
+  }
+
+  # Create GRanges object
+  bed <- makeGRangesFromDataFrame(bed, start.field = "start", end.field = "end", keep.extra.columns = includeMetadata)
+  bed <- keepStandardChromosomes(bed, pruning.mode = "coarse")
+  bed <- dropSeqlevels(bed, c("chrY", "chrM"), pruning.mode = "coarse")
+  
+  # merge overlapping regions
+  if(reduce){
+    bed <- reduce(bed)
+  }
+  
+  # Calculate and print coverage of genome
+  print(sum(width(bed)) / hg19_size)
+
+  return(bed)
+}
+
+export_GRanges_to_VCF <- function(gr_obj, sample_name) {
+  # Step 1: Convert to data frame
+  gr_df <- as.data.frame(gr_obj)
+  
+  # Step 2: Convert columns to appropriate types
+  gr_df$REF <- as.character(gr_df$REF)
+  gr_df$ALT <- sapply(gr_df$ALT, function(alt) {
+    as.character(alt)[1]
+  })
+
+  # Step 3: Generate paramRangeID if necessary
+  gr_df$paramRangeID <- paste0(gr_df$seqnames, ":", gr_df$start, "_", gr_df$REF, "/", gr_df$ALT)
+  
+  # Step 4: Create VCF header
+  vcf_header <- paste0('##fileformat=VCFv4.3\n',
+                       '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t', 
+                       sample_name)
+  
+  # Step 5: Generate VCF body
+  vcf_body <- apply(gr_df, 1, function(row) {
+    paste(row['seqnames'], row['start'], row['paramRangeID'], row['REF'], row['ALT'], row['QUAL'], row['FILTER'], '.', '.', '.', sep = '\t')
+  })
+  vcf_body <- paste(vcf_body, collapse = '\n')
+  
+  # Step 6: Combine header and body and write to file
+  vcf_text <- paste(vcf_header, vcf_body, sep = '\n')
+  writeLines(vcf_text, paste0(sample_name, ".vcf"))
+}
+
+theme_Publication <- function(base_size=16, base_family="helvetica") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family = "")
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               #legend.key.size= unit(0.2, "cm"),
+               legend.margin = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+          ))
+      
+}
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+wrap_labels <- function(labels, width = 5) {
+  wrapped_labels <- str_wrap(labels, width)
+  names(wrapped_labels) <- names(labels)
+  return(wrapped_labels)
+}
+```
+
+# Get expressed regions
+
+## Load RNA-Seq data
+- Loading control and ENU samples
+- IMPROVEMENT: account for differences between control and ENU groups
+```{r}
+activeGenes <- readRDS("activeGenes.RDS")
+nonactiveGenes <- readRDS("nonactiveGenes.RDS")
+```
+
+## Get exons
+
+### Expressed
+```{r}
+# get all exons
+exons <- exonsBy(TxDb.Hsapiens.UCSC.hg19.knownGene, by="gene")
+# exons <- unlist(exons)
+# exons$entrezgene_id <- names(exons)
+
+# subset for expressed genes
+exons.expressed <- exons[names(exons) %in% activeGenes]
+length(exons.expressed)/length(exons)  # proportion of total
+sum(unlist(exons.expressed)@ranges@width)/hg19_size # coverage of genome
+
+# unlist them
+exons.expressed <- unlist(exons.expressed)
+exons.expressed$entrezgene_id <- names(exons.expressed)
+```
+
+### Non-expressed
+```{r}
+# subset for nonexpressed genes
+exons.nonexpressed <- exons[names(exons) %in% nonactiveGenes]
+length(exons.nonexpressed)/length(exons)  # proportion of total
+sum(unlist(exons.nonexpressed)@ranges@width)/hg19_size # coverage of genome
+
+# unlist them
+exons.nonexpressed <- unlist(exons.nonexpressed)
+exons.nonexpressed$entrezgene_id <- names(exons.nonexpressed)
+```
+
+## Get introns
+
+### Expressed
+```{r}
+# Get introns by transcript
+introns <- intronsByTranscript(TxDb.Hsapiens.UCSC.hg19.knownGene)
+
+# subset for expressed genes
+introns.expressed <- introns[names(introns) %in% activeGenes]
+length(introns.expressed)/length(introns)  # proportion of total
+sum(unlist(introns.expressed)@ranges@width)/hg19_size # coverage of genome
+
+# unlist them
+introns.expressed <- unlist(introns.expressed)
+introns.expressed$entrezgene_id <- names(introns.expressed)
+```
+
+### Non-expressed
+```{r}
+# subset for nonexpressed genes
+introns.nonexpressed <- introns[names(introns) %in% nonactiveGenes]
+length(introns.nonexpressed)/length(introns)  # proportion of total
+sum(unlist(introns.nonexpressed)@ranges@width)/hg19_size # coverage of genome
+
+# unlist them
+introns.nonexpressed <- unlist(introns.nonexpressed)
+introns.nonexpressed$entrezgene_id <- names(introns.nonexpressed)
+```
+
+## Get promoters (+5KB)
+
+### Expressed
+```{r}
+# get all promoters
+promoters <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
+promoters <- resize(promoters, width = 5000, fix = "start")
+promoters$entrezgene_id <- promoters$gene_id
+
+# subset for expressed genes
+promoters.expressed <- promoters[promoters$entrezgene_id %in% activeGenes]
+length(promoters.expressed)/length(promoters) # proportion of total
+sum(promoters.expressed@ranges@width)/hg19_size # coverage of genome
+```
+### Non-expressed
+```{r}
+# subset for nonexpressed genes
+promoters.nonexpressed <- promoters[promoters$entrezgene_id %in% nonactiveGenes]
+length(promoters.nonexpressed)/length(promoters) # proportion of total
+sum(promoters.nonexpressed@ranges@width)/hg19_size # coverage of genome
+```
+
+## Get connected enhancer regions
+
+### Expressed
+```{r}
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+enhancers <- read.table("BSS00720_EPIMAP-IMR90-links_corr_only-hg19.tsv", header = TRUE)
+enhancers <- makeGRangesFromDataFrame(enhancers, start.field = "enhStart", end.field = "enhEnd", keep.extra.columns=TRUE)
+enhancers <- keepStandardChromosomes(enhancers)
+enhancers <- dropSeqlevels(enhancers, c("chrY", "chrM"), pruning.mode="coarse")
+sum(enhancers@ranges@width)/hg19_size # coverage of genome
+
+# convert gene names
+convert <- bitr(enhancers$gene, "ENSEMBL", "ENTREZID", org.Hs.eg.db)
+sum(is.na(convert$ENTREZID[match(enhancers$gene, convert$ENSEMBL)]))/length(enhancers$gene) # proportion of missing
+
+# map
+entrez_vector <- setNames(convert$ENTREZID, convert$ENSEMBL)
+entrez_ids <- entrez_vector[enhancers$gene]
+mcols(enhancers)$entrezgene_id <- entrez_ids
+sum(is.na(enhancers$entrezgene_id)/length(enhancers$entrezgene_id)) # proportion of missing
+
+# subset for expressed genes
+enhancers.expressed <- enhancers[enhancers$entrezgene_id %in% activeGenes]
+length(enhancers.expressed)/length(enhancers)
+sum(enhancers.expressed@ranges@width)/hg19_size # coverage of genome
+```
+
+### Non-Expressed
+```{r}
+# subset for nonexpressed genes
+enhancers.nonexpressed <- enhancers[enhancers$entrezgene_id %in% nonactiveGenes]
+length(enhancers.nonexpressed)/length(enhancers)
+sum(enhancers.nonexpressed@ranges@width)/hg19_size # coverage of genome
+```
+
+## Combine exons, introns, pomoters, enhancers
+
+### Expressed
+```{r}
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+expressed_regions_exons_introns_promoters_enhancers <- GRangesList(exons = exons.expressed,
+                                 introns = introns.expressed,
+                                 promoters = promoters.expressed,
+                                 enhancers = enhancers.expressed,
+                                 compress=FALSE)
+
+# save
+export.grangesList.bed(expressed_regions_exons_introns_promoters_enhancers,
+                       "/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/6-pathway/1-load-data")
+saveRDS(expressed_regions, "expressed_regions_exons_introns_promoters_enhancers.RDS")
+
+# plot
+vec <- unlist(lapply(expressed_regions_exons_introns_promoters_enhancers, function(x) sum(x@ranges@width)/hg19_size))
+df <- tibble(Category = names(vec), Value = as.numeric(vec))
+df$Category <- factor(df$Category, levels = df$Category)
+
+pdf("expressed_regions_exons_introns_promoters_enhancers.pdf",
+    width = 5,
+    height = 5)
+ggplot(df, aes(x = Category, y = Value)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(x = "Expressed regions", y = "Proportion of genome") +
+  theme_Publication() 
+dev.off()
+```
+
+### Non-expressed
+```{r}
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+nonexpressed_regions_exons_introns_promoters_enhancers <- GRangesList(exons = exons.nonexpressed,
+                                    introns = introns.nonexpressed,
+                                    promoters = promoters.nonexpressed,
+                                    enhancers = enhancers.nonexpressed,
+                                    compress=FALSE)
+
+# save
+export.grangesList.bed(nonexpressed_regions_exons_introns_promoters_enhancers,
+                       "/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/6-pathway/1-load-data")
+saveRDS(expressed_regions, "nonexpressed_regions_exons_introns_promoters_enhancers.RDS")
+
+# plot
+vec <- unlist(lapply(nonexpressed_regions_exons_introns_promoters_enhancers, function(x) sum(x@ranges@width)/hg19_size))
+df <- tibble(Category = names(vec), Value = as.numeric(vec))
+df$Category <- factor(df$Category, levels = df$Category)
+
+pdf("nonexpressed_regions_exons_introns_promoters_enhancers.pdf",
+    width = 5,
+    height = 5)
+ggplot(df, aes(x = Category, y = Value)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(x = "Expressed regions", y = "Proportion of genome") +
+  theme_Publication() 
+dev.off()
+```
+
+## Combine
+```{r}
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+expressed_nonexpressed_regions_exons_introns_promoters_enhancers <- list(expressed = unlist(expressed_regions_exons_introns_promoters_enhancers),
+                                       nonexpressed = unlist(nonexpressed_regions_exons_introns_promoters_enhancers))
+```
+
+## Combine exons, pomoters, enhancers
+
+### Expressed
+```{r}
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+expressed_regions_exons_promoters_enhancers <- GRangesList(exons = exons.expressed,
+                                 promoters = promoters.expressed,
+                                 enhancers = enhancers.expressed,
+                                 compress=FALSE)
+
+# save
+export.grangesList.bed(expressed_regions_exons_promoters_enhancers,
+                       "/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/6-pathway/1-load-data")
+saveRDS(expressed_regions, "expressed_regions_exons_promoters_enhancers.RDS")
+
+# plot
+vec <- unlist(lapply(expressed_regions_exons_promoters_enhancers, function(x) sum(x@ranges@width)/hg19_size))
+df <- tibble(Category = names(vec), Value = as.numeric(vec))
+df$Category <- factor(df$Category, levels = df$Category)
+
+pdf("expressed_regions_exons_promoters_enhancers.pdf",
+    width = 5,
+    height = 5)
+ggplot(df, aes(x = Category, y = Value)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(x = "Expressed regions", y = "Proportion of genome") +
+  theme_Publication() 
+dev.off()
+```
+
+### Non-expressed
+```{r}
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+nonexpressed_regions_exons_promoters_enhancers <- GRangesList(exons = exons.nonexpressed,
+                                    promoters = promoters.nonexpressed,
+                                    enhancers = enhancers.nonexpressed,
+                                    compress=FALSE)
+
+# save
+export.grangesList.bed(nonexpressed_regions_exons_promoters_enhancers,
+                       "/Users/ronaldcutler/Dropbox (EinsteinMed)/Vijg-lab/Projects/mutation accumulation/231009 multiple ENU analysis/6-pathway/1-load-data")
+saveRDS(expressed_regions, "nonexpressed_regions_exons_promoters_enhancers.RDS")
+
+# plot
+vec <- unlist(lapply(nonexpressed_regions_exons_promoters_enhancers, function(x) sum(x@ranges@width)/hg19_size))
+df <- tibble(Category = names(vec), Value = as.numeric(vec))
+df$Category <- factor(df$Category, levels = df$Category)
+
+pdf("nonexpressed_regions_exons_promoters_enhancers.pdf",
+    width = 5,
+    height = 5)
+ggplot(df, aes(x = Category, y = Value)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(x = "Expressed regions", y = "Proportion of genome") +
+  theme_Publication() 
+dev.off()
+```
+
+## Combine
+```{r}
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+expressed_nonexpressed_regions_exons_promoters_enhancers <- list(expressed = unlist(expressed_regions_exons_promoters_enhancers),
+                                       nonexpressed = unlist(nonexpressed_regions_exons_promoters_enhancers))
+```
+
+# Pathway enrichment
+
+## Expressed
+
+### Gene Ontology Biological Process
+```{r}
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+# get enrichment of genes expressed
+enrich.go.expressed <- enrichGO(as.character(activeGenes), 
+                   OrgDb = org.Hs.eg.db, 
+                   keyType = 'ENTREZID', 
+                   ont = 'BP',
+                   universe = as.character(rowData(se)$entrezgene_id),
+                   readable = FALSE)
+enrich.go.expressed <- simplify(enrich.go.expressed)
+enrich.go.expressed <- mutate(enrich.go.expressed, qscore = -log(pvalue, base=10))
+
+# ouput
+write.csv(enrich.go.expressed@result, "enrich.go.expressed.csv", row.names = FALSE)
+saveRDS(enrich.go.expressed, "enrich.go.expressed.RDS")
+
+# plot
+pdf("enrich.go.expressed.bar.pdf",
+    width = 7,
+    height = 7)
+barplot(enrich.go.expressed,
+        x = "qscore",
+        showCategory = 20)
+dev.off()
+
+pdf("enrich.go.expressed.dot.pdf",
+    width = 7,
+    height = 7)
+dotplot(enrich.go.expressed,
+        x = "Count",
+        showCategory = 20)
+dev.off()
+```
+
+#### Divide into pathways
+
+##### exons, introns, promoters, enhancers
+```{r}
+go_expressed_regions_exons_introns_promoters_enhancers <- subset_regions_pathways(expressed_regions_exons_introns_promoters_enhancers,
+                                        enrich.go.expressed,
+                                        intron = TRUE)
+
+go_expressed_shuffled_regions_exons_introns_promoters_enhancers <- subset_regions_pathways_shuffle(expressed_regions_exons_introns_promoters_enhancers,
+                                                         enrich.go.expressed,
+                                                         intron = TRUE,
+                                                         n_iterations = 10000)
+
+# save
+saveRDS(go_expressed_regions_exons_introns_promoters_enhancers, "go_expressed_regions_exons_introns_promoters_enhancers.RDS")
+saveRDS(go_expressed_shuffled_regions_exons_introns_promoters_enhancers, "go_expressed_shuffled_regions_exons_introns_promoters_enhancers.RDS")
+```
+
+##### exons, promoters, enhancers
+```{r}
+go_expressed_regions_exons_promoters_enhancers <- subset_regions_pathways(expressed_regions_exons_promoters_enhancers,
+                                        enrich.go.expressed,
+                                        intron = TRUE)
+
+go_expressed_shuffled_regions_exons_promoters_enhancers <- subset_regions_pathways_shuffle(expressed_regions_exons_promoters_enhancers,
+                                                         enrich.go.expressed,
+                                                         intron = TRUE,
+                                                         n_iterations = 10000)
+
+# save
+saveRDS(go_expressed_regions_exons_promoters_enhancers, "go_expressed_regions_exons_promoters_enhancers.RDS")
+saveRDS(go_expressed_shuffled_regions_exons_promoters_enhancers, "go_expressed_shuffled_regions_exons_promoters_enhancers.RDS")
+```
+
+### Essential genes
+```{r, eval = FALSE}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/annotation/gene-sets")
+
+essential <- read.table("DEG_database_eukaryote_essential_genes.csv")
+
+# load
+essential <- read.csv("AchillesCommonEssentialControls.csv", header = TRUE)
+essential$Gene <- sub(" \\(.*", "", essential$Gene)
+
+nonessential <- read.csv("AchillesNonessentialControls.csv", header = TRUE)
+nonessential$Gene <- sub(" \\(.*", "", nonessential$Gene)
+
+# convert
+essential <- merge(essential, gene_names, by.x = "Gene", by.y = "external_gene_name")
+sum(duplicated(essential$entrezgene_id))
+essential <- essential[!duplicated(essential$entrezgene_id),] # remove duplicates
+
+nonessential <- merge(nonessential, gene_names, by.x = "Gene", by.y = "external_gene_name")
+sum(duplicated(nonessential$entrezgene_id))
+nonessential <- nonessential[!duplicated(nonessential$entrezgene_id),] # remove duplicates
+
+# combine
+essential_list <- list(essential = essential,
+                       nonessential = nonessential)
+
+# divide regions by genes
+essential_genes <- subset_regions_gene_sets(expressed_regions,
+                                        essential_list)
+
+# save 
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+essential_genes <- readRDS("essential_genes.RDS")
+
+saveRDS(essential_genes, "essential_genes.RDS")
+```
+
+## Non-Expressed
+
+### Gene Ontology Biological Process
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+# get enrichment of genes expressed
+enrich.go.nonexpressed <- enrichGO(as.character(nonactiveGenes), 
+                   OrgDb = org.Hs.eg.db, 
+                   keyType = 'ENTREZID', 
+                   ont = 'BP',
+                   universe = as.character(rowData(se)$entrezgene_id),
+                   readable = FALSE)
+enrich.go.nonexpressed <- simplify(enrich.go.nonexpressed)
+enrich.go.nonexpressed <- mutate(enrich.go.nonexpressed, qscore = -log(pvalue, base=10))
+
+# ouput
+write.csv(enrich.go.nonexpressed@result, "enrich.go.nonexpressed.csv", row.names = FALSE)
+saveRDS(enrich.go.nonexpressed, "enrich.go.nonexpressed.RDS")
+
+# plot
+pdf("enrich.go.nonexpressed.bar.pdf",
+    width = 7,
+    height = 7)
+barplot(enrich.go.nonexpressed,
+        x = "qscore",
+        showCategory = 20)
+dev.off()
+
+pdf("enrich.go.nonexpressed.dot.pdf",
+    width = 7,
+    height = 7)
+dotplot(enrich.go.nonexpressed,
+        x = "Count",
+        showCategory = 20)
+dev.off()
+```
+
+#### Divide into pathways
+
+##### exons, introns, promoters, enhancers
+```{r, eval = FALSE}
+go_nonexpressed_regions_exons_introns_promoters_enhancers <- subset_regions_pathways(nonexpressed_regions_exons_introns_promoters_enhancers,
+                                        enrich.go.nonexpressed,
+                                        intron = TRUE)
+
+go_nonexpressed_shuffled_regions_exons_introns_promoters_enhancers <- subset_regions_pathways_shuffle(nonexpressed_regions_exons_introns_promoters_enhancers,
+                                                         enrich.go.nonexpressed,
+                                                         intron = TRUE,
+                                                         n_iterations = 10000)
+
+# save
+saveRDS(go_nonexpressed_regions_exons_introns_promoters_enhancers, "go_nonexpressed_regions_exons_introns_promoters_enhancers.RDS")
+saveRDS(go_nonexpressed_shuffled_regions_exons_introns_promoters_enhancers, "go_nonexpressed_shuffled_regions_exons_introns_promoters_enhancers.RDS")
+```
+
+##### exons, promoters, enhancers
+```{r, eval = FALSE}
+go_nonexpressed_regions_exons_promoters_enhancers <- subset_regions_pathways(nonexpressed_regions_exons_promoters_enhancers,
+                                        enrich.go.nonexpressed,
+                                        intron = TRUE)
+
+go_nonexpressed_shuffled_regions_exons_promoters_enhancers <- subset_regions_pathways_shuffle(nonexpressed_regions_exons_promoters_enhancers,
+                                                         enrich.go.nonexpressed,
+                                                         intron = TRUE,
+                                                         n_iterations = 10000)
+
+# save
+saveRDS(go_nonexpressed_regions_exons_promoters_enhancers, "go_nonexpressed_regions_exons_promoters_enhancers.RDS")
+saveRDS(go_nonexpressed_shuffled_regions_exons_promoters_enhancers, "go_nonexpressed_shuffled_regions_exons_promoters_enhancers.RDS")
+```
+
+## KEGG
+```{r, eval = FALSE}
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+# get enrichment of genes expressed
+enrich.kegg.expressed <- enrichKEGG(as.character(activeGenes), 
+                   organism = "hsa",
+                   keyType = 'kegg', 
+                   universe = as.character(rna$entrezgene_id))
+enrich.kegg.expressed <- mutate(enrich.kegg.expressed, qscore = -log(pvalue, base=10))
+
+# ouput
+write.csv(enrich.kegg.expressed@result, "expressed_genes_kegg.csv", row.names = FALSE)
+saveRDS(enrich.kegg.expressed, "enrich.kegg.expressed.RDS")
+
+# plot
+pdf("enrich.kegg.expressed.bar.pdf",
+    width = 7,
+    height = 7)
+barplot(enrich.kegg.expressed,
+        x = "qscore",
+        showCategory = 20)
+dev.off()
+
+pdf("enrich.kegg.expressed.dot.pdf",
+    width = 7,
+    height = 7)
+dotplot(enrich.kegg.expressed,
+        x = "Count",
+        showCategory = 20)
+dev.off()
+
+# divide regions by pathways
+kegg.expressed <- subset_regions_pathways(expressed_regions,
+                                              enrich.kegg.expressed)
+
+kegg.expressed.shuffled <- subset_regions_pathways_shuffle(expressed_regions,
+                                                               enrich.kegg.expressed)
+
+# save
+saveRDS(kegg.expressed, "kegg.expressed.RDS")
+saveRDS(kegg.expressed.shuffled, "kegg.expressed.shuffled.RDS")
+```
+
+## Marker genes
+```{r, eval = FALSE}
+setwd("/Users/ronaldcutler/Dropbox\ (EinsteinMed)/Vijg-lab/Projects/mutation\ accumulation/annotation/gene-sets")
+
+markers <- read.table("fibroblast_markers.txt")
+
+# Map gene ID to gene name
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+gene_names <- getBM(attributes = c('external_gene_name', 'entrezgene_id'),
+                filters = 'external_gene_name',
+                values = markers$V1, 
+                mart = ensembl)
+markers <- merge(markers, gene_names, by.x = "V1", by.y = "external_gene_name")
+
+# duplicate removal
+sum(duplicated(markers$entrezgene_id))
+markers <- markers[!duplicated(markers$entrezgene_id),] # remove duplicates
+
+# divide regions by genes
+marker_genes <- subset_regions_genes(expressed_regions,
+                                        markers$entrezgene_id)
+
+# save 
+setwd("/gs/gsfs0/usersb/vijg-lab/2023-Ronnie/231009_multiple_ENU_analysis/pathway/1-load-data")
+
+saveRDS(marker_genes, "marker_genes.RDS")
+```
+
+## Cytopus

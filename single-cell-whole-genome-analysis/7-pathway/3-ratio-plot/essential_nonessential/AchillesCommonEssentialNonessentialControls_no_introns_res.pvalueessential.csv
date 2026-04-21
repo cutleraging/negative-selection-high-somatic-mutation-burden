@@ -1,0 +1,9 @@
+"","contrast","estimate","SE","df","t.ratio","p.value","p.value.signif"
+"1","control cycle6.57142857142857 - enu cycle6.57142857142857",-23.4986922799423,3.04537294263025,38,-7.71619526495391,2.6985914740071e-09,"****"
+                Df Sum Sq Mean Sq F value   Pr(>F)    
+condition        1   5966    5966  62.820 1.43e-09 ***
+cycle            1    554     554   5.836 0.020612 *  
+condition:cycle  1   1346    1346  14.173 0.000564 ***
+Residuals       38   3609      95                     
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1

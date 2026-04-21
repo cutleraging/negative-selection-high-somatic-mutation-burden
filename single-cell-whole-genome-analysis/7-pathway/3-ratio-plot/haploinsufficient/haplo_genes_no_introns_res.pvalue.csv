@@ -1,0 +1,11 @@
+"","condition","cycle","region","p_value","p_adjusted","significant_p_adjusted"
+"1","control",1,"haploinsufficient",0.0209489096459286,0.0418978192918572,"*"
+"2","control",1,"haplosufficient",0.410293500007552,0.410293500007552,NA
+"3","control",9,"haploinsufficient",0.00574018501499214,0.0114803700299843,"*"
+"4","control",9,"haplosufficient",0.0577019381647421,0.0577019381647421,NA
+"5","enu",3,"haploinsufficient",0.0215188070456801,0.0430376140913601,"*"
+"6","enu",3,"haplosufficient",0.152143224398601,0.152143224398601,NA
+"7","enu",6,"haploinsufficient",0.000967394985475401,0.0019347899709508,"**"
+"8","enu",6,"haplosufficient",0.00757813719829125,0.00757813719829125,"**"
+"9","enu",9,"haploinsufficient",1.35373495484757e-12,1.35373495484757e-12,"****"
+"10","enu",9,"haplosufficient",4.30416558506208e-15,8.60833117012416e-15,"****"
